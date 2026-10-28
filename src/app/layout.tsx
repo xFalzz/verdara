@@ -38,9 +38,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${archivo.variable} ${inter.variable} ${ibmPlexMono.variable}`}
     >
-      <body className="min-h-screen antialiased selection:bg-[#c6f432] selection:text-[#151515]">
+      <body
+        suppressHydrationWarning
+        className="min-h-screen antialiased selection:bg-[#c6f432] selection:text-[#151515]"
+      >
         {children}
       </body>
     </html>

@@ -8,7 +8,7 @@ import {
   type WorldCityEntry,
 } from "@/lib/science/presets";
 import { calculateHousingFootprint } from "@/lib/science/calculator";
-import { formatCurrency, formatTemp, formatVolume } from "@/lib/science/units";
+import { formatCurrency, formatTemp } from "@/lib/science/units";
 
 /**
  * 0. VERDARA BESPOKE ARCHITECTURAL BRAND LOGO (<VerdaraLogo />)
@@ -433,11 +433,6 @@ export function DovvHoloSticker({
 
 /**
  * 4. TOWNHOUSE.DEV ANIMATED CHAPTER SCROLL RAIL (`data-testid="scene-rail"`)
- * Replicates Townhouse.dev's exact `Tt` scene-rail component from `LandingPlaceholder.BWkykNAw.js`:
- * - Fixed vertical chapter rail on the right edge (`right-3 lg:right-5 top-1/2 -translate-y-1/2`)
- * - Lead-Trail elastic morphing pill indicator (`rail-indicator`) + active dot (`w-1.5 rounded-full`)
- * - Compact dot mode on Hero (`index === 0`) that expands on hover/focus or as soon as you scroll down
- * - Live scroll percentage meter + `Next ↓` chapter button at the bottom
  */
 export interface ScrollRailChapter {
   id: string;
@@ -462,7 +457,6 @@ export function TownhouseScrollRail({
     null
   );
 
-  // Track scroll position and active section
   useEffect(() => {
     const onScroll = () => {
       const scrollTop = window.scrollY;
@@ -470,7 +464,9 @@ export function TownhouseScrollRail({
         1,
         document.documentElement.scrollHeight - window.innerHeight
       );
-      setScrollPct(Math.min(100, Math.max(0, Math.round((scrollTop / maxScroll) * 100))));
+      setScrollPct(
+        Math.min(100, Math.max(0, Math.round((scrollTop / maxScroll) * 100)))
+      );
 
       const triggerY = window.innerHeight * 0.38;
       let foundIdx = 0;
@@ -497,7 +493,6 @@ export function TownhouseScrollRail({
     return () => window.removeEventListener("scroll", onScroll);
   }, [chapters]);
 
-  // Measure active item's top & bottom for Townhouse lead-trail indicator
   useEffect(() => {
     const updateBounds = () => {
       const el = itemRefs.current[activeIndex];
@@ -530,7 +525,6 @@ export function TownhouseScrollRail({
 
   return (
     <>
-      {/* Top Thin Townhouse Scroll Progress Line */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[3px] bg-transparent"
@@ -541,7 +535,6 @@ export function TownhouseScrollRail({
         />
       </div>
 
-      {/* Townhouse.dev Fixed Right Scene Rail (`data-testid="scene-rail"`) */}
       <nav
         aria-label={isId ? "Bab Halaman" : "Page Chapters"}
         data-testid="scene-rail"
@@ -555,7 +548,6 @@ export function TownhouseScrollRail({
             : "border-white/12 bg-[#141619]/90 shadow-[0_8px_30px_rgba(0,0,0,0.45)] backdrop-blur-md"
         }`}
       >
-        {/* Scroll Percentage Mini Header */}
         <div className="mb-1 flex items-center justify-between gap-2 px-2.5 pt-1 font-mono text-[10px] opacity-60">
           <span
             className={
@@ -572,7 +564,6 @@ export function TownhouseScrollRail({
         </div>
 
         <ol className="relative flex flex-col">
-          {/* Townhouse Lead-Trail Elastic Background Pill (`rail-indicator`) */}
           {bounds && (
             <>
               <span
@@ -586,9 +577,7 @@ export function TownhouseScrollRail({
                     : "top 0.24s cubic-bezier(0.22, 1, 0.36, 1), height 0.42s cubic-bezier(0.32, 1.1, 0.5, 1)",
                 }}
                 className={`pointer-events-none absolute inset-x-0 rounded-[10px] shadow-sm ${
-                  isLight
-                    ? "bg-[#111111]"
-                    : "bg-[#c6f432]"
+                  isLight ? "bg-[#111111]" : "bg-[#c6f432]"
                 }`}
               />
               <span
@@ -656,7 +645,6 @@ export function TownhouseScrollRail({
           })}
         </ol>
 
-        {/* Townhouse `scene-next` Bottom Button */}
         <button
           type="button"
           onClick={() =>
@@ -693,11 +681,10 @@ export function TownhouseScrollRail({
 }
 
 /**
- * 5. GLOBAL WORLD COUNTRIES & CITIES EXPLORER (<WorldCityExplorer />)
- * Lets users inspect ANY country and city in the world:
- * - Instant filter across 6 Global Regions (All World, Indonesia, Asia-Pacific, Europe, Americas, Middle East & Africa)
- * - Live Open-Meteo Geocoding API search for 100,000+ cities & towns in every country on Earth
- * - Displays plain-language solar, rainwater, temperature, and local currency savings for each city
+ * 5. COMPACT WORLD COUNTRY & CITY POPOVER PICKER (<CompactWorldCityPicker />)
+ * Small, clean pill trigger that opens a compact floating dropdown popover (`w-[340px] sm:w-[390px]`).
+ * Supports instant live search across 195+ countries (Open-Meteo Geocoding API) + 28 curated cities
+ * without taking up vertical page space.
  */
 interface GeocodingHit {
   id: number;
@@ -709,10 +696,317 @@ interface GeocodingHit {
   admin1?: string;
 }
 
+export function CompactWorldCityPicker({
+  isLight,
+  isId,
+  variant = "header",
+  align = "left",
+}: {
+  isLight: boolean;
+  isId: boolean;
+  variant?: "header" | "hero";
+  align?: "left" | "center" | "right";
+}) {
+  const {
+    geo,
+    housingCalc,
+    teleportToCity,
+    setCustomCoordinates,
+  } = useVerdaraStore();
+
+  const [open, setOpen] = useState(false);
+  const [regionFilter, setRegionFilter] = useState<
+    "all" | WorldCityEntry["continent"]
+  >("all");
+  const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<GeocodingHit[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const handleLiveSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setIsSearching(true);
+    setSearchError(null);
+    try {
+      const res = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+          query.trim()
+        )}&count=6&language=${isId ? "id" : "en"}&format=json`
+      );
+      const data = await res.json();
+      if (data?.results && data.results.length > 0) {
+        setSearchResults(data.results);
+      } else {
+        setSearchResults([]);
+        setSearchError(
+          isId ? "Kota tidak ditemukan." : "No matching city found."
+        );
+      }
+    } catch {
+      setSearchError(
+        isId ? "Gagal mencari kota." : "Search unavailable right now."
+      );
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectCatalogCity = (entry: WorldCityEntry) => {
+    if (entry.presetId) {
+      teleportToCity(entry.presetId);
+    } else {
+      setCustomCoordinates(
+        entry.lat,
+        entry.lng,
+        entry.city,
+        entry.countryCode
+      );
+    }
+    setOpen(false);
+  };
+
+  const selectGeocodedCity = (hit: GeocodingHit) => {
+    const label = `${hit.name}${hit.admin1 ? `, ${hit.admin1}` : ""}`;
+    setCustomCoordinates(
+      hit.latitude,
+      hit.longitude,
+      label,
+      (hit.country_code || "XX").toUpperCase()
+    );
+    setSearchResults([]);
+    setQuery("");
+    setOpen(false);
+  };
+
+  const filteredCatalog =
+    regionFilter === "all"
+      ? WORLD_CITY_CATALOG
+      : WORLD_CITY_CATALOG.filter((c) => c.continent === regionFilter);
+
+  const alignClass =
+    align === "center"
+      ? "left-1/2 -translate-x-1/2"
+      : align === "right"
+      ? "right-0"
+      : "left-0";
+
+  return (
+    <div ref={wrapperRef} className="relative inline-block text-left">
+      {variant === "hero" ? (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className={`zeggo-btn group inline-flex min-h-[42px] cursor-pointer items-center gap-2.5 rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition hover:-translate-y-0.5 ${
+            isLight
+              ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_6px_20px_-8px_rgba(0,0,0,0.22)]"
+              : "bg-[#15171b] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_6px_20px_-8px_rgba(0,0,0,0.6)]"
+          }`}
+        >
+          <span className="dovv-pill-dot">
+            <span />
+          </span>
+          <span className="font-semibold">
+            {geo.city} ({geo.countryCode} · {geo.koppen.code})
+          </span>
+          <span className="font-mono text-xs text-[#1e9e5a]">
+            {housingCalc.solar.kwp} kWp
+          </span>
+          <span className="hidden h-3.5 w-[1px] bg-current opacity-20 sm:inline-block" />
+          <span className="hidden text-xs opacity-75 sm:inline">
+            {isId ? "Pilih Negara / Kota ▾" : "Switch Country / City ▾"}
+          </span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="inline-flex min-h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-white/20"
+        >
+          <span>{isId ? "195+ Negara" : "195+ Countries"}</span>
+          <span aria-hidden="true">{open ? "▴" : "▾"}</span>
+        </button>
+      )}
+
+      {open && (
+        <div
+          className={`absolute top-full z-50 mt-2 w-[min(92vw,380px)] rounded-2xl border p-3.5 shadow-2xl backdrop-blur-xl ${alignClass} ${
+            isLight
+              ? "border-black/12 bg-white/98 text-[#111]"
+              : "border-white/15 bg-[#111318]/98 text-white"
+          }`}
+        >
+          {/* Compact Header */}
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 font-mono text-[11px]">
+              <span className="h-2 w-2 rounded-full bg-[#1e9e5a]" />
+              <span className="font-semibold">
+                {geo.city} ({geo.countryCode} · {geo.koppen.code})
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-current/10 font-mono text-xs opacity-75 hover:opacity-100"
+              aria-label="Close city picker"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Compact Search Input */}
+          <form onSubmit={handleLiveSearch} className="flex gap-1.5">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={
+                isId
+                  ? "Ketik kota/negara (mis. Surabaya, Paris)..."
+                  : "Search any city or country..."
+              }
+              className={`h-9 flex-1 rounded-xl border px-3 text-xs focus:outline-none ${
+                isLight
+                  ? "border-black/15 bg-[#f5f5f3] text-[#111] placeholder-[#666]"
+                  : "border-white/15 bg-[#08090b] text-white placeholder-[#888]"
+              }`}
+            />
+            <button
+              type="submit"
+              disabled={isSearching}
+              className="h-9 shrink-0 cursor-pointer rounded-xl bg-[#080808] px-3 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-[#1e1e1e] disabled:opacity-50"
+            >
+              {isSearching ? "..." : isId ? "Cari" : "Go"}
+            </button>
+          </form>
+
+          {searchError && (
+            <p className="mt-1.5 text-[11px] text-[#e5484d]">{searchError}</p>
+          )}
+
+          {/* Live Geocoding Search Results */}
+          {searchResults.length > 0 && (
+            <div className="mt-2 max-h-[140px] space-y-1 overflow-y-auto rounded-xl bg-[#080808] p-2 text-white">
+              {searchResults.map((hit) => (
+                <button
+                  key={hit.id}
+                  type="button"
+                  onClick={() => selectGeocodedCity(hit)}
+                  className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition hover:bg-white/10"
+                >
+                  <span className="truncate font-medium">
+                    {hit.name}
+                    {hit.admin1 ? `, ${hit.admin1}` : ""}
+                  </span>
+                  <span className="ml-2 shrink-0 rounded bg-[#c6f432]/20 px-1.5 py-0.5 font-mono text-[10px] text-[#c6f432]">
+                    {hit.country_code}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Mini Region Filter Pills */}
+          <div className="mt-2.5 flex flex-wrap gap-1">
+            {(
+              [
+                { id: "all", labelEn: "All", labelId: "Semua" },
+                { id: "indonesia", labelEn: "ID", labelId: "ID" },
+                { id: "asia_pacific", labelEn: "Asia", labelId: "Asia" },
+                { id: "europe", labelEn: "EU", labelId: "Eropa" },
+                { id: "americas", labelEn: "Americas", labelId: "Amerika" },
+                { id: "mena_africa", labelEn: "MENA/AF", labelId: "MENA/AF" },
+              ] as const
+            ).map((tab) => {
+              const active = regionFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setRegionFilter(tab.id)}
+                  className={`cursor-pointer rounded-lg px-2 py-1 font-mono text-[10px] font-medium transition ${
+                    active
+                      ? "bg-[#080808] font-bold text-[#c6f432]"
+                      : isLight
+                      ? "bg-[#f2f2ef] text-[#4b4b48] hover:bg-[#e5e5e0]"
+                      : "bg-white/8 text-[#aaa9ad] hover:bg-white/15"
+                  }`}
+                >
+                  {isId ? tab.labelId : tab.labelEn}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Compact Scrollable 2-Column City List */}
+          <div className="mt-2 grid max-h-[188px] grid-cols-2 gap-1.5 overflow-y-auto pr-0.5">
+            {filteredCatalog.map((entry) => {
+              const isCurrent =
+                Math.abs(geo.lat - entry.lat) < 0.25 &&
+                Math.abs(geo.lng - entry.lng) < 0.25;
+              return (
+                <button
+                  key={entry.slug}
+                  type="button"
+                  onClick={() => selectCatalogCity(entry)}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl border px-2.5 py-1.5 text-left text-xs transition ${
+                    isCurrent
+                      ? "border-[#1e9e5a] bg-[#080808] font-semibold text-white"
+                      : isLight
+                      ? "border-black/8 bg-[#f8f8f6] text-[#111] hover:border-black/25 hover:bg-white"
+                      : "border-white/8 bg-[#181b20] text-[#e2e1dc] hover:border-[#c6f432]/40"
+                  }`}
+                >
+                  <span className="truncate">{entry.city}</span>
+                  <span
+                    className={`ml-1.5 shrink-0 font-mono text-[10px] ${
+                      isCurrent ? "text-[#c6f432]" : "opacity-60"
+                    }`}
+                  >
+                    {entry.countryCode}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 6. COMPACT INLINE WORLD CITY BAR (<WorldCityExplorer />)
+ * Used inside `/radar` modal or inline strip. Keeps a low profile (`max-h-[180px]` chip list)
+ * so it never dominates the page.
+ */
 export function WorldCityExplorer({
   isLight,
   isId,
-  compact = false,
 }: {
   isLight: boolean;
   isId: boolean;
@@ -733,36 +1027,21 @@ export function WorldCityExplorer({
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<GeocodingHit[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
 
   const handleLiveSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     setIsSearching(true);
-    setSearchError(null);
     try {
       const res = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
           query.trim()
-        )}&count=8&language=${isId ? "id" : "en"}&format=json`
+        )}&count=6&language=${isId ? "id" : "en"}&format=json`
       );
       const data = await res.json();
-      if (data?.results && data.results.length > 0) {
-        setSearchResults(data.results);
-      } else {
-        setSearchResults([]);
-        setSearchError(
-          isId
-            ? "Kota tidak ditemukan. Coba ketik nama kota atau negara lain."
-            : "No matching city found. Try another city or country name."
-        );
-      }
+      setSearchResults(data?.results ?? []);
     } catch {
-      setSearchError(
-        isId
-          ? "Gagal menghubungi server geokode. Gunakan daftar kota dunia di bawah."
-          : "Could not reach geocoding server. Pick any world city below."
-      );
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
@@ -798,190 +1077,87 @@ export function WorldCityExplorer({
       ? WORLD_CITY_CATALOG
       : WORLD_CITY_CATALOG.filter((c) => c.continent === regionFilter);
 
-  const visibleCities = compact
-    ? filteredCatalog.slice(0, 12)
-    : filteredCatalog;
-
   return (
     <div
-      className={`rounded-[32px] border p-5 sm:p-8 ${
+      className={`rounded-2xl border p-4 ${
         isLight
           ? "border-black/10 bg-white shadow-sm"
           : "border-white/10 bg-[#121418]"
       }`}
     >
-      {/* Top Search & Active City Banner */}
-      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <span className="rounded-full bg-[#1e9e5a]/15 px-3 py-1 font-semibold text-[#1e9e5a]">
-              {isId ? "CAKUPAN 195+ NEGARA" : "195+ COUNTRIES SUPPORTED"}
-            </span>
-            <span className="opacity-70">
-              {isId
-                ? `Kota Aktif: ${geo.city} (${geo.countryCode} · Iklim ${geo.koppen.code})`
-                : `Active City: ${geo.city} (${geo.countryCode} · Climate ${geo.koppen.code})`}
-            </span>
-          </div>
-          <h3 className="mt-2 text-2xl sm:text-3xl font-medium tracking-[-0.03em]">
-            {isId
-              ? "Pilih atau cari kota mana pun di seluruh dunia"
-              : "Pick or search any city and country on Earth"}
-          </h3>
-          <p
-            className={`mt-1 text-xs sm:text-sm ${
-              isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
-            }`}
-          >
-            {isId
-              ? "Otomatis menyesuaikan sinar matahari, curah hujan bulanan, mata uang lokal, tarif listrik, dan lokasi bank sampah untuk negara yang Anda pilih."
-              : "Automatically adapts sunshine, monthly rainfall, local currency, electricity tariff, and recycling drop-off hubs to your chosen country."}
-          </p>
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {(
+            [
+              { id: "all", labelEn: "All (28)", labelId: "Semua (28)" },
+              { id: "indonesia", labelEn: "Indonesia", labelId: "Indonesia" },
+              { id: "asia_pacific", labelEn: "Asia-Pac", labelId: "Asia-Pasifik" },
+              { id: "europe", labelEn: "Europe", labelId: "Eropa" },
+              { id: "americas", labelEn: "Americas", labelId: "Amerika" },
+              { id: "mena_africa", labelEn: "MENA & Africa", labelId: "Timteng & Afrika" },
+            ] as const
+          ).map((tab) => {
+            const active = regionFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setRegionFilter(tab.id)}
+                className={`min-h-[32px] cursor-pointer rounded-full px-3 py-1 font-mono text-[11px] font-medium transition ${
+                  active
+                    ? "bg-[#080808] font-semibold text-[#c6f432]"
+                    : isLight
+                    ? "bg-[#f3f3f0] text-[#4b4b48] hover:bg-[#e5e5e0]"
+                    : "bg-[#1a1d22] text-[#c9c7c0] hover:bg-[#242830]"
+                }`}
+              >
+                {isId ? tab.labelId : tab.labelEn}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Live Global Search Input */}
-        <form
-          onSubmit={handleLiveSearch}
-          className="flex w-full flex-col gap-2 sm:flex-row lg:w-[440px]"
-        >
+        <form onSubmit={handleLiveSearch} className="flex gap-1.5 sm:w-72">
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={
-              isId
-                ? "Ketik kota/negara (mis. Surabaya, Seoul, Paris, Cairo)..."
-                : "Type any city or country (e.g. Jakarta, Paris, Seoul, Cairo)..."
+              isId ? "Cari kota/negara..." : "Search city or country..."
             }
-            className={`min-h-[46px] flex-1 rounded-full border px-4 text-xs sm:text-sm focus:outline-none ${
+            className={`h-9 flex-1 rounded-full border px-3.5 text-xs focus:outline-none ${
               isLight
-                ? "border-black/15 bg-[#f5f5f3] text-[#111] placeholder-[#666]"
-                : "border-white/15 bg-[#0b0c0e] text-white placeholder-[#888]"
+                ? "border-black/15 bg-[#f5f5f3] text-[#111]"
+                : "border-white/15 bg-[#0b0c0e] text-white"
             }`}
           />
           <button
             type="submit"
             disabled={isSearching}
-            className="zeggo-btn min-h-[46px] shrink-0 cursor-pointer rounded-full bg-[#080808] px-6 text-xs sm:text-sm font-semibold text-[#c6f432] transition hover:bg-[#1c1c1c] disabled:opacity-50"
+            className="h-9 shrink-0 cursor-pointer rounded-full bg-[#080808] px-3.5 font-mono text-xs font-semibold text-[#c6f432]"
           >
-            {isSearching
-              ? isId
-                ? "Mencari..."
-                : "Searching..."
-              : isId
-              ? "Cari Kota Dunia"
-              : "Search World"}
+            {isSearching ? "..." : isId ? "Cari" : "Find"}
           </button>
         </form>
       </div>
 
-      {/* Live Search Results Dropdown Grid */}
-      {searchError && (
-        <p className="mt-3 rounded-2xl bg-[#e5484d]/10 px-4 py-2.5 text-xs font-medium text-[#e5484d]">
-          {searchError}
-        </p>
-      )}
-
       {searchResults.length > 0 && (
-        <div className="mt-5 rounded-2xl bg-[#080808] p-4 text-white">
-          <div className="mb-3 flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-            <span>
-              {isId
-                ? `Hasil Pencarian Global (${searchResults.length} kota ditemukan)`
-                : `Global Geocoding Results (${searchResults.length} cities found)`}
-            </span>
+        <div className="mt-2.5 flex flex-wrap gap-1.5 rounded-xl bg-[#080808] p-2.5">
+          {searchResults.map((hit) => (
             <button
+              key={hit.id}
               type="button"
-              onClick={() => setSearchResults([])}
-              className="cursor-pointer text-[#c6f432] hover:underline"
+              onClick={() => selectGeocodedCity(hit)}
+              className="cursor-pointer rounded-full bg-[#181a20] px-3 py-1 text-xs text-white hover:bg-[#c6f432] hover:text-[#080808]"
             >
-              {isId ? "Tutup Hasil ×" : "Clear Results ×"}
+              {hit.name} ({hit.country_code})
             </button>
-          </div>
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-            {searchResults.map((hit) => (
-              <button
-                key={hit.id}
-                type="button"
-                onClick={() => selectGeocodedCity(hit)}
-                className="flex min-h-[56px] cursor-pointer flex-col justify-between rounded-xl bg-[#16181d] p-3.5 text-left transition hover:bg-[#22252c] hover:ring-1 hover:ring-[#c6f432]"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-sans text-sm font-semibold text-white">
-                    {hit.name}
-                  </span>
-                  <span className="rounded-full bg-[#c6f432]/20 px-2 py-0.5 font-mono text-[10px] font-bold text-[#c6f432]">
-                    {hit.country_code}
-                  </span>
-                </div>
-                <span className="mt-1 truncate font-mono text-[11px] text-[#aaa9ad]">
-                  {hit.admin1 ? `${hit.admin1}, ` : ""}
-                  {hit.country} ({hit.latitude.toFixed(1)}°,{" "}
-                  {hit.longitude.toFixed(1)}°)
-                </span>
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Region Tabs */}
-      <div
-        role="tablist"
-        aria-label={isId ? "Filter Wilayah Dunia" : "World Region Filter"}
-        className="mt-5 flex flex-wrap gap-1.5 border-t border-current/10 pt-5"
-      >
-        {(
-          [
-            {
-              id: "all",
-              labelEn: "All Regions (28 Cities)",
-              labelId: "Semua Wilayah (28 Kota)",
-            },
-            {
-              id: "indonesia",
-              labelEn: "Indonesia (8 Cities)",
-              labelId: "Indonesia (8 Kota)",
-            },
-            {
-              id: "asia_pacific",
-              labelEn: "Asia-Pacific",
-              labelId: "Asia-Pasifik",
-            },
-            { id: "europe", labelEn: "Europe", labelId: "Eropa" },
-            { id: "americas", labelEn: "Americas", labelId: "Amerika" },
-            {
-              id: "mena_africa",
-              labelEn: "Middle East & Africa",
-              labelId: "Timur Tengah & Afrika",
-            },
-          ] as const
-        ).map((tab) => {
-          const active = regionFilter === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setRegionFilter(tab.id)}
-              className={`min-h-[38px] cursor-pointer rounded-full px-4 py-1.5 text-xs font-medium transition ${
-                active
-                  ? "bg-[#080808] font-semibold text-[#c6f432]"
-                  : isLight
-                  ? "bg-[#f5f5f3] text-[#4b4b48] hover:bg-[#e5e5e0] hover:text-[#111]"
-                  : "bg-[#1a1d22] text-[#c9c7c0] hover:bg-[#242830] hover:text-white"
-              }`}
-            >
-              {isId ? tab.labelId : tab.labelEn}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* World Cities Interactive Cards Grid */}
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {visibleCities.map((entry) => {
+      <div className="mt-3 grid max-h-[168px] grid-cols-2 gap-1.5 overflow-y-auto sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {filteredCatalog.map((entry) => {
           const cityGeo = resolveWorldCityGeoContext({
             lat: entry.lat,
             lng: entry.lng,
@@ -1008,70 +1184,32 @@ export function WorldCityExplorer({
               key={entry.slug}
               type="button"
               onClick={() => selectCatalogCity(entry)}
-              className={`th-node-card group flex cursor-pointer flex-col justify-between overflow-hidden border p-4 pl-5 text-left transition ${
+              className={`flex cursor-pointer flex-col justify-between rounded-xl border p-2.5 text-left transition ${
                 isCurrent
-                  ? "border-[#1e9e5a] bg-[#080808] text-white shadow-md"
+                  ? "border-[#1e9e5a] bg-[#080808] text-white"
                   : isLight
-                  ? "border-black/10 bg-[#f8f8f6] text-[#111] hover:border-black/30 hover:bg-white"
-                  : "border-white/10 bg-[#17191e] text-white hover:border-[#c6f432]/50"
+                  ? "border-black/10 bg-[#f8f8f6] text-[#111] hover:bg-white"
+                  : "border-white/10 bg-[#17191e] text-white hover:border-[#c6f432]/40"
               }`}
             >
-              <span
-                aria-hidden="true"
-                className={`th-map-bar ${
-                  isCurrent
-                    ? "bg-[#c6f432] opacity-100"
-                    : "bg-[#1e9e5a] opacity-55"
-                }`}
-              />
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-70">
-                    {entry.countryCode} ·{" "}
-                    {isId ? entry.countryNameId : entry.countryNameEn}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold ${
-                      isCurrent
-                        ? "bg-[#c6f432] text-[#080808]"
-                        : "bg-[#1e9e5a]/15 text-[#1e9e5a]"
-                    }`}
-                  >
-                    {cityGeo.koppen.code} · {formatTemp(cityGeo.currentTempC, units)}
-                  </span>
-                </div>
-                <p className="mt-1.5 text-base font-semibold tracking-tight">
+              <div className="flex items-center justify-between gap-1">
+                <span className="truncate text-xs font-semibold">
                   {entry.city}
-                </p>
+                </span>
+                <span className="shrink-0 font-mono text-[10px] opacity-70">
+                  {entry.countryCode}
+                </span>
               </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-current/10 pt-2.5 font-mono text-[11px]">
-                <div>
-                  <span className="block text-[9px] uppercase opacity-60">
-                    {isId ? "Tenaga Surya" : "Solar Roof"}
-                  </span>
-                  <span className="font-semibold text-[#1e9e5a]">
-                    {cityCalc.solar.kwp} kWp (
-                    {formatCurrency(
-                      cityCalc.solar.savingsYear,
-                      cityCalc.solar.currency,
-                      locale
-                    )}
-                    /yr)
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase opacity-60">
-                    {isId ? "Panen Hujan" : "Rain Harvest"}
-                  </span>
-                  <span className="font-semibold text-[#2a9dbd]">
-                    {formatVolume(
-                      cityCalc.rainwater.litersYear,
-                      units,
-                      locale
-                    )}
-                  </span>
-                </div>
+              <div className="mt-1 flex items-center justify-between font-mono text-[10px] opacity-80">
+                <span className="text-[#1e9e5a]">{cityCalc.solar.kwp}kWp</span>
+                <span>{formatTemp(cityGeo.currentTempC, units)}</span>
+                <span>
+                  {formatCurrency(
+                    cityCalc.solar.savingsYear,
+                    cityCalc.solar.currency,
+                    locale
+                  )}
+                </span>
               </div>
             </button>
           );

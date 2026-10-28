@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   resolvePresetGeoContext,
@@ -22,7 +24,7 @@ import {
   DovvInteractiveWordmark,
   DovvHoloSticker,
   TownhouseScrollRail,
-  WorldCityExplorer,
+  CompactWorldCityPicker,
   type ScrollRailChapter,
 } from "@/components/ui/InteractiveEffects";
 
@@ -69,11 +71,6 @@ const MONTHS_SHORT = [
 const LANDING_CHAPTERS: ScrollRailChapter[] = [
   { id: "chapter-hero", labelEn: "Overview", labelId: "Ringkasan" },
   { id: "chapter-town", labelEn: "Living Town 3D", labelId: "Kota 3D Hidup" },
-  {
-    id: "chapter-world",
-    labelEn: "All World Cities",
-    labelId: "Semua Kota Dunia",
-  },
   { id: "chapter-slides", labelEn: "5 Climate Decks", labelId: "5 Dek Iklim" },
   { id: "chapter-how", labelEn: "How It Works", labelId: "Cara Kerja" },
   { id: "chapter-tools", labelEn: "4 Core Tools", labelId: "4 Fitur Utama" },
@@ -110,7 +107,8 @@ export default function LandingPage() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [headerNotchOpen, setHeaderNotchOpen] = useState(false);
   const [headerNotchSlide, setHeaderNotchSlide] = useState(0);
-  const [domeCurveScale, setDomeCurveScale] = useState(0.85);
+
+  const pageRef = useRef<HTMLDivElement | null>(null);
   const domeRef = useRef<SVGSVGElement | null>(null);
 
   const isId = locale === "id";
@@ -127,18 +125,198 @@ export default function LandingPage() {
     }
   }, [activePresetId]);
 
-  // DOVV Studio scroll-driven curved dome (.dome) interpolation
+  // GSAP + ScrollTrigger Choreographed Page Animations
   useEffect(() => {
-    const handleScroll = () => {
-      if (!domeRef.current) return;
-      const rect = domeRef.current.getBoundingClientRect();
-      const vh = window.innerHeight || 800;
-      const progress = Math.max(0, Math.min(1, 1 - rect.top / vh));
-      setDomeCurveScale(0.35 + progress * 0.65);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReduced || !pageRef.current) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const ctx = gsap.context(() => {
+      // 1. Hero entrance stagger
+      gsap.fromTo(
+        ".gsap-hero-item",
+        { y: 24, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.75,
+          stagger: 0.09,
+          ease: "power3.out",
+          clearProps: "transform,opacity",
+        }
+      );
+
+      // 2. 3D Living Town Stage scroll-linked scale & lift
+      gsap.fromTo(
+        ".gsap-town-stage",
+        { scale: 0.94, y: 36 },
+        {
+          scale: 1,
+          y: 0,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "#chapter-town",
+            start: "top 88%",
+            end: "top 25%",
+            scrub: 0.5,
+          },
+        }
+      );
+
+      // 3. Section headings reveal
+      gsap.utils.toArray<HTMLElement>(".gsap-section-heading").forEach((el) => {
+        gsap.fromTo(
+          el,
+          { y: 32, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.75,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 86%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      });
+
+      // 4. Slide deck frame entrance
+      gsap.fromTo(
+        ".gsap-slide-frame",
+        { y: 40, opacity: 0, scale: 0.98 },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: "#chapter-slides",
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // 5. Zeggo Sticky-Left + Scrolling-Right step cards
+      gsap.utils.toArray<HTMLElement>(".gsap-step-card").forEach((card, i) => {
+        gsap.fromTo(
+          card,
+          { y: 42, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            delay: i * 0.05,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 88%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      });
+
+      // 6. Zeggo 12-Column Diagonal Staircase Cascade
+      gsap.fromTo(
+        ".gsap-stair-card",
+        { y: 36, x: -16, opacity: 0 },
+        {
+          y: 0,
+          x: 0,
+          opacity: 1,
+          duration: 0.7,
+          stagger: 0.12,
+          ease: "back.out(1.25)",
+          scrollTrigger: {
+            trigger: ".gsap-stair-grid",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // 7. 4 Core Bento Workspace Cards
+      gsap.fromTo(
+        ".gsap-bento-card",
+        { y: 46, opacity: 0, scale: 0.97 },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.75,
+          stagger: 0.12,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: "#chapter-tools",
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // 8. DOVV Studio Curved SVG Dome scrub
+      if (domeRef.current) {
+        gsap.fromTo(
+          domeRef.current,
+          { scaleY: 0.25 },
+          {
+            scaleY: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: "#chapter-climate",
+              start: "top 95%",
+              end: "top 35%",
+              scrub: 0.4,
+            },
+          }
+        );
+      }
+
+      // 9. 12-Month ERA5 Rainfall Bars growth
+      gsap.fromTo(
+        ".gsap-era5-bar",
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          transformOrigin: "bottom center",
+          duration: 0.7,
+          stagger: 0.04,
+          ease: "back.out(1.4)",
+          scrollTrigger: {
+            trigger: ".gsap-era5-chart",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // 10. Meta Hackathon Judging Cards stagger
+      gsap.fromTo(
+        ".gsap-judge-card",
+        { y: 32, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.65,
+          stagger: 0.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".gsap-judge-grid",
+            start: "top 88%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }, pageRef);
+
+    return () => ctx.revert();
   }, []);
 
   const maxPrecip = Math.max(...geo.monthlyPrecipMm, 100);
@@ -263,6 +441,7 @@ export default function LandingPage() {
 
   return (
     <div
+      ref={pageRef}
       className={`min-h-screen overflow-x-clip transition-colors duration-300 ${
         isLight
           ? "bg-[#f5f5f3] text-[#111111]"
@@ -276,30 +455,25 @@ export default function LandingPage() {
         isId={isId}
       />
 
-      {/* 1. DOVV STUDIO FLOATING TOP CHROME + BESPOKE VERDARA LOGO */}
-      <header className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-2 sm:px-10 sm:pt-7">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* 1. DOVV STUDIO SINGLE-LINE TOP CHROME + COMPACT CITY/COUNTRY PICKER */}
+      <header className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-2 px-4 pt-5 pb-2 sm:px-10 sm:pt-6">
+        <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <Link
             href="/"
-            className="flex min-h-[44px] items-center gap-2.5"
+            className="flex min-h-[42px] shrink-0 items-center gap-2"
             aria-label="Verdara Home"
           >
-            <VerdaraLogo size={42} />
-            <div className="flex flex-col text-left">
-              <span className="dovv-wordmark text-2xl sm:text-3xl tracking-tight">
-                VERDARA
-              </span>
-              <span className="font-mono text-[9px] uppercase tracking-[0.14em] opacity-60">
-                Meta SAM 3.1 · Muse Spark
-              </span>
-            </div>
+            <VerdaraLogo size={38} />
+            <span className="dovv-wordmark text-2xl sm:text-[28px] tracking-tight">
+              VERDARA
+            </span>
           </Link>
 
-          {/* Quick City Switcher Pill */}
+          {/* Single-Row Quick City Switcher + Compact 195+ Countries Popover */}
           <div
             role="group"
             aria-label={isId ? "Pilih Kota" : "Select City"}
-            className="hidden flex-wrap items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] xl:flex"
+            className="hidden items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] xl:flex"
           >
             {CITY_SPECIMENS.map((c, idx) => {
               const active =
@@ -313,7 +487,7 @@ export default function LandingPage() {
                     teleportToCity(c.id);
                     setActiveSlide(idx);
                   }}
-                  className={`min-h-[36px] cursor-pointer rounded-full px-3.5 py-1 text-xs font-medium transition ${
+                  className={`min-h-[34px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
                     active
                       ? "bg-[#c6f432] font-semibold text-[#080808]"
                       : "text-[#c9c7c0] hover:bg-[#1c1c1c] hover:text-white"
@@ -326,45 +500,45 @@ export default function LandingPage() {
                 </button>
               );
             })}
-            <a
-              href="#chapter-world"
-              className="min-h-[36px] inline-flex items-center rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] hover:bg-white/20"
-            >
-              {isId ? "+ Semua Negara" : "+ 195 Countries"}
-            </a>
+            <CompactWorldCityPicker
+              isLight={isLight}
+              isId={isId}
+              variant="header"
+              align="left"
+            />
           </div>
         </div>
 
-        {/* Right Controls + DOVV Notch Trigger + Zeggo Roll CTA */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        {/* Right Controls + DOVV Notch Trigger + Zeggo Roll CTA (Single Row, Never Wraps) */}
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => setLocale(locale === "en" ? "id" : "en")}
-            className={`min-h-[42px] cursor-pointer rounded-full px-3 text-xs font-semibold transition ${
+            className={`min-h-[40px] shrink-0 cursor-pointer rounded-full px-3 text-xs font-semibold whitespace-nowrap transition ${
               isLight
                 ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
                 : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
             }`}
           >
-            {locale === "id" ? "ID 🇮🇩" : "EN 🌐"}
+            {locale === "id" ? "ID" : "EN"}
           </button>
           <button
             type="button"
             onClick={() =>
               setUnits(units === "metric" ? "imperial" : "metric")
             }
-            className={`hidden min-h-[42px] cursor-pointer rounded-full px-3.5 text-xs font-medium transition sm:inline-flex items-center ${
+            className={`hidden min-h-[40px] shrink-0 cursor-pointer items-center rounded-full px-3 text-xs font-medium whitespace-nowrap transition sm:inline-flex ${
               isLight
                 ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
                 : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
             }`}
           >
-            {units === "metric" ? "Metric (m², L)" : "Imperial (ft², gal)"}
+            {units === "metric" ? "Metric (m²)" : "Imperial (ft²)"}
           </button>
           <button
             type="button"
             onClick={() => setTheme(isLight ? "dark" : "light")}
-            className={`min-h-[42px] cursor-pointer rounded-full px-3 text-xs font-medium transition ${
+            className={`min-h-[40px] shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium whitespace-nowrap transition ${
               isLight
                 ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
                 : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
@@ -378,17 +552,17 @@ export default function LandingPage() {
             type="button"
             onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
             aria-expanded={headerNotchOpen}
-            className="zeggo-btn hidden min-h-[44px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 text-xs font-medium text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#1a1a1a] md:flex"
+            className="zeggo-btn hidden min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-3.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#1a1a1a] lg:flex"
           >
             <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
             <ZeggoRollText
               text={
                 headerNotchOpen
                   ? isId
-                    ? "Tutup Info"
-                    : "Close Deck"
+                    ? "Tutup"
+                    : "Close"
                   : isId
-                  ? "Ringkasan Juri (03)"
+                  ? "Info Juri (03)"
                   : "Judge Brief (03)"
               }
             />
@@ -403,14 +577,14 @@ export default function LandingPage() {
               loginAsJudgeDemo();
               router.push("/dashboard");
             }}
-            className="zeggo-btn group flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition hover:bg-[#222]"
+            className="zeggo-btn group flex min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-4 text-xs sm:text-sm font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition hover:bg-[#222]"
           >
             <ZeggoRollText
               text={isId ? "Buka Kota 3D" : "Open Living Town"}
             />
             <svg
-              width="15"
-              height="15"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
@@ -555,44 +729,23 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* 2. CHAPTER 01: DOVV STUDIO HERO SECTION */}
+      {/* 2. CHAPTER 01: DOVV STUDIO HERO SECTION WITH COMPACT CITY/COUNTRY POPOVER */}
       <section
         id="chapter-hero"
-        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-8 pb-10 text-center sm:px-10 sm:pt-14"
+        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-6 pb-9 text-center sm:px-10 sm:pt-12"
       >
-        {/* Live City Status Pill */}
-        <a
-          href="#chapter-world"
-          className={`zeggo-btn group inline-flex min-h-[42px] cursor-pointer items-center gap-2.5 rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition hover:-translate-y-0.5 ${
-            isLight
-              ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.07),0_6px_20px_-8px_rgba(0,0,0,0.22)]"
-              : "bg-[#15171b] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_6px_20px_-8px_rgba(0,0,0,0.6)]"
-          }`}
-        >
-          <span className="dovv-pill-dot">
-            <span />
-          </span>
-          <span>
-            {geo.city} ({geo.countryCode} · {geo.koppen.code}) ·{" "}
-            {housingCalc.solar.kwp} kWp Solar
-          </span>
-          <span className="hidden h-3.5 w-[1px] bg-current opacity-20 sm:inline-block" />
-          <span className="hidden opacity-75 sm:inline">
-            <ZeggoRollText
-              text={
-                isId
-                  ? "Ganti Kota / Negara (195+ Negara)"
-                  : "Change City / Country (195+ Countries)"
-              }
-            />
-          </span>
-          <span aria-hidden="true" className="opacity-65">
-            ↓
-          </span>
-        </a>
+        {/* Compact Country & City Popover Pill (Small, Simple, Zero Page Clutter) */}
+        <div className="gsap-hero-item relative z-30">
+          <CompactWorldCityPicker
+            isLight={isLight}
+            isId={isId}
+            variant="hero"
+            align="center"
+          />
+        </div>
 
         {/* Giant Interactive Variable Display Wordmark + DOVV Draggable Holographic Foil Stickers */}
-        <div className="relative mt-6 sm:mt-7 flex w-full max-w-[1240px] flex-col items-center justify-center">
+        <div className="gsap-hero-item relative mt-6 sm:mt-7 flex w-full max-w-[1240px] flex-col items-center justify-center">
           <h1 className="sr-only">
             {isId
               ? "Verdara: Ubah rumah dan lingkungan Anda menjadi kota hijau 3D. Hitung panel surya, panen air hujan, dan nilai daur ulang di kota mana pun di dunia dengan Meta SAM 3.1 dan Muse Spark."
@@ -643,16 +796,16 @@ export default function LandingPage() {
 
         {/* Plain-Language Subtitle & Zeggo Character-Roll Pill Buttons */}
         <p
-          className={`mt-5 sm:mt-6 max-w-[680px] px-2 text-sm sm:text-lg leading-[1.55] tracking-[-0.015em] ${
+          className={`gsap-hero-item mt-5 sm:mt-6 max-w-[680px] px-2 text-sm sm:text-lg leading-[1.55] tracking-[-0.015em] ${
             isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
           }`}
         >
           {isId
-            ? "Pilih kota Anda di negara mana pun atau foto rumah Anda. Verdara menggambar rumah Anda sebagai kota 3D yang hidup, menghitung berapa listrik surya, air hujan, dan uang daur ulang yang bisa Anda hemat, lalu memandu perbaikannya bersama 3 pakar AI Meta."
-            : "Pick any city in the world or snap a photo of your home. Verdara draws your plot as a living 3D town, calculates exactly how much solar power, rainwater, and recycling cash you can save, and guides your upgrades with 3 Meta AI specialists."}
+            ? "Pilih kota Anda di atas atau foto rumah Anda. Verdara menggambar rumah Anda sebagai kota 3D yang hidup, menghitung berapa listrik surya, air hujan, dan uang daur ulang yang bisa Anda hemat, lalu memandu perbaikannya bersama 3 pakar AI Meta."
+            : "Pick any city above or snap a photo of your home. Verdara draws your plot as a living 3D town, calculates exactly how much solar power, rainwater, and recycling cash you can save, and guides your upgrades with 3 Meta AI specialists."}
         </p>
 
-        <div className="mt-6 sm:mt-7 flex w-full sm:w-auto flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 px-2">
+        <div className="gsap-hero-item mt-6 sm:mt-7 flex w-full sm:w-auto flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 px-2">
           <button
             type="button"
             onClick={() => {
@@ -686,25 +839,10 @@ export default function LandingPage() {
               }
             />
           </Link>
-
-          <a
-            href="#chapter-world"
-            className={`zeggo-btn flex min-h-[48px] items-center justify-center rounded-full px-5 text-sm font-medium transition ${
-              isLight
-                ? "bg-white text-[#1e9e5a] shadow-[0_0_0_1px_rgba(30,158,90,0.3)] hover:bg-[#1e9e5a] hover:text-white"
-                : "bg-[#141619] text-[#c6f432] shadow-[0_0_0_1px_rgba(198,244,50,0.3)] hover:bg-[#c6f432] hover:text-[#080808]"
-            }`}
-          >
-            <ZeggoRollText
-              text={
-                isId ? "Jelajahi Semua Negara 🌍" : "Explore All Countries 🌍"
-              }
-            />
-          </a>
         </div>
 
         {/* ZEGGO.COM.SG SIGNATURE SCROLL INDICATOR LINE (.zeggo-scroll-indicator) */}
-        <div className="mt-7 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.14em] opacity-65">
+        <div className="gsap-hero-item mt-7 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.14em] opacity-65">
           <span>
             {isId
               ? "Gulir halaman atau putar kota 3D di bawah"
@@ -719,7 +857,7 @@ export default function LandingPage() {
         id="chapter-town"
         className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-10"
       >
-        <div className="dovv-stage-frame h-[620px] w-full sm:h-[680px] lg:h-[720px]">
+        <div className="gsap-town-stage dovv-stage-frame h-[620px] w-full sm:h-[680px] lg:h-[720px]">
           {/* Interactive 3D Townhouse Diorama */}
           <EcoIslandCanvas
             biome={geo.biome}
@@ -871,38 +1009,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. CHAPTER 03: GLOBAL WORLD COUNTRIES & CITIES EXPLORER (ALL COUNTRIES & CITIES) */}
-      <section
-        id="chapter-world"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-20 pb-8 sm:px-10"
-      >
-        <div className="mb-6">
-          <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
-            {isId
-              ? "01 / Penjelajah Negara & Kota Dunia (195+ Negara)"
-              : "01 / Global Country & City Explorer (195+ Countries)"}
-          </p>
-          <h2 className="mt-2 text-[clamp(30px,4.4vw,60px)] font-normal leading-[1.06] tracking-[-0.04em]">
-            {isId
-              ? "Lihat potensi surya, air hujan, dan daur ulang di kota mana pun di dunia."
-              : "See solar, rainwater, and recycling potential in any city on Earth."}
-          </h2>
-        </div>
-
-        <WorldCityExplorer isLight={isLight} isId={isId} />
-      </section>
-
-      {/* 5. CHAPTER 04: DOVV STUDIO 01/05 INTERACTIVE HORIZONTAL SLIDE DECK CAROUSEL */}
+      {/* 4. CHAPTER 03: DOVV STUDIO 01/05 INTERACTIVE HORIZONTAL SLIDE DECK CAROUSEL */}
       <section
         id="chapter-slides"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-16 pb-12 sm:px-10"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-20 pb-12 sm:px-10"
       >
-        <div className="flex flex-wrap items-end justify-between gap-4 pb-8">
+        <div className="gsap-section-heading flex flex-wrap items-end justify-between gap-4 pb-8">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               {isId
-                ? "02 / Bandingkan 5 Zona Iklim Utama Dunia"
-                : "02 / Compare 5 Benchmark Climate Zones"}
+                ? "01 / Bandingkan 5 Zona Iklim Utama Dunia"
+                : "01 / Compare 5 Benchmark Climate Zones"}
             </p>
             <h2 className="mt-2 text-[clamp(28px,4.2vw,58px)] font-normal leading-[1.06] tracking-[-0.04em]">
               {isId
@@ -945,7 +1062,7 @@ export default function LandingPage() {
         </div>
 
         {/* Horizontal Slide Viewport */}
-        <div className="overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626]">
+        <div className="gsap-slide-frame overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626]">
           <div
             className="dovv-slide-track"
             style={{
@@ -1133,18 +1250,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. CHAPTER 05: ZEGGO.COM.SG STICKY-LEFT + SCROLLING-RIGHT SUBGRID & STAIRCASE CASCADE */}
+      {/* 5. CHAPTER 04: ZEGGO.COM.SG STICKY-LEFT + SCROLLING-RIGHT SUBGRID & STAIRCASE CASCADE */}
       <section
         id="chapter-how"
         className="scroll-mt-20 mx-auto max-w-[1440px] px-4 py-16 sm:px-10 sm:py-20"
       >
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
-            <div className="md:sticky md:top-24 space-y-4">
+            <div className="gsap-section-heading md:sticky md:top-24 space-y-4">
               <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
                 {isId
-                  ? "03 / Cara Kerja yang Mudah Dipahami"
-                  : "03 / How Verdara Works in Plain Words"}
+                  ? "02 / Cara Kerja yang Mudah Dipahami"
+                  : "02 / How Verdara Works in Plain Words"}
               </p>
               <h2 className="text-[clamp(30px,4.2vw,56px)] font-normal leading-[1.06] tracking-[-0.04em]">
                 {isId ? (
@@ -1179,7 +1296,8 @@ export default function LandingPage() {
                 num: "01",
                 barColor: "bg-[#1e9e5a]",
                 titleEn: "Step 1: Meta SAM 3.1 Sees Your Roof & Recyclables",
-                titleId: "Langkah 1: Kamera Meta SAM 3.1 Mengenali Atap & Barang Daur Ulang",
+                titleId:
+                  "Langkah 1: Kamera Meta SAM 3.1 Mengenali Atap & Barang Daur Ulang",
                 highlightEn: "Zero-Shot Object Outlines",
                 highlightId: "Deteksi Objek Otomatis",
                 bodyEn:
@@ -1213,7 +1331,8 @@ export default function LandingPage() {
                 num: "03",
                 barColor: "bg-[#e9a23b]",
                 titleEn: "Step 3: 3 Meta Muse Spark Experts Build Your Plan",
-                titleId: "Langkah 3: 3 Pakar AI Meta Muse Spark Menyusun Rencana Anda",
+                titleId:
+                  "Langkah 3: 3 Pakar AI Meta Muse Spark Menyusun Rencana Anda",
                 highlightEn: "Dr. Flora, Ir. Arka & Sirkula",
                 highlightId: "Dr. Flora, Ir. Arka & Sirkula",
                 bodyEn:
@@ -1225,7 +1344,7 @@ export default function LandingPage() {
             ].map((item) => (
               <div
                 key={item.num}
-                className={`th-node-card border p-6 pl-7 sm:p-7 sm:pl-8 ${
+                className={`gsap-step-card th-node-card border p-6 pl-7 sm:p-7 sm:pl-8 ${
                   isLight
                     ? "border-black/10 bg-white shadow-sm"
                     : "border-white/10 bg-[#141619]"
@@ -1269,10 +1388,10 @@ export default function LandingPage() {
         <div className="mt-16 sm:mt-20">
           <p className="mb-5 font-mono text-xs uppercase tracking-[0.12em] opacity-60">
             {isId
-              ? "04 / Alur 4 Langkah dari Foto ke Kota 3D"
-              : "04 / 4-Step Journey from Photo to Living 3D Town"}
+              ? "03 / Alur 4 Langkah dari Foto ke Kota 3D"
+              : "03 / 4-Step Journey from Photo to Living 3D Town"}
           </p>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+          <div className="gsap-stair-grid grid grid-cols-1 gap-4 md:grid-cols-12">
             {[
               {
                 step: "01",
@@ -1301,7 +1420,7 @@ export default function LandingPage() {
             ].map((st) => (
               <div
                 key={st.step}
-                className={`${st.colClass} th-node-card rounded-[24px] bg-[#080808] p-5 sm:p-6 pl-6 text-white shadow-[inset_0_0_0_1.5px_#262626]`}
+                className={`${st.colClass} gsap-stair-card th-node-card rounded-[24px] bg-[#080808] p-5 sm:p-6 pl-6 text-white shadow-[inset_0_0_0_1.5px_#262626]`}
               >
                 <span className="th-map-bar bg-[#c6f432]" />
                 <span className="font-mono text-xs font-bold text-[#c6f432]">
@@ -1317,17 +1436,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 7. CHAPTER 06: DOVV STUDIO 2-COLUMN WORK / CAPABILITY BENTO GRID */}
+      {/* 6. CHAPTER 05: DOVV STUDIO 2-COLUMN WORK / CAPABILITY BENTO GRID */}
       <section
         id="chapter-tools"
         className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-6 pb-24 sm:px-10"
       >
-        <div className="flex flex-col items-start justify-between gap-4 pb-10 md:flex-row md:items-end">
+        <div className="gsap-section-heading flex flex-col items-start justify-between gap-4 pb-10 md:flex-row md:items-end">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               {isId
-                ? "05 / Empat Alat Utama Verdara"
-                : "05 / Four Interactive Tools Ready to Try"}
+                ? "04 / Empat Alat Utama Verdara"
+                : "04 / Four Interactive Tools Ready to Try"}
             </p>
             <h2 className="mt-2 text-[clamp(30px,4.8vw,68px)] font-normal leading-[1.05] tracking-[-0.04em]">
               {isId
@@ -1349,7 +1468,7 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {/* DOVV CARD 01: OMNI-SPATIAL LENS */}
-          <Link href="/lens" className="dovv-card group">
+          <Link href="/lens" className="gsap-bento-card dovv-card group">
             <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
                 <span>META SAM 3.1 + MUSE SPARK + MUSE IMAGE</span>
@@ -1427,7 +1546,7 @@ export default function LandingPage() {
           </Link>
 
           {/* DOVV CARD 02: 3D URBAN ROOF RADAR */}
-          <Link href="/radar" className="dovv-card group">
+          <Link href="/radar" className="gsap-bento-card dovv-card group">
             <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
                 <span>3D MAP RADAR · SOLAR & RAIN CALCULATOR</span>
@@ -1505,7 +1624,7 @@ export default function LandingPage() {
           </Link>
 
           {/* DOVV CARD 03: THE VERDARA SPECIALIST COUNCIL */}
-          <Link href="/council" className="dovv-card group">
+          <Link href="/council" className="gsap-bento-card dovv-card group">
             <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
                 <span>META MUSE SPARK + OPEN-WEIGHT MODE</span>
@@ -1588,7 +1707,7 @@ export default function LandingPage() {
           </Link>
 
           {/* DOVV CARD 04: VERIFIABLE FIELD-ACTION PROOFS */}
-          <Link href="/academy" className="dovv-card group">
+          <Link href="/academy" className="gsap-bento-card dovv-card group">
             <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
                 <span>META SAM 3.1 CAMERA PROOF · ANTI-CHEAT</span>
@@ -1600,7 +1719,9 @@ export default function LandingPage() {
               <div className="my-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#262930]">
                   <span className="font-mono text-[10px] text-[#c6f432]">
-                    {isId ? "LANGKAH 1-2 / PANDUAN PRAKTIS" : "STEP 1-2 / QUICK GUIDE"}
+                    {isId
+                      ? "LANGKAH 1-2 / PANDUAN PRAKTIS"
+                      : "STEP 1-2 / QUICK GUIDE"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
                     {isId
@@ -1615,7 +1736,9 @@ export default function LandingPage() {
                 </div>
                 <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#262930]">
                   <span className="font-mono text-[10px] text-amber-300">
-                    {isId ? "LANGKAH 3 / BUKTI FOTO AI" : "STEP 3 / AI PHOTO PROOF"}
+                    {isId
+                      ? "LANGKAH 3 / BUKTI FOTO AI"
+                      : "STEP 3 / AI PHOTO PROOF"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
                     {isId
@@ -1664,7 +1787,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. CHAPTER 07: SCROLL-DRIVEN CURVED DOME DARK SECTION + ERA5 CHART + META HACKATHON JUDGING ALIGNMENT */}
+      {/* 7. CHAPTER 06: SCROLL-DRIVEN CURVED DOME DARK SECTION + ERA5 CHART + META HACKATHON JUDGING ALIGNMENT */}
       <section id="chapter-climate" className="scroll-mt-16 relative mt-4 w-full">
         {/* DOVV Studio Scroll-Driven Curved Dome Top Edge (svg.dome) */}
         <svg
@@ -1673,10 +1796,10 @@ export default function LandingPage() {
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           style={{
-            transform: `translateY(1px) scaleY(${domeCurveScale.toFixed(3)})`,
+            transform: "translateY(1px)",
             transformOrigin: "bottom center",
           }}
-          className="block h-[36px] w-full fill-[#080808] transition-transform duration-150 sm:h-[72px]"
+          className="block h-[36px] w-full fill-[#080808] sm:h-[72px]"
         >
           <path d="M0 100 Q50 -95 100 100 Z" />
         </svg>
@@ -1685,9 +1808,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-[1440px] space-y-20">
             {/* Part A: ERA5 10-Year Monthly Climatology Bar Chart */}
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-              <div className="space-y-4 lg:col-span-5">
+              <div className="gsap-section-heading space-y-4 lg:col-span-5">
                 <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
-                  06 / {isId ? "Data Cuaca 12 Bulan" : "12-Month Weather Data"} ·{" "}
+                  05 / {isId ? "Data Cuaca 12 Bulan" : "12-Month Weather Data"} ·{" "}
                   {geo.city} ({geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}°)
                 </p>
                 <h2 className="text-2xl font-normal leading-[1.1] tracking-[-0.04em] sm:text-5xl">
@@ -1718,7 +1841,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-[28px] bg-[#121212] p-4 sm:p-6 shadow-[inset_0_0_0_1px_#242424] lg:col-span-7">
+              <div className="gsap-era5-chart overflow-x-auto rounded-[28px] bg-[#121212] p-4 sm:p-6 shadow-[inset_0_0_0_1px_#242424] lg:col-span-7">
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-6 font-mono text-[11px] sm:text-xs text-[#aaa9ad]">
                   <span>
                     12-MONTH ERA5 WEATHER · {geo.city.toUpperCase()} (
@@ -1749,7 +1872,7 @@ export default function LandingPage() {
                         <div className="relative flex w-full flex-1 items-end justify-center rounded-lg bg-[#1c1c1c] p-0.5">
                           <div
                             style={{ height: `${barHeightPct}%` }}
-                            className="w-full rounded-md bg-[#c6f432] transition-all duration-300"
+                            className="gsap-era5-bar w-full rounded-md bg-[#c6f432]"
                           />
                         </div>
                         <span className="font-mono text-[9px] sm:text-[10px] text-[#aaa9ad] tabular-nums">
@@ -1765,12 +1888,12 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Part B: Meta Hackathon Judging & AI Stack Alignment ("Why Verdara Matters") */}
+            {/* Part B: Meta Hackathon Judging & AI Stack Alignment */}
             <div className="border-t border-[#222222] pt-16">
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div className="gsap-section-heading flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div>
                   <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
-                    07 /{" "}
+                    06 /{" "}
                     {isId
                       ? "Arsitektur Meta AI & Kriteria Penjurian Hackathon"
                       : "Meta AI Stack & Hackathon Judging Alignment"}
@@ -1791,8 +1914,8 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+              <div className="gsap-judge-grid mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
                   <span className="th-map-bar bg-[#1e9e5a]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#1e9e5a]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#1e9e5a]" />
@@ -1810,7 +1933,7 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
                   <span className="th-map-bar bg-[#2a9dbd]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#2a9dbd]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#2a9dbd]" />
@@ -1828,7 +1951,7 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
                   <span className="th-map-bar bg-[#c6f432]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#c6f432]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#c6f432]" />
@@ -1846,7 +1969,7 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
                   <span className="th-map-bar bg-[#e9a23b]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#e9a23b]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#e9a23b]" />
@@ -1869,7 +1992,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. DOVV STUDIO GIANT ARCHITECTURAL FOOTER (.footer + .hello-text + 4-Cell Grid) */}
+      {/* 8. DOVV STUDIO GIANT ARCHITECTURAL FOOTER (.footer + .hello-text + 4-Cell Grid) */}
       <footer
         className={`w-full overflow-clip pb-28 ${
           isLight ? "bg-[#f5f5f3] text-[#0b0b0b]" : "bg-[#0b0c0e] text-white"

@@ -9,7 +9,11 @@ import {
   type CityPreset,
 } from "@/lib/science/presets";
 import { formatTemp } from "@/lib/science/units";
-import { VerdaraLogo, ZeggoRollText } from "@/components/ui/InteractiveEffects";
+import {
+  VerdaraLogo,
+  ZeggoRollText,
+  CompactWorldCityPicker,
+} from "@/components/ui/InteractiveEffects";
 
 const CITY_SPECIMENS: {
   id: CityPreset["id"];
@@ -128,54 +132,45 @@ export default function StudioShell({
         {isId ? "Lewati ke ruang kerja utama" : "Skip to main workspace"}
       </a>
 
-      {/* DOVV STUDIO + TOWNHOUSE FLOATING TOP CHROME */}
-      <header className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-5 pt-6 pb-4 sm:px-8">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* DOVV STUDIO + TOWNHOUSE SINGLE-ROW FLOATING TOP CHROME */}
+      <header className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-2 px-4 pt-5 pb-3 sm:px-8">
+        <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <Link
             href="/"
-            className="group flex min-h-[44px] items-center gap-2.5"
+            className="group flex min-h-[42px] shrink-0 items-center gap-2"
           >
-            <VerdaraLogo size={38} />
-            <span className="dovv-wordmark text-2xl tracking-tight">
+            <VerdaraLogo size={36} />
+            <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
               VERDARA
             </span>
           </Link>
 
-          {/* Townhouse Live Status Pill */}
-          <div
-            className={`flex min-h-[40px] items-center gap-2.5 rounded-full px-3.5 py-1.5 text-xs font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_6px_20px_-8px_rgba(0,0,0,0.18)] ${
-              isLight
-                ? "bg-white text-[#111111]"
-                : "bg-[#141619] text-[#f2f1ec] shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
-            }`}
-          >
-            <span className="dovv-pill-dot">
-              <span />
-            </span>
-            <span className="font-semibold">{geo.city}</span>
-            <span className="h-3.5 w-[1px] bg-current opacity-20" />
-            <span className="font-mono text-[11px] opacity-75">
-              {geo.koppen.code} · {formatTemp(geo.currentTempC, units)} · AQI{" "}
-              {geo.currentAqi}
-            </span>
-          </div>
+          {/* Compact City/Country Popover Pill */}
+          <CompactWorldCityPicker
+            isLight={isLight}
+            isId={isId}
+            variant="hero"
+            align="left"
+          />
         </div>
 
-        {/* City Pills + DOVV Studio Expandable Notch Trigger */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* City Pills + DOVV Studio Expandable Notch Trigger (Single Row) */}
+        <div className="flex shrink-0 items-center gap-2">
           <div
             role="group"
             aria-label={isId ? "Pilih Kota" : "Select City"}
             className="hidden items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] xl:flex"
           >
             {CITY_SPECIMENS.map((c) => {
-              const active = activePresetId === c.id;
+              const active =
+                activePresetId === c.id &&
+                geo.city.toLowerCase().includes(c.label.toLowerCase());
               return (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => teleportToCity(c.id)}
-                  className={`min-h-[36px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition ${
+                  className={`min-h-[34px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
                     active
                       ? "bg-[#c6f432] font-semibold text-[#111111]"
                       : "text-[#c9c7c0] hover:bg-[#1c1c1c] hover:text-white"
@@ -194,23 +189,25 @@ export default function StudioShell({
             type="button"
             onClick={() => setNotchOpen(!notchOpen)}
             aria-expanded={notchOpen}
-            className="zeggo-btn flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-full bg-[#080808] px-4 py-2 text-xs font-medium text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#181818]"
+            className="zeggo-btn flex min-h-[42px] shrink-0 cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-3.5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#181818]"
           >
             <span className="font-mono text-[11px] text-[#c6f432]">
               Lv.{level} · {xp} XP
             </span>
-            <span className="h-3.5 w-[1px] bg-white/20" />
-            <ZeggoRollText
-              text={
-                notchOpen
-                  ? isId
-                    ? "Tutup Studio"
-                    : "Close Studio"
-                  : isId
-                  ? "Notch & Slide Studio"
-                  : "Studio Notch & Slides"
-              }
-            />
+            <span className="hidden h-3.5 w-[1px] bg-white/20 sm:inline-block" />
+            <span className="hidden sm:inline">
+              <ZeggoRollText
+                text={
+                  notchOpen
+                    ? isId
+                      ? "Tutup"
+                      : "Close"
+                    : isId
+                    ? "Studio (03)"
+                    : "Studio (03)"
+                }
+              />
+            </span>
             <span className="font-mono text-sm leading-none">
               {notchOpen ? "×" : "+"}
             </span>
