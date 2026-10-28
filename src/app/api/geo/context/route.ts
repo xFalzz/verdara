@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  findNearestPresetByCoords,
   resolvePresetGeoContext,
+  resolveWorldCityGeoContext,
   type CityPreset,
 } from "@/lib/science/presets";
 import { calculateHousingFootprint } from "@/lib/science/calculator";
@@ -11,18 +11,26 @@ export async function GET(req: NextRequest) {
   const presetParam = searchParams.get("preset") as CityPreset["id"] | null;
   const latParam = searchParams.get("lat");
   const lngParam = searchParams.get("lng");
+  const cityParam = searchParams.get("city");
+  const countryParam = searchParams.get("country");
 
-  let presetId: CityPreset["id"] = "menlo_park";
-  if (
-    presetParam &&
-    ["menlo_park", "london", "tokyo", "dubai", "yogyakarta"].includes(presetParam)
-  ) {
-    presetId = presetParam;
-  } else if (latParam && lngParam) {
-    presetId = findNearestPresetByCoords(Number(latParam), Number(lngParam));
-  }
-
-  const geo = resolvePresetGeoContext(presetId, 10);
+  const geo =
+    latParam && lngParam && cityParam
+      ? resolveWorldCityGeoContext({
+          lat: Number(latParam),
+          lng: Number(lngParam),
+          city: cityParam,
+          countryCode: countryParam || "XX",
+        })
+      : resolvePresetGeoContext(
+          presetParam &&
+            ["menlo_park", "london", "tokyo", "dubai", "yogyakarta"].includes(
+              presetParam
+            )
+            ? presetParam
+            : "menlo_park",
+          10
+        );
   const calc = calculateHousingFootprint({
     footprintM2: geo.defaultFootprintM2,
     ghiKwhM2Day: geo.ghiKwhM2Day,

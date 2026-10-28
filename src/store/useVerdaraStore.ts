@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import {
   resolvePresetGeoContext,
+  resolveWorldCityGeoContext,
   type CityPreset,
   type ResolvedGeoContext,
 } from "../lib/science/presets";
@@ -263,14 +264,31 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
 
   setCustomCoordinates: (lat, lng, cityLabel, countryCode) => {
     const current = get();
-    const updatedGeo: ResolvedGeoContext = {
-      ...current.geo,
+    const updatedGeo = resolveWorldCityGeoContext({
+      lat,
+      lng,
       city: cityLabel,
       countryCode,
-      lat: Number(lat.toFixed(2)),
-      lng: Number(lng.toFixed(2)),
-    };
-    set({ geo: updatedGeo });
+    });
+    const newCalc = calculateHousingFootprint({
+      footprintM2: current.customFootprintM2 || updatedGeo.defaultFootprintM2,
+      ghiKwhM2Day: updatedGeo.ghiKwhM2Day,
+      annualPrecipMm: updatedGeo.koppen.pAnnMm,
+      electricityTariff: updatedGeo.policy.electricityTariff,
+      gridEfKgPerKwh: updatedGeo.policy.gridEfKgKwh,
+      currency: updatedGeo.policy.currency,
+      warmMonthMaxTempC: updatedGeo.warmMonthMaxTempC,
+      greenCoverRatio: updatedGeo.greenCoverRatio,
+      builtCoverRatio: updatedGeo.builtCoverRatio,
+      usableRoofRatio: current.usableRoofRatio,
+      runoffCoefficient: current.runoffCoefficient,
+    });
+    set({
+      activePresetId: updatedGeo.presetId,
+      geo: updatedGeo,
+      housingCalc: newCalc,
+      units: updatedGeo.policy.defaultUnits,
+    });
   },
 
   updateCalculatorAssumptions: (opts) => {

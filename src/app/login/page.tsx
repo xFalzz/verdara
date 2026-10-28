@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
+import { VerdaraLogo } from "@/components/ui/InteractiveEffects";
 
 const EcoIslandCanvas = dynamic(
   () => import("@/components/three/EcoIslandCanvas"),
@@ -99,15 +100,7 @@ export default function LoginPage() {
         {/* Top Floating Bar */}
         <header className="flex items-center justify-between pb-8">
           <Link href="/" className="flex min-h-[44px] items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#080808] text-[#c6f432]">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-9.5Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-              </svg>
-            </span>
+            <VerdaraLogo size={40} />
             <span className="dovv-wordmark text-3xl">VERDARA</span>
           </Link>
 

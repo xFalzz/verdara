@@ -17,9 +17,13 @@ import {
   formatVolume,
 } from "@/lib/science/units";
 import {
+  VerdaraLogo,
   ZeggoRollText,
   DovvInteractiveWordmark,
   DovvHoloSticker,
+  TownhouseScrollRail,
+  WorldCityExplorer,
+  type ScrollRailChapter,
 } from "@/components/ui/InteractiveEffects";
 
 const EcoIslandCanvas = dynamic(
@@ -62,6 +66,24 @@ const MONTHS_SHORT = [
   "Dec",
 ];
 
+const LANDING_CHAPTERS: ScrollRailChapter[] = [
+  { id: "chapter-hero", labelEn: "Overview", labelId: "Ringkasan" },
+  { id: "chapter-town", labelEn: "Living Town 3D", labelId: "Kota 3D Hidup" },
+  {
+    id: "chapter-world",
+    labelEn: "All World Cities",
+    labelId: "Semua Kota Dunia",
+  },
+  { id: "chapter-slides", labelEn: "5 Climate Decks", labelId: "5 Dek Iklim" },
+  { id: "chapter-how", labelEn: "How It Works", labelId: "Cara Kerja" },
+  { id: "chapter-tools", labelEn: "4 Core Tools", labelId: "4 Fitur Utama" },
+  {
+    id: "chapter-climate",
+    labelEn: "Weather & Meta AI",
+    labelId: "Cuaca & Meta AI",
+  },
+];
+
 type TownSimMode = "run" | "break" | "heal";
 
 export default function LandingPage() {
@@ -98,7 +120,6 @@ export default function LandingPage() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // Sync active slide when user switches city preset
   useEffect(() => {
     const idx = CITY_SPECIMENS.findIndex((c) => c.id === activePresetId);
     if (idx !== -1) {
@@ -125,160 +146,165 @@ export default function LandingPage() {
     aiShield.lifetimeCapUsd - aiShield.totalSpendUsd
   ).toFixed(2);
 
-  // Townhouse.dev "Watch it Run, Break, and Heal" simulation states
+  // Plain-language Townhouse.dev "Watch it Run, Break, and Heal" simulation states
   const simConfig = {
     run: {
       badge1: {
         dot: "bg-[#1e9e5a]",
         text: "text-[#14733f]",
-        label: "SOLAR ROOF OK",
+        label: isId ? "SURYA ATAP AMAN" : "SOLAR ROOF OK",
       },
       badge2: {
         dot: "bg-[#2a9dbd]",
         text: "text-[#146f8a]",
-        label: "CISTERN FLOW NOMINAL",
+        label: isId ? "ALIRAN AIR LANCAR" : "WATER FLOW STEADY",
       },
       badge3: {
         dot: "bg-[#1e9e5a]",
         text: "text-[#14733f]",
-        label: `TCI ${housingCalc.thermal.tciScore}/100`,
+        label: isId
+          ? `KENYAMANAN ${housingCalc.thermal.tciScore}/100`
+          : `COMFORT ${housingCalc.thermal.tciScore}/100`,
       },
       title: isId
-        ? "Seluruh kapling Anda berjalan stabil dalam satu gambar."
-        : "Your whole plot running smoothly in one picture.",
+        ? "Seluruh potensi rumah Anda terlihat jelas dalam satu gambar."
+        : "Your whole home's energy and water in one clear picture.",
       desc: isId
-        ? `Atap ${formatArea(
+        ? `Atap seluas ${formatArea(
             housingCalc.footprintM2,
             units,
             locale
-          )} di ${geo.city} menghasilkan ${
+          )} di ${geo.city} menghasilkan listrik surya ${
             housingCalc.solar.kwp
-          } kWp surya (${formatCurrency(
+          } kWp (hemat ${formatCurrency(
             housingCalc.solar.savingsYear,
             housingCalc.solar.currency,
             locale
-          )}/thn) dan memanen ${formatVolume(
+          )}/tahun) dan menampung ${formatVolume(
             housingCalc.rainwater.litersYear,
             units,
             locale
-          )} air hujan per tahun tanpa limpasan berlebih.`
+          )} air hujan bersih setiap tahun.`
         : `A ${formatArea(
             housingCalc.footprintM2,
             units,
             locale
-          )} roof in ${geo.city} yields ${
+          )} roof in ${geo.city} generates ${
             housingCalc.solar.kwp
-          } kWp solar (${formatCurrency(
+          } kWp of solar power (saving ${formatCurrency(
             housingCalc.solar.savingsYear,
             housingCalc.solar.currency,
             locale
-          )}/yr) and captures ${formatVolume(
+          )}/yr) and collects ${formatVolume(
             housingCalc.rainwater.litersYear,
             units,
             locale
-          )} of rainwater per year with zero overflow.`,
+          )} of free rainwater every year.`,
     },
     break: {
       badge1: {
         dot: "bg-[#e5484d]",
         text: "text-[#b8252a]",
-        label: "CISTERN OVERFLOW RISK",
+        label: isId ? "RAWAN BANJIR TALANG" : "OVERFLOW WARNING",
       },
       badge2: {
         dot: "bg-[#e9a23b]",
         text: "text-[#8a5608]",
-        label: "ROOF ALBEDO HEAT SPIKE",
+        label: isId ? "ATAP TERLALU PANAS" : "ROOF HEAT SPIKE",
       },
       badge3: {
         dot: "bg-[#e5484d]",
         text: "text-[#b8252a]",
-        label: `PEAK ${maxPrecip} MM/MO SURGE`,
+        label: isId
+          ? `PUNCAK HUJAN ${maxPrecip} MM`
+          : `PEAK ${maxPrecip} MM STORM`,
       },
       title: isId
-        ? "Lihat titik kritis sebelum talang meluap atau atap memanas."
-        : "Know before gutters overflow or roof thermal load spikes.",
+        ? "Ketahui titik masalah sebelum air meluap atau tagihan listrik naik."
+        : "Spot what overflows or overheats before it costs you money.",
       desc: isId
-        ? `Simulasi puncak hujan ${maxPrecip} mm/bln di ${geo.city}: tanpa ${housingCalc.infiltration.bioporeUnits} sumur biopori dan tangki ${housingCalc.rainwater.recommendedCisternLiters}L, limpasan permukaan melonjak 42% dan suhu permukaan atap naik +4.2°C.`
-        : `Peak ${maxPrecip} mm/month storm simulation in ${geo.city}: without ${housingCalc.infiltration.bioporeUnits} biopore shafts and a ${housingCalc.rainwater.recommendedCisternLiters}L cistern, surface runoff spikes 42% and roof skin temperature rises +4.2°C.`,
+        ? `Saat puncak hujan ${maxPrecip} mm/bulan di ${geo.city}: tanpa ${housingCalc.infiltration.bioporeUnits} lubang resapan biopori dan tangki air ${housingCalc.rainwater.recommendedCisternLiters}L, air hujan terbuang ke jalan dan suhu atap naik +4.2°C.`
+        : `During a ${maxPrecip} mm/month storm in ${geo.city}: without ${housingCalc.infiltration.bioporeUnits} biopore soak pits and a ${housingCalc.rainwater.recommendedCisternLiters}L tank, rainwater floods the street and roof heat spikes by +4.2°C.`,
     },
     heal: {
       badge1: {
         dot: "bg-[#1e9e5a]",
         text: "text-[#14733f]",
-        label: "SAM 3.1 RETROFIT APPLIED",
+        label: isId ? "DIPINDAI META SAM 3.1" : "SCANNED BY META SAM 3.1",
       },
       badge2: {
         dot: "bg-[#2a9dbd]",
         text: "text-[#146f8a]",
-        label: `+${housingCalc.infiltration.bioporeUnits} BIOPORES ACTIVE`,
+        label: isId
+          ? `+${housingCalc.infiltration.bioporeUnits} BIOPORI AKTIF`
+          : `+${housingCalc.infiltration.bioporeUnits} BIOPORES ACTIVE`,
       },
       badge3: {
         dot: "bg-[#1e9e5a]",
         text: "text-[#14733f]",
-        label: "COUNCIL ±3% VERIFIED",
+        label: isId ? "DISETUJUI 3 PAKAR AI" : "3 AI EXPERTS VERIFIED",
       },
       title: isId
-        ? "Dipindai SAM 3.1, dirancang Dewan AI, dan diverifikasi di lapangan."
-        : "Scanned by SAM 3.1, routed by Council, healed in the field.",
+        ? "Dipindai dengan kamera AI, dihitung otomatis, dan langsung terpasang."
+        : "Scanned by AI camera, calculated accurately, and ready to build.",
       desc: isId
-        ? `Masker poligon SAM 3.1 memetakan ${housingCalc.solar.panelCountEst} panel PV + pipa talang ke tangki ${housingCalc.rainwater.recommendedCisternLiters}L. Dr. Flora, Ir. Arka, dan Sirkula mengunci penghematan ${formatCurrency(
+        ? `Kamera Meta SAM 3.1 menandai posisi ${housingCalc.solar.panelCountEst} panel surya dan jalur pipa ke tangki ${housingCalc.rainwater.recommendedCisternLiters}L. Tiga pakar AI (Meta Muse Spark) memastikan Anda menghemat ${formatCurrency(
             housingCalc.solar.savingsYear,
             housingCalc.solar.currency,
             locale
-          )}/thn dan meredam 100% banjir kapling.`
-        : `SAM 3.1 polygon masks map ${housingCalc.solar.panelCountEst} PV panels + downspout routing into a ${housingCalc.rainwater.recommendedCisternLiters}L cistern. Dr. Flora, Ir. Arka, and Sirkula lock ${formatCurrency(
+          )}/tahun.`
+        : `Meta SAM 3.1 outlines where ${housingCalc.solar.panelCountEst} solar panels and pipes connect to a ${housingCalc.rainwater.recommendedCisternLiters}L tank. Three Meta Muse Spark experts verify ${formatCurrency(
             housingCalc.solar.savingsYear,
             housingCalc.solar.currency,
             locale
-          )}/yr in savings and absorb 100% of plot surge.`,
+          )}/yr in household savings.`,
     },
   }[townSimMode];
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
+      className={`min-h-screen overflow-x-clip transition-colors duration-300 ${
         isLight
           ? "bg-[#f5f5f3] text-[#111111]"
           : "bg-[#0b0c0e] text-[#f2f1ec]"
       }`}
     >
-      {/* 1. DOVV STUDIO FLOATING TOP CHROME + EXPANDABLE NOTCH */}
-      <header className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-5 pt-7 pb-2 sm:px-10">
+      {/* TOWNHOUSE.DEV RIGHT CHAPTER SCROLL RAIL + TOP PROGRESS BAR */}
+      <TownhouseScrollRail
+        chapters={LANDING_CHAPTERS}
+        isLight={isLight}
+        isId={isId}
+      />
+
+      {/* 1. DOVV STUDIO FLOATING TOP CHROME + BESPOKE VERDARA LOGO */}
+      <header className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-2 sm:px-10 sm:pt-7">
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/"
             className="flex min-h-[44px] items-center gap-2.5"
             aria-label="Verdara Home"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#080808] text-[#c6f432] shadow-[inset_0_0_0_1px_#2a2a2a]">
-              <svg
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-9.5Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <span className="dovv-wordmark text-3xl tracking-tight">
-              VERDARA
-            </span>
+            <VerdaraLogo size={42} />
+            <div className="flex flex-col text-left">
+              <span className="dovv-wordmark text-2xl sm:text-3xl tracking-tight">
+                VERDARA
+              </span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.14em] opacity-60">
+                Meta SAM 3.1 · Muse Spark
+              </span>
+            </div>
           </Link>
 
-          {/* City Specimen Switcher Pill */}
+          {/* Quick City Switcher Pill */}
           <div
             role="group"
             aria-label={isId ? "Pilih Kota" : "Select City"}
-            className="hidden flex-wrap items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] lg:flex"
+            className="hidden flex-wrap items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] xl:flex"
           >
             {CITY_SPECIMENS.map((c, idx) => {
-              const active = activePresetId === c.id;
+              const active =
+                activePresetId === c.id &&
+                geo.city.toLowerCase().includes(c.label.toLowerCase());
               return (
                 <button
                   key={c.id}
@@ -300,28 +326,34 @@ export default function LandingPage() {
                 </button>
               );
             })}
+            <a
+              href="#chapter-world"
+              className="min-h-[36px] inline-flex items-center rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] hover:bg-white/20"
+            >
+              {isId ? "+ Semua Negara" : "+ 195 Countries"}
+            </a>
           </div>
         </div>
 
         {/* Right Controls + DOVV Notch Trigger + Zeggo Roll CTA */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => setLocale(locale === "en" ? "id" : "en")}
-            className={`min-h-[44px] cursor-pointer rounded-full px-3.5 text-xs font-medium transition ${
+            className={`min-h-[42px] cursor-pointer rounded-full px-3 text-xs font-semibold transition ${
               isLight
                 ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
                 : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
             }`}
           >
-            {locale.toUpperCase()}
+            {locale === "id" ? "ID 🇮🇩" : "EN 🌐"}
           </button>
           <button
             type="button"
             onClick={() =>
               setUnits(units === "metric" ? "imperial" : "metric")
             }
-            className={`min-h-[44px] cursor-pointer rounded-full px-3.5 text-xs font-medium transition ${
+            className={`hidden min-h-[42px] cursor-pointer rounded-full px-3.5 text-xs font-medium transition sm:inline-flex items-center ${
               isLight
                 ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
                 : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
@@ -332,7 +364,7 @@ export default function LandingPage() {
           <button
             type="button"
             onClick={() => setTheme(isLight ? "dark" : "light")}
-            className={`min-h-[44px] cursor-pointer rounded-full px-3.5 text-xs font-medium transition ${
+            className={`min-h-[42px] cursor-pointer rounded-full px-3 text-xs font-medium transition ${
               isLight
                 ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
                 : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
@@ -346,18 +378,18 @@ export default function LandingPage() {
             type="button"
             onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
             aria-expanded={headerNotchOpen}
-            className="zeggo-btn flex min-h-[46px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 text-xs font-medium text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#1a1a1a]"
+            className="zeggo-btn hidden min-h-[44px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 text-xs font-medium text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#1a1a1a] md:flex"
           >
             <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
             <ZeggoRollText
               text={
                 headerNotchOpen
                   ? isId
-                    ? "Tutup Notch"
-                    : "Close Notch"
+                    ? "Tutup Info"
+                    : "Close Deck"
                   : isId
-                  ? "Slide Dek Studio"
-                  : "Studio Deck (03)"
+                  ? "Ringkasan Juri (03)"
+                  : "Judge Brief (03)"
               }
             />
             <span className="font-mono text-sm leading-none">
@@ -371,14 +403,14 @@ export default function LandingPage() {
               loginAsJudgeDemo();
               router.push("/dashboard");
             }}
-            className="zeggo-btn group flex min-h-[46px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-5 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition hover:bg-[#222]"
+            className="zeggo-btn group flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition hover:bg-[#222]"
           >
             <ZeggoRollText
               text={isId ? "Buka Kota 3D" : "Open Living Town"}
             />
             <svg
-              width="16"
-              height="16"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
@@ -398,16 +430,16 @@ export default function LandingPage() {
 
       {/* DOVV STUDIO EXPANDABLE TOP-RIGHT NOTCH WITH MINI SLIDE CAROUSEL */}
       {headerNotchOpen && (
-        <div className="mx-auto mt-3 max-w-[1440px] px-5 sm:px-10">
+        <div className="mx-auto mt-3 max-w-[1440px] px-4 sm:px-10">
           <div className="ml-auto max-w-[680px] rounded-[34px] bg-[#080808] p-5 text-white shadow-[inset_0_0_0_2px_#2c2c2c,0_24px_60px_-12px_rgba(0,0,0,0.65)]">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
               <div className="flex flex-col justify-between space-y-3 sm:col-span-5">
                 <div>
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#aaa9ad]">
-                    DOVV STUDIO NOTCH · LIVE NODE
+                    META HACKATHON · LIVE NODE
                   </span>
                   <p className="mt-1 font-sans text-lg font-medium text-white">
-                    {geo.city} ({geo.koppen.code})
+                    {geo.city} ({geo.countryCode} · {geo.koppen.code})
                   </p>
                   <p className="font-mono text-xs text-[#c6f432]">
                     ${remainingCredit} / $150.00 Meta API Pool
@@ -479,30 +511,40 @@ export default function LandingPage() {
                   >
                     <div className="w-full shrink-0 space-y-1">
                       <p className="text-xs font-semibold text-white">
-                        01 / SAM 3.1 Zero-Shot Concept Masks
+                        01 / Meta SAM 3.1 Camera Scanner
                       </p>
                       <p className="text-[11px] leading-relaxed text-[#aaa9ad]">
-                        Segments rooftop solar slabs, rainwater downspouts, and
-                        recyclable PET/Alu/e-waste with IoU &lt; 0.85 deduplication.
+                        {isId
+                          ? "Memindai foto atap, talang air, halaman, dan botol/kaleng daur ulang secara otomatis dengan masker poligon presisi."
+                          : "Automatically outlines roof space for solar panels, gutters for rain tanks, and bottles/cans for recycling cash."}
                       </p>
                     </div>
                     <div className="w-full shrink-0 space-y-1">
                       <p className="text-xs font-semibold text-white">
-                        02 / NREL PVWatts v8 + ERA5 Hydrology
+                        02 / Real Solar & Rainwater Math
                       </p>
                       <p className="text-[11px] leading-relaxed text-[#aaa9ad]">
-                        Computes {housingCalc.solar.kwp} kWp solar array yield
-                        and {formatVolume(housingCalc.rainwater.litersYear, units, locale)}{" "}
-                        monsoon capture for {geo.city}.
+                        {isId
+                          ? `Menghitung ${housingCalc.solar.kwp} kWp listrik surya dan ${formatVolume(
+                              housingCalc.rainwater.litersYear,
+                              units,
+                              locale
+                            )} panen air hujan untuk ${geo.city}.`
+                          : `Calculates ${housingCalc.solar.kwp} kWp solar output and ${formatVolume(
+                              housingCalc.rainwater.litersYear,
+                              units,
+                              locale
+                            )} rainwater harvest for ${geo.city}.`}
                       </p>
                     </div>
                     <div className="w-full shrink-0 space-y-1">
                       <p className="text-xs font-semibold text-white">
-                        03 / Specialist Council (±3% Fact Guard)
+                        03 / Meta Muse Spark 3-Expert Council
                       </p>
                       <p className="text-[11px] leading-relaxed text-[#aaa9ad]">
-                        Dr. Flora, Ir. Arka, and Sirkula synthesize a locked
-                        Master Blueprint cross-checked against SITE_BRIEF.
+                        {isId
+                          ? "Tiga pakar AI (Botani, Arsitek Surya, Ekonomi Sirkular) menyusun rencana aksi rumah Anda tanpa mengarang angka."
+                          : "Three AI specialists (Botanist, Solar Architect, Circular Economist) build your home plan with zero fake numbers."}
                       </p>
                     </div>
                   </div>
@@ -513,12 +555,14 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* 2. DOVV STUDIO HERO SECTION (Cursor-Proximity Variable Font Wave + Draggable Holo Stickers + Zeggo Roll Buttons) */}
-      <section className="mx-auto flex max-w-[1440px] flex-col items-center px-5 pt-10 pb-10 text-center sm:px-10 sm:pt-14">
-        {/* DOVV Live Status Pill */}
-        <button
-          type="button"
-          onClick={() => router.push("/radar")}
+      {/* 2. CHAPTER 01: DOVV STUDIO HERO SECTION */}
+      <section
+        id="chapter-hero"
+        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-8 pb-10 text-center sm:px-10 sm:pt-14"
+      >
+        {/* Live City Status Pill */}
+        <a
+          href="#chapter-world"
           className={`zeggo-btn group inline-flex min-h-[42px] cursor-pointer items-center gap-2.5 rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition hover:-translate-y-0.5 ${
             isLight
               ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.07),0_6px_20px_-8px_rgba(0,0,0,0.22)]"
@@ -529,44 +573,36 @@ export default function LandingPage() {
             <span />
           </span>
           <span>
-            {geo.city} ({geo.koppen.code}) · {housingCalc.solar.kwp} kWp Solar
+            {geo.city} ({geo.countryCode} · {geo.koppen.code}) ·{" "}
+            {housingCalc.solar.kwp} kWp Solar
           </span>
           <span className="hidden h-3.5 w-[1px] bg-current opacity-20 sm:inline-block" />
           <span className="hidden opacity-75 sm:inline">
             <ZeggoRollText
-              text={isId ? "Inspeksi Fisika Atap" : "Inspect roof physics"}
+              text={
+                isId
+                  ? "Ganti Kota / Negara (195+ Negara)"
+                  : "Change City / Country (195+ Countries)"
+              }
             />
           </span>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-            className="opacity-65 transition-transform group-hover:translate-x-0.5"
-          >
-            <path
-              d="M5 12h14m0 0-6-6m6 6-6 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+          <span aria-hidden="true" className="opacity-65">
+            ↓
+          </span>
+        </a>
 
         {/* Giant Interactive Variable Display Wordmark + DOVV Draggable Holographic Foil Stickers */}
-        <div className="relative mt-7 flex w-full max-w-[1240px] flex-col items-center justify-center">
+        <div className="relative mt-6 sm:mt-7 flex w-full max-w-[1240px] flex-col items-center justify-center">
           <h1 className="sr-only">
             {isId
-              ? "Verdara: Lihat ke dalam kota ekologis Anda, ukur tenaga surya atap, air hujan, dan daur ulang dalam ruang 3D."
-              : "Verdara: See inside your living eco-town, audit solar roofs, rainwater pipes, and circular material recovery."}
+              ? "Verdara: Ubah rumah dan lingkungan Anda menjadi kota hijau 3D. Hitung panel surya, panen air hujan, dan nilai daur ulang di kota mana pun di dunia dengan Meta SAM 3.1 dan Muse Spark."
+              : "Verdara: Turn your home and neighborhood into a 3D living eco-town. Measure rooftop solar, rainwater harvest, and recycling value in any city on Earth with Meta SAM 3.1 and Muse Spark."}
           </h1>
 
           {/* Draggable Holo Sticker 1: Top-Left Orange */}
           <DovvHoloSticker
             label="Meta SAM 3.1 + Muse Spark"
-            sublabel="Drag Me"
+            sublabel="Drag Sticker"
             variant="orange"
             rotationDeg={-8}
             className="absolute -top-7 left-2 z-20 hidden md:block lg:left-6"
@@ -579,6 +615,7 @@ export default function LandingPage() {
               housingCalc.solar.currency,
               locale
             )}/yr`}
+            sublabel={`${geo.city} (${geo.countryCode})`}
             variant="lime"
             rotationDeg={9}
             className="absolute -top-6 right-2 z-20 hidden md:block lg:right-8"
@@ -586,7 +623,8 @@ export default function LandingPage() {
 
           {/* Draggable Holo Sticker 3: Bottom-Right Gold */}
           <DovvHoloSticker
-            label="NREL PVWatts v8 · ERA5 10-Yr"
+            label="195+ Countries · Real Physics"
+            sublabel="NREL PVWatts · ERA5 Weather"
             variant="gold"
             rotationDeg={-6}
             className="absolute -bottom-6 right-6 z-20 hidden lg:block"
@@ -596,45 +634,45 @@ export default function LandingPage() {
           <DovvInteractiveWordmark
             lines={
               isId
-                ? ["LIHAT KOTA EKOLOGIS", "HIDUP MILIK ANDA"]
+                ? ["LIHAT KOTA HIJAU", "HIDUP MILIK ANDA"]
                 : ["SEE INSIDE YOUR", "LIVING ECO-TOWN"]
             }
-            className="text-center text-[clamp(52px,13vw,182px)] tracking-tight"
+            className="text-center text-[clamp(42px,12.2vw,178px)] tracking-tight"
           />
         </div>
 
-        {/* Subtitle & Zeggo Character-Roll Pill Buttons */}
+        {/* Plain-Language Subtitle & Zeggo Character-Roll Pill Buttons */}
         <p
-          className={`mt-6 max-w-[640px] text-base sm:text-lg leading-[1.45] tracking-[-0.02em] ${
+          className={`mt-5 sm:mt-6 max-w-[680px] px-2 text-sm sm:text-lg leading-[1.55] tracking-[-0.015em] ${
             isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
           }`}
         >
           {isId
-            ? "Blok hunian Anda digambar sebagai kota hidup berisi atap surya, pipa air hujan, tangki sisterna, dan hub sirkular. Amati kinerjanya, uji saat badai datang, dan verifikasi perbaikan fisik."
-            : "Your neighborhood drawn as a living town of solar roofs, rainwater pipes, cisterns, and circular hubs. Watch it run, stress-test monsoon surges, and verify real-world fixes."}
+            ? "Pilih kota Anda di negara mana pun atau foto rumah Anda. Verdara menggambar rumah Anda sebagai kota 3D yang hidup, menghitung berapa listrik surya, air hujan, dan uang daur ulang yang bisa Anda hemat, lalu memandu perbaikannya bersama 3 pakar AI Meta."
+            : "Pick any city in the world or snap a photo of your home. Verdara draws your plot as a living 3D town, calculates exactly how much solar power, rainwater, and recycling cash you can save, and guides your upgrades with 3 Meta AI specialists."}
         </p>
 
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 sm:mt-7 flex w-full sm:w-auto flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 px-2">
           <button
             type="button"
             onClick={() => {
               loginAsJudgeDemo();
               router.push("/dashboard");
             }}
-            className="zeggo-btn flex min-h-[48px] cursor-pointer items-center justify-center rounded-full bg-[#080808] px-7 text-[15px] font-medium text-white transition hover:bg-[#222222]"
+            className="zeggo-btn flex min-h-[48px] cursor-pointer items-center justify-center rounded-full bg-[#080808] px-7 text-sm sm:text-[15px] font-medium text-white transition hover:bg-[#222222]"
           >
             <ZeggoRollText
               text={
                 isId
-                  ? "Masuk ke Kota Hidup 3D (Demo Juri Lv.5)"
-                  : "Start with Judge Demo Town (Lv.5)"
+                  ? "Buka Kota Hidup 3D (Demo Juri Lv.5)"
+                  : "Enter 3D Living Town (Lv.5 Judge Demo)"
               }
             />
           </button>
 
           <Link
             href="/lens"
-            className={`zeggo-btn flex min-h-[48px] items-center justify-center rounded-full px-6 text-[15px] font-medium transition ${
+            className={`zeggo-btn flex min-h-[48px] items-center justify-center rounded-full px-6 text-sm sm:text-[15px] font-medium transition ${
               isLight
                 ? "text-[#111] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.22)] hover:shadow-[inset_0_0_0_1px_#000]"
                 : "text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)] hover:shadow-[inset_0_0_0_1px_#fff]"
@@ -643,25 +681,45 @@ export default function LandingPage() {
             <ZeggoRollText
               text={
                 isId
-                  ? "Pindai Objek di Lensa SAM 3.1"
-                  : "Open SAM 3.1 Spatial Lens"
+                  ? "Pindai Foto dengan Meta SAM 3.1"
+                  : "Scan Photo with Meta SAM 3.1"
               }
             />
           </Link>
+
+          <a
+            href="#chapter-world"
+            className={`zeggo-btn flex min-h-[48px] items-center justify-center rounded-full px-5 text-sm font-medium transition ${
+              isLight
+                ? "bg-white text-[#1e9e5a] shadow-[0_0_0_1px_rgba(30,158,90,0.3)] hover:bg-[#1e9e5a] hover:text-white"
+                : "bg-[#141619] text-[#c6f432] shadow-[0_0_0_1px_rgba(198,244,50,0.3)] hover:bg-[#c6f432] hover:text-[#080808]"
+            }`}
+          >
+            <ZeggoRollText
+              text={
+                isId ? "Jelajahi Semua Negara 🌍" : "Explore All Countries 🌍"
+              }
+            />
+          </a>
         </div>
 
         {/* ZEGGO.COM.SG SIGNATURE SCROLL INDICATOR LINE (.zeggo-scroll-indicator) */}
-        <div className="mt-8 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.14em] opacity-65">
+        <div className="mt-7 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.14em] opacity-65">
           <span>
-            {isId ? "Gulir atau putar kota 3D" : "Scroll or orbit living town"}
+            {isId
+              ? "Gulir halaman atau putar kota 3D di bawah"
+              : "Scroll page or orbit the 3D town below"}
           </span>
           <span className="zeggo-scroll-indicator" aria-hidden="true" />
         </div>
       </section>
 
-      {/* 3. DOVV SHOWREEL FRAME + TOWNHOUSE.DEV "WATCH IT RUN, BREAK, AND HEAL" LIVE STAGE */}
-      <section className="mx-auto max-w-[1440px] px-4 sm:px-10">
-        <div className="dovv-stage-frame h-[580px] w-full sm:h-[670px] lg:h-[710px]">
+      {/* 3. CHAPTER 02: TOWNHOUSE.DEV "WATCH IT RUN, BREAK, AND HEAL" LIVE 3D STAGE */}
+      <section
+        id="chapter-town"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-10"
+      >
+        <div className="dovv-stage-frame h-[620px] w-full sm:h-[680px] lg:h-[720px]">
           {/* Interactive 3D Townhouse Diorama */}
           <EcoIslandCanvas
             biome={geo.biome}
@@ -679,25 +737,25 @@ export default function LandingPage() {
           />
 
           {/* Top-Left Townhouse Simulation Bar ("Watch it Run, Break, and Heal") */}
-          <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-1.5 rounded-full bg-[#080808]/90 p-1.5 backdrop-blur-md shadow-lg">
+          <div className="absolute top-3 left-3 right-3 sm:right-auto sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1 rounded-2xl sm:rounded-full bg-[#080808]/90 p-1.5 backdrop-blur-md shadow-lg">
             {(
               [
                 {
                   id: "run",
-                  labelEn: "01 Watch it Run",
-                  labelId: "01 Operasi Normal",
+                  labelEn: "01 Normal Day (Run)",
+                  labelId: "01 Hari Normal",
                   dot: "bg-[#1e9e5a]",
                 },
                 {
                   id: "break",
-                  labelEn: "02 Monsoon Stress (Break)",
-                  labelId: "02 Simulasi Badai (Kritis)",
+                  labelEn: "02 Storm Surge (Break)",
+                  labelId: "02 Uji Badai & Panas",
                   dot: "bg-[#e5484d]",
                 },
                 {
                   id: "heal",
-                  labelEn: "03 SAM 3.1 + Council Heal",
-                  labelId: "03 Solusi SAM 3.1 + Dewan",
+                  labelEn: "03 AI Solution (Heal)",
+                  labelId: "03 Solusi AI Meta",
                   dot: "bg-[#2a9dbd]",
                 },
               ] as const
@@ -708,23 +766,26 @@ export default function LandingPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setTownSimMode(tab.id)}
-                  className={`flex min-h-[36px] cursor-pointer items-center gap-2 rounded-full px-3.5 py-1 font-mono text-xs font-medium transition ${
+                  className={`flex min-h-[34px] flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] sm:text-xs font-medium transition ${
                     active
                       ? "bg-white font-semibold text-[#111]"
                       : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
                   }`}
                 >
-                  <span className={`h-2 w-2 rounded-full ${tab.dot}`} />
-                  <span>{isId ? tab.labelId : tab.labelEn}</span>
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${tab.dot}`} />
+                  <span className="truncate">
+                    {isId ? tab.labelId : tab.labelEn}
+                  </span>
                 </button>
               );
             })}
           </div>
 
           {/* Top-Right Lighting & Biome Pill inside Stage */}
-          <div className="absolute top-4 right-4 z-10 hidden flex-wrap items-center gap-2 md:flex">
+          <div className="absolute top-4 right-4 z-10 hidden flex-wrap items-center gap-2 lg:flex">
             <span className="rounded-full bg-[#080808]/90 px-3.5 py-1.5 font-mono text-xs font-medium text-white backdrop-blur-md">
-              {geo.city} · Köppen {geo.koppen.code} ({geo.biome.toUpperCase()})
+              {geo.city} ({geo.countryCode}) · {geo.koppen.code} (
+              {geo.biome.toUpperCase()})
             </span>
             <button
               type="button"
@@ -737,13 +798,13 @@ export default function LandingPage() {
 
           {/* TOWNHOUSE.DEV SIGNATURE BOTTOM-LEFT FLOATING PAPER CARD (.static-hero-words) */}
           <div
-            className={`absolute bottom-4 left-4 right-4 z-10 rounded-[16px] border p-5 shadow-2xl backdrop-blur-md transition-all duration-300 sm:right-auto sm:bottom-6 sm:left-6 sm:w-[min(540px,46vw)] sm:p-6 ${
+            className={`absolute bottom-3 left-3 right-3 z-10 rounded-[18px] border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 sm:right-auto sm:bottom-6 sm:left-6 sm:w-[min(540px,48vw)] sm:p-6 ${
               isLight
                 ? "border-[#151515]/10 bg-white/95 text-[#151515]"
                 : "border-white/10 bg-[#16171a]/95 text-[#f2f1ec]"
             }`}
           >
-            <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
+            <div className="flex flex-wrap items-center gap-2.5 font-mono text-[10px] sm:text-[11px]">
               <span
                 className={`inline-flex items-center gap-1.5 font-semibold ${simConfig.badge1.text}`}
               >
@@ -770,39 +831,39 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <h2 className="townhouse-title mt-2.5 text-2xl sm:text-4xl">
+            <h2 className="townhouse-title mt-2 text-xl sm:text-3xl lg:text-4xl">
               {simConfig.title}
             </h2>
 
             <p
-              className={`mt-2 text-xs sm:text-sm leading-relaxed ${
+              className={`mt-1.5 text-xs sm:text-sm leading-relaxed ${
                 isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
               }`}
             >
               {simConfig.desc}
             </p>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            <div className="mt-3.5 flex flex-wrap items-center gap-2">
               <Link
                 href="/dashboard"
-                className={`zeggo-btn inline-flex min-h-[44px] items-center rounded-[8px] px-4 text-xs sm:text-sm font-medium transition ${
+                className={`zeggo-btn inline-flex min-h-[42px] items-center rounded-[10px] px-4 text-xs sm:text-sm font-medium transition ${
                   isLight
                     ? "bg-[#151515] text-[#f6f6f3] hover:bg-[#2a2a2a]"
                     : "bg-[#f2f1ec] text-[#0f1012] hover:bg-white"
                 }`}
               >
                 <ZeggoRollText
-                  text={isId ? "Inspeksi Kota Hidup" : "Inspect Living Town"}
+                  text={
+                    isId ? "Buka Dasbor Kota 3D" : "Inspect Full Living Town"
+                  }
                 />
               </Link>
               <Link
                 href="/radar"
-                className="zeggo-btn inline-flex min-h-[44px] items-center rounded-[8px] border border-current/20 px-3.5 text-xs sm:text-sm font-medium"
+                className="zeggo-btn inline-flex min-h-[42px] items-center rounded-[10px] border border-current/20 px-3.5 text-xs sm:text-sm font-medium"
               >
                 <ZeggoRollText
-                  text={
-                    isId ? "Ubah Luas Atap" : "Adjust Roof Footprint (m²/ft²)"
-                  }
+                  text={isId ? "Atur Luas Atap Rumah" : "Adjust Roof Size"}
                 />
               </Link>
             </div>
@@ -810,19 +871,43 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. DOVV STUDIO 01/05 INTERACTIVE HORIZONTAL SLIDE DECK CAROUSEL (.dovv-slide-track) */}
-      <section className="mx-auto max-w-[1440px] px-5 pt-24 pb-12 sm:px-10">
+      {/* 4. CHAPTER 03: GLOBAL WORLD COUNTRIES & CITIES EXPLORER (ALL COUNTRIES & CITIES) */}
+      <section
+        id="chapter-world"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-20 pb-8 sm:px-10"
+      >
+        <div className="mb-6">
+          <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
+            {isId
+              ? "01 / Penjelajah Negara & Kota Dunia (195+ Negara)"
+              : "01 / Global Country & City Explorer (195+ Countries)"}
+          </p>
+          <h2 className="mt-2 text-[clamp(30px,4.4vw,60px)] font-normal leading-[1.06] tracking-[-0.04em]">
+            {isId
+              ? "Lihat potensi surya, air hujan, dan daur ulang di kota mana pun di dunia."
+              : "See solar, rainwater, and recycling potential in any city on Earth."}
+          </h2>
+        </div>
+
+        <WorldCityExplorer isLight={isLight} isId={isId} />
+      </section>
+
+      {/* 5. CHAPTER 04: DOVV STUDIO 01/05 INTERACTIVE HORIZONTAL SLIDE DECK CAROUSEL */}
+      <section
+        id="chapter-slides"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-16 pb-12 sm:px-10"
+      >
         <div className="flex flex-wrap items-end justify-between gap-4 pb-8">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               {isId
-                ? "01 / Dek Geser Spesimen Iklim Dunia (DOVV Slide Track)"
-                : "01 / Global Climate Specimen Slide Deck (DOVV Slide Track)"}
+                ? "02 / Bandingkan 5 Zona Iklim Utama Dunia"
+                : "02 / Compare 5 Benchmark Climate Zones"}
             </p>
-            <h2 className="mt-2 text-[clamp(32px,4.5vw,64px)] font-normal leading-[1.06] tracking-[-0.04em]">
+            <h2 className="mt-2 text-[clamp(28px,4.2vw,58px)] font-normal leading-[1.06] tracking-[-0.04em]">
               {isId
-                ? "Geser 5 spesimen kota dan bandingkan fisika atapnya."
-                : "Slide across 5 global climate specimens in real time."}
+                ? "Geser kartu untuk melihat bagaimana cuaca memengaruhi rumah Anda."
+                : "Slide through 5 climate zones to see how local weather shapes a home."}
             </h2>
           </div>
 
@@ -842,7 +927,7 @@ export default function LandingPage() {
                 )
               }
               aria-label="Previous city specimen slide"
-              className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#080808] text-white transition hover:scale-105 hover:bg-[#222]"
+              className="flex h-11 w-11 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded-full bg-[#080808] text-white transition hover:scale-105 hover:bg-[#222]"
             >
               ←
             </button>
@@ -852,7 +937,7 @@ export default function LandingPage() {
                 setActiveSlide((s) => (s + 1) % CITY_SPECIMENS.length)
               }
               aria-label="Next city specimen slide"
-              className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#080808] text-white transition hover:scale-105 hover:bg-[#222]"
+              className="flex h-11 w-11 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded-full bg-[#080808] text-white transition hover:scale-105 hover:bg-[#222]"
             >
               →
             </button>
@@ -860,7 +945,7 @@ export default function LandingPage() {
         </div>
 
         {/* Horizontal Slide Viewport */}
-        <div className="overflow-hidden rounded-[32px] bg-[#080808] p-6 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626]">
+        <div className="overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626]">
           <div
             className="dovv-slide-track"
             style={{
@@ -885,28 +970,28 @@ export default function LandingPage() {
               return (
                 <div
                   key={spec.id}
-                  className="w-full shrink-0 pr-2 sm:pr-4"
+                  className="w-full shrink-0 pr-1 sm:pr-4"
                   aria-hidden={activeSlide !== idx}
                 >
                   <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
                     <div className="space-y-4 lg:col-span-6">
-                      <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
+                      <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
                         <span className="rounded-full bg-[#c6f432] px-3 py-1 font-bold text-[#080808]">
-                          SPECIMEN 0{idx + 1} · {spec.iso}
+                          ZONE 0{idx + 1} · {spec.iso}
                         </span>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-white">
-                          Köppen {preset.koppen.code} ({preset.koppen.nameEn})
+                          {preset.koppen.code} ({preset.koppen.nameEn})
                         </span>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-[#c6f432]">
-                          Biome: {preset.biome.toUpperCase()}
+                          {preset.biome.toUpperCase()}
                         </span>
                       </div>
 
-                      <h3 className="dovv-wordmark text-5xl sm:text-7xl text-white">
+                      <h3 className="dovv-wordmark text-4xl sm:text-7xl text-white">
                         {preset.city}
                       </h3>
 
-                      <p className="max-w-xl text-sm sm:text-base leading-relaxed text-[#c9c7c0]">
+                      <p className="max-w-xl text-xs sm:text-base leading-relaxed text-[#c9c7c0]">
                         {isId
                           ? preset.koppen.descriptionId
                           : preset.koppen.descriptionEn}
@@ -916,7 +1001,7 @@ export default function LandingPage() {
                         <button
                           type="button"
                           onClick={() => teleportToCity(spec.id)}
-                          className={`zeggo-btn inline-flex min-h-[46px] cursor-pointer items-center gap-2 rounded-full px-6 text-sm font-semibold transition ${
+                          className={`zeggo-btn inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-5 sm:px-6 text-xs sm:text-sm font-semibold transition ${
                             isCurrent
                               ? "bg-[#c6f432] text-[#080808]"
                               : "bg-white text-[#080808] hover:bg-[#c6f432]"
@@ -926,22 +1011,22 @@ export default function LandingPage() {
                             text={
                               isCurrent
                                 ? isId
-                                  ? `Aktif di Kota 3D (${preset.city})`
-                                  : `Active in 3D Town (${preset.city})`
+                                  ? `Sedang Aktif (${preset.city})`
+                                  : `Currently Active (${preset.city})`
                                 : isId
-                                ? `Teleportasi ke ${preset.city}`
-                                : `Teleport Town to ${preset.city}`
+                                ? `Terapkan Kota ${preset.city}`
+                                : `Load ${preset.city} in 3D Town`
                             }
                           />
                         </button>
                         <Link
                           href="/radar"
                           onClick={() => teleportToCity(spec.id)}
-                          className="zeggo-btn inline-flex min-h-[46px] items-center rounded-full border border-white/25 px-5 text-sm font-medium text-white hover:bg-white/10"
+                          className="zeggo-btn inline-flex min-h-[44px] items-center rounded-full border border-white/25 px-5 text-xs sm:text-sm font-medium text-white hover:bg-white/10"
                         >
                           <ZeggoRollText
                             text={
-                              isId ? "Buka Peta Radar 3D" : "Open in 3D Radar"
+                              isId ? "Lihat di Peta 3D" : "View on 3D Map"
                             }
                           />
                         </Link>
@@ -949,12 +1034,13 @@ export default function LandingPage() {
                     </div>
 
                     {/* Right Telemetry Cards inside Slide */}
-                    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 lg:col-span-6">
-                      <div className="rounded-2xl bg-[#141619] p-5 shadow-[inset_0_0_0_1px_#2a2d34]">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-6">
+                      <div className="th-node-card rounded-2xl bg-[#141619] p-4 sm:p-5 pl-6 shadow-[inset_0_0_0_1px_#2a2d34]">
+                        <span className="th-map-bar bg-[#c6f432]" />
                         <span className="font-mono text-[11px] text-[#aaa9ad]">
-                          NREL PVWATTS V8 SOLAR
+                          {isId ? "LISTRIK PANEL SURYA" : "ROOFTOP SOLAR POWER"}
                         </span>
-                        <p className="mt-1.5 font-mono text-2xl sm:text-3xl font-bold text-[#c6f432]">
+                        <p className="mt-1 font-mono text-2xl sm:text-3xl font-bold text-[#c6f432]">
                           {calc.solar.kwp} kWp
                         </p>
                         <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
@@ -969,11 +1055,12 @@ export default function LandingPage() {
                         </p>
                       </div>
 
-                      <div className="rounded-2xl bg-[#141619] p-5 shadow-[inset_0_0_0_1px_#2a2d34]">
+                      <div className="th-node-card rounded-2xl bg-[#141619] p-4 sm:p-5 pl-6 shadow-[inset_0_0_0_1px_#2a2d34]">
+                        <span className="th-map-bar bg-[#2a9dbd]" />
                         <span className="font-mono text-[11px] text-[#aaa9ad]">
-                          ERA5 RAINWATER HARVEST
+                          {isId ? "PANEN AIR HUJAN" : "RAINWATER CAPTURED"}
                         </span>
-                        <p className="mt-1.5 font-mono text-2xl sm:text-3xl font-bold text-cyan-300">
+                        <p className="mt-1 font-mono text-2xl sm:text-3xl font-bold text-cyan-300">
                           {formatVolume(
                             calc.rainwater.litersYear,
                             units,
@@ -981,17 +1068,18 @@ export default function LandingPage() {
                           )}
                         </p>
                         <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
-                          {preset.koppen.pAnnMm} mm/yr · Cistern{" "}
+                          {preset.koppen.pAnnMm} mm/yr · Tank{" "}
                           {calc.rainwater.recommendedCisternLiters}L
                         </p>
                       </div>
 
-                      <div className="rounded-2xl bg-[#141619] p-5 shadow-[inset_0_0_0_1px_#2a2d34]">
+                      <div className="th-node-card rounded-2xl bg-[#141619] p-4 sm:p-5 pl-6 shadow-[inset_0_0_0_1px_#2a2d34]">
+                        <span className="th-map-bar bg-[#e9a23b]" />
                         <span className="font-mono text-[11px] text-[#aaa9ad]">
-                          THERMAL COMFORT & ALBEDO
+                          {isId ? "KENYAMANAN SUHU" : "THERMAL COMFORT"}
                         </span>
-                        <p className="mt-1.5 font-mono text-2xl sm:text-3xl font-bold text-amber-300">
-                          TCI {calc.thermal.tciScore}/100
+                        <p className="mt-1 font-mono text-2xl sm:text-3xl font-bold text-amber-300">
+                          {calc.thermal.tciScore}/100
                         </p>
                         <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
                           {formatTemp(preset.currentTempC, units)} · Cool Roof -
@@ -999,12 +1087,13 @@ export default function LandingPage() {
                         </p>
                       </div>
 
-                      <div className="rounded-2xl bg-[#141619] p-5 shadow-[inset_0_0_0_1px_#2a2d34]">
+                      <div className="th-node-card rounded-2xl bg-[#141619] p-4 sm:p-5 pl-6 shadow-[inset_0_0_0_1px_#2a2d34]">
+                        <span className="th-map-bar bg-[#1e9e5a]" />
                         <span className="font-mono text-[11px] text-[#aaa9ad]">
-                          OSM CIRCULAR HUBS
+                          {isId ? "TITIK DAUR ULANG" : "RECYCLING DROP-OFFS"}
                         </span>
-                        <p className="mt-1.5 font-mono text-2xl sm:text-3xl font-bold text-white">
-                          {preset.hubs.length} Verified
+                        <p className="mt-1 font-mono text-2xl sm:text-3xl font-bold text-white">
+                          {preset.hubs.length} Hubs
                         </p>
                         <p className="mt-1 truncate font-mono text-xs text-[#c9c7c0]">
                           {preset.hubs[0]?.name}
@@ -1018,14 +1107,14 @@ export default function LandingPage() {
           </div>
 
           {/* Slide Dots Bar */}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5">
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {CITY_SPECIMENS.map((c, idx) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => setActiveSlide(idx)}
-                  className={`min-h-[36px] cursor-pointer rounded-full px-3.5 text-xs font-mono transition ${
+                  className={`min-h-[36px] cursor-pointer rounded-full px-3 sm:px-3.5 text-xs font-mono transition ${
                     activeSlide === idx
                       ? "bg-[#c6f432] font-bold text-[#080808]"
                       : "bg-white/10 text-[#c9c7c0] hover:bg-white/20"
@@ -1035,40 +1124,40 @@ export default function LandingPage() {
                 </button>
               ))}
             </div>
-            <span className="font-mono text-xs text-[#aaa9ad]">
+            <span className="font-mono text-[11px] text-[#aaa9ad]">
               {isId
-                ? "Transisi pegas DOVV cubic-bezier(0.32, 1.1, 0.5, 1)"
-                : "DOVV spring slide track · cubic-bezier(0.32, 1.1, 0.5, 1)"}
+                ? "Klik panah ← → untuk berpindah zona iklim"
+                : "Click ← → arrows to compare climate zones"}
             </span>
           </div>
         </div>
       </section>
 
-      {/* 5. ZEGGO.COM.SG STICKY-LEFT + SCROLLING-RIGHT SUBGRID (01/02/03) & DIAGONAL STAIRCASE CASCADE */}
-      <section className="mx-auto max-w-[1440px] px-5 py-20 sm:px-10">
-        {/* Part A: Zeggo Sticky Split Subgrid */}
+      {/* 6. CHAPTER 05: ZEGGO.COM.SG STICKY-LEFT + SCROLLING-RIGHT SUBGRID & STAIRCASE CASCADE */}
+      <section
+        id="chapter-how"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 py-16 sm:px-10 sm:py-20"
+      >
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
             <div className="md:sticky md:top-24 space-y-4">
               <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
                 {isId
-                  ? "02 / Arsitektur Spasial Zeggo Subgrid"
-                  : "02 / Spatial Engineering Architecture"}
+                  ? "03 / Cara Kerja yang Mudah Dipahami"
+                  : "03 / How Verdara Works in Plain Words"}
               </p>
-              <h2 className="text-[clamp(34px,4.4vw,60px)] font-normal leading-[1.06] tracking-[-0.04em]">
+              <h2 className="text-[clamp(30px,4.2vw,56px)] font-normal leading-[1.06] tracking-[-0.04em]">
                 {isId ? (
                   <>
-                    Setiap klaim AI diikat pada{" "}
-                    <span className="text-[#1e9e5a]">persamaan fisika</span>{" "}
-                    yang dapat diaudit.
+                    Bukan sekadar chatbot AI, tetapi{" "}
+                    <span className="text-[#1e9e5a]">kalkulator nyata</span>{" "}
+                    yang melihat rumah Anda.
                   </>
                 ) : (
                   <>
-                    Every AI recommendation is anchored to{" "}
-                    <span className="text-[#1e9e5a]">
-                      auditable physics equations
-                    </span>
-                    .
+                    Not just another AI chat, but{" "}
+                    <span className="text-[#1e9e5a]">real home math</span>{" "}
+                    powered by computer vision.
                   </>
                 )}
               </h2>
@@ -1078,30 +1167,32 @@ export default function LandingPage() {
                 }`}
               >
                 {isId
-                  ? "Kami memadukan segmentasi poligon Meta SAM 3.1 dengan persamaan hidrologi dan fotovoltaik deterministik, sehingga juri maupun pemilik rumah dapat memverifikasi setiap angka."
-                  : "We fuse Meta SAM 3.1 zero-shot polygon segmentation with deterministic hydrology and photovoltaic equations so homeowners and judges can verify every single number."}
+                  ? "Kebanyakan aplikasi AI hanya menebak angka. Di Verdara, model kamera Meta SAM 3.1 mengenali objek nyata di foto Anda, lalu rumus fisika menghitung penghematan listrik, air, dan uang secara akurat sebelum dijelaskan oleh 3 pakar AI Meta Muse Spark."
+                  : "Most AI tools guess numbers. In Verdara, Meta SAM 3.1 camera vision finds real objects in your photo, physics formulas calculate your exact solar, water, and cash savings, and 3 Meta Muse Spark specialists explain your step-by-step plan."}
               </p>
             </div>
           </div>
 
-          <div className="space-y-6 md:col-span-6 md:col-start-7">
+          <div className="space-y-5 md:col-span-6 md:col-start-7">
             {[
               {
                 num: "01",
-                titleEn: "Zero-Shot Spatial Segmentation (Meta SAM 3.1)",
-                titleId: "Segmentasi Spasial Zero-Shot (Meta SAM 3.1)",
-                highlightEn: "IoU < 0.85 polygon deduplication",
-                highlightId: "deduplikasi poligon IoU < 0.85",
+                barColor: "bg-[#1e9e5a]",
+                titleEn: "Step 1: Meta SAM 3.1 Sees Your Roof & Recyclables",
+                titleId: "Langkah 1: Kamera Meta SAM 3.1 Mengenali Atap & Barang Daur Ulang",
+                highlightEn: "Zero-Shot Object Outlines",
+                highlightId: "Deteksi Objek Otomatis",
                 bodyEn:
-                  "Extracts solar-ready roof slabs, gutter downspouts, permeable soil zones, and recyclable materials from a single photo with real-time SVG mask overlays.",
+                  "Upload a photo or pick a sample. Meta SAM 3.1 automatically draws precise outlines around roof areas for solar panels, gutters for rain tanks, and plastic/aluminum/e-waste items you can trade for cash.",
                 bodyId:
-                  "Mengekstrak bidang atap surya, pipa talang air hujan, zona tanah resapan, dan material daur ulang dari satu foto dengan lapisan masker SVG interaktif.",
+                  "Unggah foto atau pilih contoh. Meta SAM 3.1 otomatis menggambar garis batas pada atap untuk panel surya, pipa talang untuk tangki hujan, serta botol plastik/kaleng yang bisa ditukar uang.",
                 href: "/lens",
               },
               {
                 num: "02",
-                titleEn: "NREL PVWatts v8 & 10-Year ERA5 Climatology",
-                titleId: "NREL PVWatts v8 & Klimatologi ERA5 10-Tahun",
+                barColor: "bg-[#2a9dbd]",
+                titleEn: "Step 2: Real Weather & Solar Math for Your Country",
+                titleId: "Langkah 2: Hitungan Surya & Air Hujan Sesuai Negara Anda",
                 highlightEn: `${housingCalc.solar.kwp} kWp & ${formatVolume(
                   housingCalc.rainwater.litersYear,
                   units,
@@ -1113,33 +1204,35 @@ export default function LandingPage() {
                   locale
                 )}/thn`,
                 bodyEn:
-                  "Calculates usable roof area (0.68 ratio), panel density, performance ratio (0.78), and DIN 1989-1 rainwater harvesting without LLM hallucination.",
+                  "Using official NREL solar equations and 10-year ERA5 rainfall records for your city, Verdara computes how many kWh of electricity and liters of rainwater your roof can harvest in local currency.",
                 bodyId:
-                  "Menghitung rasio atap efektif (0.68), densitas panel, rasio performa (0.78), dan panen air hujan standar DIN 1989-1 tanpa halusinasi angka LLM.",
+                  "Menggunakan rumus surya resmi NREL dan data curah hujan 10 tahun di kota Anda, Verdara menghitung berapa kWh listrik dan liter air hujan yang bisa dipanen beserta nilai hematnya dalam mata uang lokal.",
                 href: "/radar",
               },
               {
                 num: "03",
-                titleEn: "Multi-Agent Specialist Council (±3% Fact Validator)",
-                titleId: "Dewan Spesialis Multi-Agen (Validator Fakta ±3%)",
+                barColor: "bg-[#e9a23b]",
+                titleEn: "Step 3: 3 Meta Muse Spark Experts Build Your Plan",
+                titleId: "Langkah 3: 3 Pakar AI Meta Muse Spark Menyusun Rencana Anda",
                 highlightEn: "Dr. Flora, Ir. Arka & Sirkula",
                 highlightId: "Dr. Flora, Ir. Arka & Sirkula",
                 bodyEn:
-                  "Three domain agents debate your plot using Meta Muse Spark (or open-weight mode) while a deterministic post-validator enforces ±3% numerical fidelity against SITE_BRIEF.",
+                  "Three AI specialists (an Urban Botanist, a Solar & Water Engineer, and a Circular Economist) debate your home's data and give you a practical action plan verified within ±3% accuracy.",
                 bodyId:
-                  "Tiga agen spesialis membedah kapling Anda menggunakan Meta Muse Spark (atau mode open-weight) sementara validator deterministik menjaga akurasi angka ±3% terhadap SITE_BRIEF.",
+                  "Tiga spesialis AI (Ahli Botani Kota, Insinyur Surya & Air, serta Ekonom Sirkular) membahas data rumah Anda dan menyusun langkah praktis yang terjamin akurat tanpa mengarang angka.",
                 href: "/council",
               },
             ].map((item) => (
               <div
                 key={item.num}
-                className={`rounded-[28px] border p-7 transition hover:-translate-y-0.5 ${
+                className={`th-node-card border p-6 pl-7 sm:p-7 sm:pl-8 ${
                   isLight
                     ? "border-black/10 bg-white shadow-sm"
                     : "border-white/10 bg-[#141619]"
                 }`}
               >
-                <div className="flex items-center justify-between font-mono text-xs">
+                <span className={`th-map-bar ${item.barColor}`} />
+                <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                   <span className="rounded-full bg-[#080808] px-3 py-1 font-bold text-[#c6f432]">
                     STEP {item.num}
                   </span>
@@ -1147,11 +1240,11 @@ export default function LandingPage() {
                     {isId ? item.highlightId : item.highlightEn}
                   </span>
                 </div>
-                <h3 className="mt-4 text-2xl font-medium tracking-[-0.03em]">
+                <h3 className="mt-3.5 text-xl sm:text-2xl font-medium tracking-[-0.03em]">
                   {isId ? item.titleId : item.titleEn}
                 </h3>
                 <p
-                  className={`mt-2 text-sm leading-relaxed ${
+                  className={`mt-2 text-xs sm:text-sm leading-relaxed ${
                     isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
                   }`}
                 >
@@ -1163,7 +1256,7 @@ export default function LandingPage() {
                 >
                   <ZeggoRollText
                     text={
-                      isId ? "Buka Modul Terkait →" : "Open Workspace Module →"
+                      isId ? "Coba Fitur Ini Sekarang →" : "Try This Tool Now →"
                     }
                   />
                 </Link>
@@ -1172,44 +1265,45 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Part B: Zeggo.com.sg 12-Column Diagonal Staircase Cascade (col-start-1, 4, 7, 10) */}
-        <div className="mt-20">
-          <p className="mb-6 font-mono text-xs uppercase tracking-[0.12em] opacity-60">
+        {/* Zeggo.com.sg 12-Column Diagonal Staircase Cascade */}
+        <div className="mt-16 sm:mt-20">
+          <p className="mb-5 font-mono text-xs uppercase tracking-[0.12em] opacity-60">
             {isId
-              ? "03 / Tangga Alur Verifikasi (Zeggo Staircase Cascade)"
-              : "03 / Four-Stage Verification Cascade (Zeggo Staircase Grid)"}
+              ? "04 / Alur 4 Langkah dari Foto ke Kota 3D"
+              : "04 / 4-Step Journey from Photo to Living 3D Town"}
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
             {[
               {
                 step: "01",
                 colClass: "md:col-start-1 md:col-span-3",
-                title: isId ? "1. Pilih atau Cari Kota" : "1. Select or Geocode City",
-                detail: `${geo.city} (${geo.koppen.code}) · ${geo.ghiKwhM2Day} kWh/m²/d`,
+                title: isId ? "1. Pilih Kota Dunia" : "1. Pick Any World City",
+                detail: `${geo.city} (${geo.countryCode} · ${geo.koppen.code})`,
               },
               {
                 step: "02",
                 colClass: "md:col-start-4 md:col-span-3 md:mt-8",
-                title: isId ? "2. Pindai dengan SAM 3.1" : "2. Segment with SAM 3.1",
-                detail: `${housingCalc.solar.panelCountEst} PV Panels · ${housingCalc.rainwater.recommendedCisternLiters}L Cistern`,
+                title: isId ? "2. Pindai Kamera SAM 3.1" : "2. Scan with SAM 3.1",
+                detail: `${housingCalc.solar.panelCountEst} Solar Panels · ${housingCalc.rainwater.recommendedCisternLiters}L Tank`,
               },
               {
                 step: "03",
                 colClass: "md:col-start-7 md:col-span-3 md:mt-16",
-                title: isId ? "3. Sidang Dewan 3 Agen" : "3. Convene 3-Agent Council",
-                detail: `Locked SITE_BRIEF · ±3% Fact Guard`,
+                title: isId ? "3. Tanya 3 Pakar AI" : "3. Ask 3 AI Specialists",
+                detail: `Meta Muse Spark + Open-Weight`,
               },
               {
                 step: "04",
                 colClass: "md:col-start-10 md:col-span-3 md:mt-24",
-                title: isId ? "4. Bukti Fisik & Bangun Kota" : "4. Field Proof & Unlock Town",
-                detail: `64-Bit dHash Anti-Cheat · Lv.${level} Town`,
+                title: isId ? "4. Bangun Kota 3D Anda" : "4. Grow Your 3D Town",
+                detail: `Camera Proof · Level ${level} Eco-Town`,
               },
             ].map((st) => (
               <div
                 key={st.step}
-                className={`${st.colClass} rounded-[24px] bg-[#080808] p-6 text-white shadow-[inset_0_0_0_1.5px_#262626]`}
+                className={`${st.colClass} th-node-card rounded-[24px] bg-[#080808] p-5 sm:p-6 pl-6 text-white shadow-[inset_0_0_0_1.5px_#262626]`}
               >
+                <span className="th-map-bar bg-[#c6f432]" />
                 <span className="font-mono text-xs font-bold text-[#c6f432]">
                   STAGE {st.step}
                 </span>
@@ -1223,28 +1317,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. DOVV STUDIO 2-COLUMN WORK / CAPABILITY BENTO GRID (.work + .dovv-card) */}
-      <section className="mx-auto max-w-[1440px] px-5 pt-8 pb-28 sm:px-10">
-        <div className="flex flex-col items-start justify-between gap-4 pb-12 md:flex-row md:items-end">
+      {/* 7. CHAPTER 06: DOVV STUDIO 2-COLUMN WORK / CAPABILITY BENTO GRID */}
+      <section
+        id="chapter-tools"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-6 pb-24 sm:px-10"
+      >
+        <div className="flex flex-col items-start justify-between gap-4 pb-10 md:flex-row md:items-end">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               {isId
-                ? "04 / Empat Instrumen Spasial Inti"
-                : "04 / Four Core Spatial Instruments"}
+                ? "05 / Empat Alat Utama Verdara"
+                : "05 / Four Interactive Tools Ready to Try"}
             </p>
-            <h2 className="mt-2 text-[clamp(36px,5vw,72px)] font-normal leading-[1.05] tracking-[-0.05em]">
+            <h2 className="mt-2 text-[clamp(30px,4.8vw,68px)] font-normal leading-[1.05] tracking-[-0.04em]">
               {isId
-                ? "Dibangun dengan fisika nyata, bukan sekadar obrolan."
-                : "Built on deterministic physics, not chatbot guesswork."}
+                ? "Klik kartu mana pun untuk langsung mencoba fiturnya."
+                : "Click any card below to launch the interactive workspace."}
             </h2>
           </div>
           <Link
             href="/dashboard"
-            className="zeggo-btn inline-flex min-h-[48px] items-center gap-2 rounded-full border border-current/25 px-6 text-sm font-medium transition hover:bg-[#080808] hover:text-white"
+            className="zeggo-btn inline-flex min-h-[46px] items-center gap-2 rounded-full border border-current/25 px-6 text-xs sm:text-sm font-medium transition hover:bg-[#080808] hover:text-white"
           >
             <ZeggoRollText
               text={
-                isId ? "Jelajahi Semua Modul →" : "Explore all workspaces →"
+                isId ? "Buka Semua Fitur →" : "Open All Workspaces →"
               }
             />
           </Link>
@@ -1253,91 +1350,102 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {/* DOVV CARD 01: OMNI-SPATIAL LENS */}
           <Link href="/lens" className="dovv-card group">
-            <div className="dovv-card-media aspect-[16/10] p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-                <span>SAM 3.1 + MUSE SPARK + MUSE IMAGE</span>
+            <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
+                <span>META SAM 3.1 + MUSE SPARK + MUSE IMAGE</span>
                 <span className="rounded-full bg-[#c6f432]/15 px-3 py-0.5 text-[#c6f432]">
-                  IoU &lt; 0.85 Dedup
+                  {isId ? "Deteksi Kamera AI" : "AI Camera Scanner"}
                 </span>
               </div>
 
-              <div className="my-auto grid grid-cols-3 gap-3 py-4">
+              <div className="my-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                 <div className="rounded-2xl border border-[#1e9e5a]/50 bg-[#1e9e5a]/10 p-3.5">
                   <span className="font-mono text-[10px] text-[#c6f432]">
-                    #01 ROOF SLAB
+                    {isId ? "#01 ATAP SURYA" : "#01 ROOF SOLAR"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
-                    {housingCalc.solar.panelCountEst} Solar Panels
+                    {housingCalc.solar.panelCountEst} Panels
                   </p>
                   <p className="mt-0.5 font-mono text-xs text-[#aaa9ad]">
-                    Conf: 96% · {housingCalc.solar.kwp} kWp
+                    {housingCalc.solar.kwp} kWp Capacity
                   </p>
                 </div>
                 <div className="rounded-2xl border border-[#2a9dbd]/50 bg-[#2a9dbd]/10 p-3.5">
                   <span className="font-mono text-[10px] text-cyan-300">
-                    #02 DOWNSPOUT
+                    {isId ? "#02 PIPA AIR HUJAN" : "#02 RAIN PIPE"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
-                    {housingCalc.rainwater.recommendedCisternLiters}L Cistern
+                    {housingCalc.rainwater.recommendedCisternLiters}L Tank
                   </p>
                   <p className="mt-0.5 font-mono text-xs text-[#aaa9ad]">
-                    Conf: 94% · Runoff 0.85
+                    {isId ? "Tampung Air Bersih" : "Rainwater Storage"}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-[#e9a23b]/50 bg-[#e9a23b]/10 p-3.5">
                   <span className="font-mono text-[10px] text-amber-300">
-                    #03 CIRCULAR
+                    {isId ? "#03 DAUR ULANG" : "#03 RECYCLABLES"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
                     PET / Alu / PCB
                   </p>
                   <p className="mt-0.5 font-mono text-xs text-[#aaa9ad]">
-                    EPA WARM v16 Valued
+                    {isId ? "Nilai Tunai Lokal" : "Local Cash Value"}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-white/10 pt-3 font-mono text-xs text-[#c9c7c0]">
-                <span>6 Golden Demo Specimens Ready ($0.00 Cache)</span>
+                <span>
+                  {isId
+                    ? "6 Contoh Foto Siap Pakai (Instan & Gratis)"
+                    : "6 Ready-to-Test Photo Specimens ($0.00 Cache)"}
+                </span>
                 <span className="text-[#c6f432] group-hover:translate-x-1 transition-transform">
-                  Open Lens →
+                  {isId ? "Buka Lensa →" : "Open Lens →"}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-2">
-              <h3 className="text-2xl font-normal tracking-[-0.03em]">
-                {isId
-                  ? "Lensa Omni-Spasial SAM 3.1"
-                  : "Omni-Spatial Lens & Eco-Retrofit"}
-              </h3>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-normal tracking-[-0.03em]">
+                  {isId
+                    ? "1. Lensa Kamera AI (Meta SAM 3.1)"
+                    : "1. AI Camera Lens & Before/After Retrofit"}
+                </h3>
+                <p className="mt-1 text-xs text-[#aaa9ad]">
+                  {isId
+                    ? "Foto barang bekas, tanaman, atau atap rumah untuk melihat potensi uang dan energi."
+                    : "Scan recyclables, plants, or rooftops to see instant cash value and solar/water potential."}
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
-                <span className="dovv-chip">SAM 3.1 Masks</span>
-                <span className="dovv-chip">Before/After Curtain</span>
+                <span className="dovv-chip">Meta SAM 3.1</span>
+                <span className="dovv-chip">Muse Image</span>
               </div>
             </div>
           </Link>
 
           {/* DOVV CARD 02: 3D URBAN ROOF RADAR */}
           <Link href="/radar" className="dovv-card group">
-            <div className="dovv-card-media aspect-[16/10] p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-                <span>MAPLIBRE GL 3D (55° PITCH) · NREL PVWATTS V8</span>
+            <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
+                <span>3D MAP RADAR · SOLAR & RAIN CALCULATOR</span>
                 <span className="rounded-full bg-cyan-400/15 px-3 py-0.5 text-cyan-300">
-                  {geo.hubs.length} OSM Hubs
+                  {geo.hubs.length} {isId ? "Titik Daur Ulang" : "Local Hubs"}
                 </span>
               </div>
 
-              <div className="my-auto grid grid-cols-2 gap-3 py-4">
+              <div className="my-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#262930]">
                   <span className="font-mono text-[10px] text-[#aaa9ad]">
-                    ANNUAL SOLAR GENERATION
+                    {isId ? "LISTRIK SURYA PER TAHUN" : "YEARLY SOLAR POWER"}
                   </span>
                   <p className="mt-1 font-mono text-2xl font-semibold text-[#c6f432]">
                     {Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh
                   </p>
                   <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
-                    Saves{" "}
+                    {isId ? "Hemat " : "Saves "}
                     {formatCurrency(
                       housingCalc.solar.savingsYear,
                       housingCalc.solar.currency,
@@ -1348,7 +1456,7 @@ export default function LandingPage() {
                 </div>
                 <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#262930]">
                   <span className="font-mono text-[10px] text-[#aaa9ad]">
-                    MONSOON & RAIN HARVEST
+                    {isId ? "PANEN AIR HUJAN PER TAHUN" : "YEARLY RAIN HARVEST"}
                   </span>
                   <p className="mt-1 font-mono text-2xl font-semibold text-cyan-300">
                     {formatVolume(
@@ -1358,61 +1466,72 @@ export default function LandingPage() {
                     )}
                   </p>
                   <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
-                    {housingCalc.infiltration.bioporeUnits} biopore shafts ·{" "}
+                    {housingCalc.infiltration.bioporeUnits}{" "}
+                    {isId ? "lubang biopori" : "biopore pits"} ·{" "}
                     {geo.koppen.pAnnMm} mm/yr
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-white/10 pt-3 font-mono text-xs text-[#c9c7c0]">
-                <span>Nearest Hub: {geo.hubs[0]?.name}</span>
-                <span className="text-[#c6f432] group-hover:translate-x-1 transition-transform">
-                  Open 3D Radar →
+                <span className="truncate pr-2">
+                  {isId ? "Hub Terdekat: " : "Nearest Hub: "}
+                  {geo.hubs[0]?.name}
+                </span>
+                <span className="shrink-0 text-[#c6f432] group-hover:translate-x-1 transition-transform">
+                  {isId ? "Buka Radar 3D →" : "Open 3D Radar →"}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-2">
-              <h3 className="text-2xl font-normal tracking-[-0.03em]">
-                {isId
-                  ? "Radar Atap Urban 3D & Hub Sirkular"
-                  : "3D Urban Roof Radar & Circular Hubs"}
-              </h3>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-normal tracking-[-0.03em]">
+                  {isId
+                    ? "2. Peta Radar Atap 3D & Lokasi Bank Sampah"
+                    : "2. 3D Roof Radar & Recycling Map"}
+                </h3>
+                <p className="mt-1 text-xs text-[#aaa9ad]">
+                  {isId
+                    ? "Geser ukuran atap rumah Anda dan temukan lokasi pengumpulan daur ulang terdekat di peta 3D."
+                    : "Adjust your roof size slider and locate nearby recycling drop-off hubs on an interactive 3D map."}
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
-                <span className="dovv-chip">NREL PVWatts v8</span>
-                <span className="dovv-chip">OpenStreetMap</span>
+                <span className="dovv-chip">3D MapLibre</span>
+                <span className="dovv-chip">195+ Countries</span>
               </div>
             </div>
           </Link>
 
           {/* DOVV CARD 03: THE VERDARA SPECIALIST COUNCIL */}
           <Link href="/council" className="dovv-card group">
-            <div className="dovv-card-media aspect-[16/10] p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
+            <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
                 <span>META MUSE SPARK + OPEN-WEIGHT MODE</span>
                 <span className="rounded-full bg-amber-400/15 px-3 py-0.5 text-amber-300">
-                  ±3% Fact Validator
+                  {isId ? "Bebas Halusinasi Angka" : "Fact-Checked AI"}
                 </span>
               </div>
 
-              <div className="my-auto space-y-2.5 py-3">
+              <div className="my-4 space-y-2.5">
                 {[
                   {
                     agent: "01 / Dr. Flora",
-                    role: "Urban Botanist & Microclimate Ecologist",
-                    status: "Verified vs SITE_BRIEF",
+                    roleEn: "Plants, Cooling Trees & Rain Soak Pits",
+                    roleId: "Tanaman Peneduh & Resapan Air Biopori",
                     dot: "bg-[#1e9e5a]",
                   },
                   {
                     agent: "02 / Ir. Arka",
-                    role: "Building Solar & Hydrological Systems Architect",
-                    status: "Verified vs SITE_BRIEF",
+                    roleEn: "Rooftop Solar Panels & Rainwater Tank",
+                    roleId: "Panel Surya Atap & Tangki Air Hujan",
                     dot: "bg-[#2a9dbd]",
                   },
                   {
                     agent: "03 / Sirkula",
-                    role: "Circular Economy & Household Payback Strategist",
-                    status: "Verified vs SITE_BRIEF",
+                    roleEn: "Household Savings & Recycling Cashback",
+                    roleId: "Penghematan Tagihan & Uang Daur Ulang",
                     dot: "bg-[#e9a23b]",
                   },
                 ].map((ag) => (
@@ -1420,105 +1539,133 @@ export default function LandingPage() {
                     key={ag.agent}
                     className="flex items-center justify-between rounded-xl bg-[#111317] px-3.5 py-2.5 text-xs shadow-[inset_0_0_0_1px_#262930]"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span className={`h-2 w-2 rounded-full ${ag.dot}`} />
+                    <div className="flex items-center gap-2.5 truncate pr-2">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${ag.dot}`} />
                       <span className="font-mono font-semibold text-white">
                         {ag.agent}
                       </span>
-                      <span className="hidden text-[#aaa9ad] sm:inline">
-                        {ag.role}
+                      <span className="truncate text-[#aaa9ad]">
+                        {isId ? ag.roleId : ag.roleEn}
                       </span>
                     </div>
-                    <span className="font-mono text-[11px] text-[#c6f432]">
-                      {ag.status}
+                    <span className="shrink-0 font-mono text-[11px] text-[#c6f432]">
+                      Verified
                     </span>
                   </div>
                 ))}
               </div>
 
               <div className="flex items-center justify-between border-t border-white/10 pt-3 font-mono text-xs text-[#c9c7c0]">
-                <span>Supports meta-models/muse-spark-open</span>
+                <span>
+                  {isId
+                    ? "Mendukung Meta Muse Spark & Open-Weight"
+                    : "Powered by Meta Muse Spark & Open-Weight"}
+                </span>
                 <span className="text-[#c6f432] group-hover:translate-x-1 transition-transform">
-                  Convene Council →
+                  {isId ? "Mulai Diskusi →" : "Ask Council →"}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-2">
-              <h3 className="text-2xl font-normal tracking-[-0.03em]">
-                {isId
-                  ? "Sidang Dewan Spesialis Multi-Agen"
-                  : "The Verdara Specialist Council"}
-              </h3>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-normal tracking-[-0.03em]">
+                  {isId
+                    ? "3. Dewan 3 Pakar AI (Meta Muse Spark)"
+                    : "3. Three-Specialist AI Council (Meta Muse Spark)"}
+                </h3>
+                <p className="mt-1 text-xs text-[#aaa9ad]">
+                  {isId
+                    ? "Konsultasikan rumah Anda dengan 3 pakar AI yang memberi saran praktis sesuai cuaca kota Anda."
+                    : "Get a complete home upgrade plan from 3 AI specialists tailored to your city's weather and prices."}
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
-                <span className="dovv-chip">3 Specialist Agents</span>
-                <span className="dovv-chip">Zero Hallucination</span>
+                <span className="dovv-chip">Meta Muse Spark</span>
+                <span className="dovv-chip">3 AI Experts</span>
               </div>
             </div>
           </Link>
 
           {/* DOVV CARD 04: VERIFIABLE FIELD-ACTION PROOFS */}
           <Link href="/academy" className="dovv-card group">
-            <div className="dovv-card-media aspect-[16/10] p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-                <span>SAM 3.1 PROOF ENGINE · 64-BIT PERCEPTUAL DHASH</span>
+            <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
+                <span>META SAM 3.1 CAMERA PROOF · ANTI-CHEAT</span>
                 <span className="rounded-full bg-[#c6f432]/15 px-3 py-0.5 text-[#c6f432]">
-                  HTTP 409 Anti-Cheat
+                  +150 to +220 XP
                 </span>
               </div>
 
-              <div className="my-auto grid grid-cols-2 gap-3 py-4">
+              <div className="my-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#262930]">
                   <span className="font-mono text-[10px] text-[#c6f432]">
-                    STEP 01-02 / KÖPPEN PROTOCOL
+                    {isId ? "LANGKAH 1-2 / PANDUAN PRAKTIS" : "STEP 1-2 / QUICK GUIDE"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
-                    Climate-Adaptive Field Gate
+                    {isId
+                      ? "Panduan Sesuai Cuaca Kota"
+                      : "Weather-Matched Missions"}
                   </p>
                   <p className="mt-1 text-xs text-[#aaa9ad]">
-                    Adapts biopore depth, cistern sizing, and sorting rules to
-                    Köppen {geo.koppen.code}.
+                    {isId
+                      ? `Panduan singkat memilah sampah, membuat kompos, dan panen air untuk iklim ${geo.koppen.code}.`
+                      : `Short, practical guides for sorting waste, composting, and saving water in ${geo.koppen.code} climates.`}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#262930]">
                   <span className="font-mono text-[10px] text-amber-300">
-                    STEP 03 / SAM 3.1 PROOF SCAN
+                    {isId ? "LANGKAH 3 / BUKTI FOTO AI" : "STEP 3 / AI PHOTO PROOF"}
                   </span>
                   <p className="mt-1 font-sans text-base font-semibold text-white">
-                    Unlocks 3D Town Modules
+                    {isId
+                      ? "Buka Bangunan Baru di Kota 3D"
+                      : "Unlock New 3D Town Buildings"}
                   </p>
                   <p className="mt-1 text-xs text-[#aaa9ad]">
-                    Verifies physical objects in camera photos and blocks
-                    duplicate dHash uploads.
+                    {isId
+                      ? "Meta SAM 3.1 memeriksa foto aksi nyata Anda dan membuka bangunan baru di Kota 3D."
+                      : "Meta SAM 3.1 verifies your real-world photo and unlocks new structures in your 3D Town."}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-white/10 pt-3 font-mono text-xs text-[#c9c7c0]">
-                <span>4 Field Tracks · +150 to +220 Eco-XP per proof</span>
+                <span>
+                  {isId
+                    ? "4 Misi Lapangan Siap Dicoba"
+                    : "4 Hands-On Eco Missions Ready"}
+                </span>
                 <span className="text-[#c6f432] group-hover:translate-x-1 transition-transform">
-                  Verify Field Proof →
+                  {isId ? "Mulai Misi →" : "Start Mission →"}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-2">
-              <h3 className="text-2xl font-normal tracking-[-0.03em]">
-                {isId
-                  ? "Verifikasi Bukti Fisik Akademi"
-                  : "Verifiable Field-Action Proofs"}
-              </h3>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-normal tracking-[-0.03em]">
+                  {isId
+                    ? "4. Akademi & Verifikasi Bukti Foto Nyata"
+                    : "4. Field Missions & Camera Proof Verifier"}
+                </h3>
+                <p className="mt-1 text-xs text-[#aaa9ad]">
+                  {isId
+                    ? "Selesaikan misi singkat di rumah, buktikan dengan foto kamera, dan naikkan level Kota 3D Anda."
+                    : "Complete simple home eco-missions, verify with a photo, and level up your 3D Living Town."}
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
-                <span className="dovv-chip">SAM 3.1 Verifier</span>
-                <span className="dovv-chip">64-Bit dHash</span>
+                <span className="dovv-chip">SAM 3.1 Proof</span>
+                <span className="dovv-chip">dHash Anti-Cheat</span>
               </div>
             </div>
           </Link>
         </div>
       </section>
 
-      {/* 7. DOVV STUDIO SCROLL-DRIVEN CURVED DOME DARK SECTION + ERA5 CHART & TOWNHOUSE GRADED LEDGER */}
-      <section className="relative mt-4 w-full">
+      {/* 8. CHAPTER 07: SCROLL-DRIVEN CURVED DOME DARK SECTION + ERA5 CHART + META HACKATHON JUDGING ALIGNMENT */}
+      <section id="chapter-climate" className="scroll-mt-16 relative mt-4 w-full">
         {/* DOVV Studio Scroll-Driven Curved Dome Top Edge (svg.dome) */}
         <svg
           ref={domeRef}
@@ -1529,37 +1676,41 @@ export default function LandingPage() {
             transform: `translateY(1px) scaleY(${domeCurveScale.toFixed(3)})`,
             transformOrigin: "bottom center",
           }}
-          className="block h-[42px] w-full fill-[#080808] transition-transform duration-150 sm:h-[76px]"
+          className="block h-[36px] w-full fill-[#080808] transition-transform duration-150 sm:h-[72px]"
         >
           <path d="M0 100 Q50 -95 100 100 Z" />
         </svg>
 
-        <div className="bg-[#080808] px-5 pt-16 pb-28 text-white sm:px-10 sm:pt-24">
+        <div className="bg-[#080808] px-4 pt-14 pb-28 text-white sm:px-10 sm:pt-22">
           <div className="mx-auto max-w-[1440px] space-y-20">
             {/* Part A: ERA5 10-Year Monthly Climatology Bar Chart */}
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
               <div className="space-y-4 lg:col-span-5">
                 <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
-                  05 / ERA5 10-Year Climatology ({geo.lat.toFixed(2)}°,{" "}
-                  {geo.lng.toFixed(2)}°)
+                  06 / {isId ? "Data Cuaca 12 Bulan" : "12-Month Weather Data"} ·{" "}
+                  {geo.city} ({geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}°)
                 </p>
-                <h2 className="text-3xl font-normal leading-[1.08] tracking-[-0.04em] sm:text-5xl">
+                <h2 className="text-2xl font-normal leading-[1.1] tracking-[-0.04em] sm:text-5xl">
                   {isId
-                    ? `Bagaimana curah hujan dan suhu di ${geo.city} menentukan ukuran sisterna & pendinginan atap?`
-                    : `How do rainfall and temperature in ${geo.city} shape your cistern & solar roof?`}
+                    ? `Bagaimana hujan dan panas di ${geo.city} menentukan ukuran tangki air & panel surya Anda?`
+                    : `How rainfall and sunshine in ${geo.city} size your water tank & solar roof.`}
                 </h2>
-                <p className="text-sm leading-relaxed text-[#aaa9ad]">
+                <p className="text-xs sm:text-sm leading-relaxed text-[#aaa9ad]">
                   {isId ? geo.koppen.descriptionId : geo.koppen.descriptionEn}
                 </p>
                 <div className="grid grid-cols-2 gap-3 pt-2 font-mono text-xs">
                   <div className="rounded-2xl bg-[#141414] p-4 shadow-[inset_0_0_0_1px_#242424]">
-                    <span className="text-[#aaa9ad]">ANNUAL RAINFALL</span>
+                    <span className="text-[#aaa9ad]">
+                      {isId ? "TOTAL HUJAN / TAHUN" : "ANNUAL RAINFALL"}
+                    </span>
                     <p className="mt-1 text-xl font-bold text-white">
                       {geo.koppen.pAnnMm} mm/yr
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#141414] p-4 shadow-[inset_0_0_0_1px_#242424]">
-                    <span className="text-[#aaa9ad]">SOLAR IRRADIANCE</span>
+                    <span className="text-[#aaa9ad]">
+                      {isId ? "SINAR MATAHARI HARIAN" : "DAILY SUNSHINE (GHI)"}
+                    </span>
                     <p className="mt-1 text-xl font-bold text-[#c6f432]">
                       {geo.ghiKwhM2Day} kWh/m²/d
                     </p>
@@ -1567,16 +1718,20 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="rounded-[28px] bg-[#121212] p-6 shadow-[inset_0_0_0_1px_#242424] lg:col-span-7">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-6 font-mono text-xs text-[#aaa9ad]">
+              <div className="overflow-x-auto rounded-[28px] bg-[#121212] p-4 sm:p-6 shadow-[inset_0_0_0_1px_#242424] lg:col-span-7">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-6 font-mono text-[11px] sm:text-xs text-[#aaa9ad]">
                   <span>
-                    12-MONTH ERA5 REANALYSIS · {geo.city.toUpperCase()} (
-                    {geo.koppen.code})
+                    12-MONTH ERA5 WEATHER · {geo.city.toUpperCase()} (
+                    {geo.countryCode} · {geo.koppen.code})
                   </span>
-                  <span>Bars: Rainfall (mm) · Top: Mean Temp</span>
+                  <span>
+                    {isId
+                      ? "Batang: Curah Hujan (mm) · Atas: Suhu Rata-Rata"
+                      : "Bars: Rainfall (mm) · Top: Avg Temp"}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-12 items-end gap-2 h-52 pt-6">
+                <div className="grid min-w-[460px] grid-cols-12 items-end gap-1.5 sm:gap-2 h-52 pt-6">
                   {geo.monthlyPrecipMm.map((precipMm: number, idx: number) => {
                     const tempC = geo.monthlyTempC[idx] ?? 20;
                     const barHeightPct = Math.max(
@@ -1588,7 +1743,7 @@ export default function LandingPage() {
                         key={MONTHS_SHORT[idx]}
                         className="flex h-full flex-col items-center justify-end gap-1.5"
                       >
-                        <span className="font-mono text-[10px] text-[#c9c7c0] tabular-nums">
+                        <span className="font-mono text-[9px] sm:text-[10px] text-[#c9c7c0] tabular-nums">
                           {formatTemp(tempC, units)}
                         </span>
                         <div className="relative flex w-full flex-1 items-end justify-center rounded-lg bg-[#1c1c1c] p-0.5">
@@ -1597,10 +1752,10 @@ export default function LandingPage() {
                             className="w-full rounded-md bg-[#c6f432] transition-all duration-300"
                           />
                         </div>
-                        <span className="font-mono text-[10px] text-[#aaa9ad] tabular-nums">
+                        <span className="font-mono text-[9px] sm:text-[10px] text-[#aaa9ad] tabular-nums">
                           {precipMm}
                         </span>
-                        <span className="font-mono text-[10px] font-bold text-white">
+                        <span className="font-mono text-[9px] sm:text-[10px] font-bold text-white">
                           {MONTHS_SHORT[idx]}
                         </span>
                       </div>
@@ -1610,55 +1765,102 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Part B: Townhouse.dev Plain-Words Graded Ledger ("What it does") */}
+            {/* Part B: Meta Hackathon Judging & AI Stack Alignment ("Why Verdara Matters") */}
             <div className="border-t border-[#222222] pt-16">
-              <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#aaa9ad]">
-                06 / Townhouse Health & 7-Layer Credit Shield
-              </p>
-              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-[24px] bg-[#121212] p-6 shadow-[inset_0_0_0_1px_#242424]">
+              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
+                    07 /{" "}
+                    {isId
+                      ? "Arsitektur Meta AI & Kriteria Penjurian Hackathon"
+                      : "Meta AI Stack & Hackathon Judging Alignment"}
+                  </p>
+                  <h3 className="mt-2 text-2xl sm:text-4xl font-normal tracking-[-0.03em]">
+                    {isId
+                      ? "Mengapa Verdara menggabungkan Meta SAM 3.1, Muse Spark, dan Fisika Nyata."
+                      : "How Verdara combines Meta SAM 3.1, Muse Spark, and real-world impact."}
+                  </h3>
+                </div>
+                <Link
+                  href="/settings"
+                  className="zeggo-btn inline-flex min-h-[42px] items-center rounded-full bg-white/10 px-4 font-mono text-xs text-[#c6f432] hover:bg-white/20"
+                >
+                  <ZeggoRollText
+                    text={`$150 Meta API Shield ($${remainingCredit} Ready) →`}
+                  />
+                </Link>
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                  <span className="th-map-bar bg-[#1e9e5a]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#1e9e5a]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#1e9e5a]" />
-                    <span>GRADE: OPTIMAL · NREL PVWATTS V8</span>
+                    <span>01 · META SAM 3.1 VISION</span>
                   </div>
-                  <h3 className="mt-3 text-xl font-medium">
-                    Your whole roof & water loop in plain words
-                  </h3>
+                  <h4 className="mt-3 text-lg font-medium">
+                    {isId
+                      ? "Segmentasi Objek & Bukti Aksi"
+                      : "Zero-Shot Spatial Segmentation"}
+                  </h4>
                   <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
-                    Every solar panel, downspout, cistern liter, and biopore
-                    shaft is computed deterministically from your city&apos;s
-                    latitude and 10-year ERA5 rainfall.
+                    {isId
+                      ? "Memetakan poligon atap surya, talang air, dan barang daur ulang dari foto kamera serta memverifikasi bukti foto misi lapangan."
+                      : "Segments solar roof slabs, rainwater pipes, and recyclable items from user photos and verifies real-world field proofs."}
                   </p>
                 </div>
 
-                <div className="rounded-[24px] bg-[#121212] p-6 shadow-[inset_0_0_0_1px_#242424]">
-                  <div className="flex items-center gap-2 font-mono text-xs text-[#e9a23b]">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#e9a23b]" />
-                    <span>GRADE: PROTECTED · $150 META API POOL</span>
-                  </div>
-                  <h3 className="mt-3 text-xl font-medium">
-                    Know before AI credits or cisterns run out
-                  </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
-                    7-Layer AI Credit Shield locks a $35 Judge Reserve and
-                    resolves all 6 Golden Demo Specimens in &lt;50ms at $0.00
-                    via SHA-256 + 64-bit dHash caching (${remainingCredit} cap
-                    remaining).
-                  </p>
-                </div>
-
-                <div className="rounded-[24px] bg-[#121212] p-6 shadow-[inset_0_0_0_1px_#242424]">
+                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                  <span className="th-map-bar bg-[#2a9dbd]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#2a9dbd]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#2a9dbd]" />
-                    <span>GRADE: VERIFIED · ±3% FACT GUARD</span>
+                    <span>02 · META MUSE SPARK</span>
                   </div>
-                  <h3 className="mt-3 text-xl font-medium">
-                    Fixed, proven, and verified in the field
-                  </h3>
+                  <h4 className="mt-3 text-lg font-medium">
+                    {isId
+                      ? "Dewan 3 Pakar AI + Open-Weight"
+                      : "3-Agent Council + Open-Weight"}
+                  </h4>
                   <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
-                    Council agents are cross-checked against locked SITE_BRIEF
-                    metrics, and field actions require Meta SAM 3.1 concept
-                    masks before unlocking 3D town structures.
+                    {isId
+                      ? "Menjalankan 3 agen spesialis (Dr. Flora, Ir. Arka, Sirkula) dengan pengawas fakta ±3% terhadap SITE_BRIEF serta dukungan muse-spark-open."
+                      : "Orchestrates 3 specialist agents (Dr. Flora, Ir. Arka, Sirkula) with a ±3% fact validator against SITE_BRIEF and muse-spark-open support."}
+                  </p>
+                </div>
+
+                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                  <span className="th-map-bar bg-[#c6f432]" />
+                  <div className="flex items-center gap-2 font-mono text-xs text-[#c6f432]">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#c6f432]" />
+                    <span>03 · META MUSE IMAGE</span>
+                  </div>
+                  <h4 className="mt-3 text-lg font-medium">
+                    {isId
+                      ? "Visualisasi Sebelum / Sesudah"
+                      : "Before / After Eco-Retrofit"}
+                  </h4>
+                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+                    {isId
+                      ? "Menampilkan perbandingan interaktif sebelum dan sesudah pemasangan panel surya, tangki air hujan, dan taman resapan."
+                      : "Renders interactive Before/After architectural retrofits showing solar arrays, rainwater cisterns, and native rain gardens."}
+                  </p>
+                </div>
+
+                <div className="th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                  <span className="th-map-bar bg-[#e9a23b]" />
+                  <div className="flex items-center gap-2 font-mono text-xs text-[#e9a23b]">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#e9a23b]" />
+                    <span>04 · 7-LAYER CREDIT SHIELD</span>
+                  </div>
+                  <h4 className="mt-3 text-lg font-medium">
+                    {isId
+                      ? "Perisai Kredit $150 & Demo Instan"
+                      : "$150 API Shield & <50ms Demo"}
+                  </h4>
+                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+                    {isId
+                      ? `Mengunci cadangan $35 khusus juri dan menyajikan 6 spesimen demo dalam <50ms ($0.00) melalui cache SHA-256 + dHash ($${remainingCredit} tersisa).`
+                      : `Locks a $35 Judge Reserve and serves all 6 Golden Demo Specimens in <50ms at $0.00 via SHA-256 + dHash caching ($${remainingCredit} left).`}
                   </p>
                 </div>
               </div>
@@ -1667,20 +1869,20 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. DOVV STUDIO GIANT ARCHITECTURAL FOOTER (.footer + .hello-text + 4-Cell Grid) */}
+      {/* 9. DOVV STUDIO GIANT ARCHITECTURAL FOOTER (.footer + .hello-text + 4-Cell Grid) */}
       <footer
         className={`w-full overflow-clip pb-28 ${
           isLight ? "bg-[#f5f5f3] text-[#0b0b0b]" : "bg-[#0b0c0e] text-white"
         }`}
       >
-        <div className="mx-auto max-w-[1440px] px-4 pt-16 pb-6">
+        <div className="mx-auto max-w-[1440px] px-4 pt-14 pb-6">
           <Link
             href="/dashboard"
             className="block select-none text-center transition-opacity hover:opacity-85"
           >
             <DovvInteractiveWordmark
               lines={["VERDARA TOWN"]}
-              className="text-center text-[18.2vw] leading-[0.85]"
+              className="text-center text-[17.5vw] leading-[0.85]"
             />
           </Link>
         </div>
@@ -1690,17 +1892,27 @@ export default function LandingPage() {
             isLight ? "border-black/15" : "border-white/15"
           }`}
         >
-          {/* Cell 1: Direct Action */}
+          {/* Cell 1: Brand & Judge Demo Action */}
           <div
-            className={`flex flex-col gap-3.5 border-b p-8 xl:border-b-0 xl:border-r ${
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
-            <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
-              01 / Interactive Demo Specimen
-            </span>
-            <p className="text-2xl font-medium tracking-[-0.03em]">
-              Menlo Park, California (US-CA · Csb)
+            <div className="flex items-center gap-3">
+              <VerdaraLogo size={40} />
+              <div>
+                <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
+                  01 / Judge Quick-Start
+                </span>
+                <p className="text-lg font-semibold tracking-tight">
+                  Verdara Spatial Eco-Town
+                </p>
+              </div>
+            </div>
+            <p className="text-xs sm:text-sm opacity-80">
+              {isId
+                ? "Klik tombol di bawah untuk langsung masuk ke Kota 3D Level 5 dengan seluruh 6 bangunan ekologis terbuka."
+                : "Click below to launch the Level 5 Judge Demo Town with all 6 ecological structures unlocked."}
             </p>
             <button
               type="button"
@@ -1708,7 +1920,7 @@ export default function LandingPage() {
                 loginAsJudgeDemo();
                 router.push("/dashboard");
               }}
-              className="zeggo-btn mt-2 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#080808] px-5 text-sm font-medium text-white transition hover:bg-[#222]"
+              className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#080808] px-5 text-sm font-medium text-white transition hover:bg-[#222]"
             >
               <ZeggoRollText text="Launch Lv.5 Judge Town ↗" />
             </button>
@@ -1716,7 +1928,7 @@ export default function LandingPage() {
 
           {/* Cell 2: Spatial Workspaces (Archivo Condensed Uppercase Links) */}
           <div
-            className={`flex flex-col gap-3.5 border-b p-8 xl:border-b-0 xl:border-r ${
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
@@ -1746,30 +1958,32 @@ export default function LandingPage() {
 
           {/* Cell 3: Scientific Citations */}
           <div
-            className={`flex flex-col gap-3.5 border-b p-8 md:border-b-0 xl:border-r ${
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 md:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
-              03 / Physics & AI Stack
+              03 / Meta AI & Science Stack
             </span>
             <ul className="space-y-1.5 text-sm opacity-80">
               <li>Meta SAM 3.1 Concept Segmentation</li>
               <li>Meta Muse Spark &amp; muse-spark-open</li>
+              <li>Meta Muse Image Eco-Retrofit</li>
               <li>NREL PVWatts v8 Rooftop Solar Model</li>
               <li>Open-Meteo ERA5 10-Yr Climatology</li>
-              <li>Beck et al. (2018) Köppen-Geiger 1km</li>
               <li>US EPA WARM v16 Material Factors</li>
             </ul>
           </div>
 
           {/* Cell 4: Live Jurisdiction & Status */}
-          <div className="flex flex-col justify-between gap-4 p-8">
+          <div className="flex flex-col justify-between gap-4 p-6 sm:p-8">
             <div className="space-y-2">
               <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
-                04 / Active Telemetry Node
+                04 / Active World City
               </span>
-              <p className="dovv-wordmark text-3xl">{geo.city}</p>
+              <p className="dovv-wordmark text-3xl">
+                {geo.city} ({geo.countryCode})
+              </p>
               <div className="flex items-center gap-2 text-sm opacity-75">
                 <span className="h-2 w-2 rounded-full bg-[#16c847]" />
                 <span>
@@ -1780,7 +1994,7 @@ export default function LandingPage() {
             </div>
 
             <p className="font-mono text-xs opacity-55">
-              Verdara Spatial Studio · Zero External GLB · 60 FPS WebGL
+              Verdara Spatial Studio · 195+ Countries · 60 FPS WebGL
             </p>
           </div>
         </div>
@@ -1833,7 +2047,7 @@ export default function LandingPage() {
           <Link
             key={item.href}
             href={item.href}
-            className={`zeggo-btn flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 text-xs sm:text-sm font-medium transition ${
+            className={`zeggo-btn flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-3.5 sm:px-4 text-xs sm:text-sm font-medium transition ${
               item.active
                 ? "bg-[#c6f432] font-semibold text-[#080808]"
                 : "text-white hover:bg-[#222222]"

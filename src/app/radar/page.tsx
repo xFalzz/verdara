@@ -12,6 +12,7 @@ import {
 } from "@/lib/science/units";
 import type { CircularHub } from "@/lib/science/presets";
 import type { MaterialCode } from "@/lib/science/valuation";
+import { WorldCityExplorer } from "@/components/ui/InteractiveEffects";
 
 const Radar3DMap = dynamic(() => import("@/components/radar/Radar3DMap"), {
   ssr: false,
@@ -54,6 +55,7 @@ export default function RadarPage() {
     geo.hubs[0] ?? null
   );
   const [savedToast, setSavedToast] = useState<boolean>(false);
+  const [showWorldPicker, setShowWorldPicker] = useState<boolean>(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -67,7 +69,10 @@ export default function RadarPage() {
     );
   }, [geo.hubs, selectedMaterialFilter]);
 
-  const activeHub = selectedHub ?? filteredHubs[0] ?? null;
+  const activeHub =
+    selectedHub && filteredHubs.some((h) => h.id === selectedHub.id)
+      ? selectedHub
+      : filteredHubs[0] ?? null;
 
   const handleBuildingClickOnMap = (
     _lat: number,
@@ -105,9 +110,24 @@ export default function RadarPage() {
             </p>
             <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
               {isId
-                ? `Peta Bangunan 3D & Kalkulator Fisika Atap: ${geo.city}`
-                : `3D Extruded Urban Map & Roof Physics Calculator: ${geo.city}`}
+                ? `Peta Bangunan 3D & Kalkulator Fisika Atap: ${geo.city} (${geo.countryCode})`
+                : `3D Extruded Urban Map & Roof Physics Calculator: ${geo.city} (${geo.countryCode})`}
             </h1>
+            <button
+              type="button"
+              onClick={() => setShowWorldPicker(!showWorldPicker)}
+              className="mt-2 inline-flex min-h-[38px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 py-1.5 font-mono text-xs font-semibold text-[#c6f432] transition hover:bg-[#1a1a1a]"
+            >
+              <span>
+                {showWorldPicker
+                  ? isId
+                    ? "Tutup Penjelajah Negara ×"
+                    : "Close World City Picker ×"
+                  : isId
+                  ? "🌍 Pilih / Cari Kota & Negara Lain (195+ Negara)"
+                  : "🌍 Switch to Any World City / Country (195+ Countries)"}
+              </span>
+            </button>
           </div>
 
           <div
@@ -142,6 +162,10 @@ export default function RadarPage() {
             })}
           </div>
         </div>
+
+        {showWorldPicker && (
+          <WorldCityExplorer isLight={isLight} isId={isId} compact />
+        )}
 
         {/* Main 7/5 Split: 3D MapLibre Viewport + Deterministic Roof Physics Drawer */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

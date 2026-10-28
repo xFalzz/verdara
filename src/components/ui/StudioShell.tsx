@@ -5,11 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
-  findNearestPresetByCoords,
+  WORLD_CITY_CATALOG,
   type CityPreset,
 } from "@/lib/science/presets";
 import { formatTemp } from "@/lib/science/units";
-import { ZeggoRollText } from "@/components/ui/InteractiveEffects";
+import { VerdaraLogo, ZeggoRollText } from "@/components/ui/InteractiveEffects";
 
 const CITY_SPECIMENS: {
   id: CityPreset["id"];
@@ -94,16 +94,11 @@ export default function StudioShell({
       const data = await res.json();
       if (data?.results?.[0]) {
         const hit = data.results[0];
-        const nearestId = findNearestPresetByCoords(
-          hit.latitude,
-          hit.longitude
-        );
-        teleportToCity(nearestId);
         setCustomCoordinates(
           hit.latitude,
           hit.longitude,
           `${hit.name}${hit.admin1 ? `, ${hit.admin1}` : ""}`,
-          hit.country_code || "US"
+          (hit.country_code || "XX").toUpperCase()
         );
         setSearchQuery("");
       }
@@ -140,22 +135,7 @@ export default function StudioShell({
             href="/"
             className="group flex min-h-[44px] items-center gap-2.5"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#080808] text-[#c6f432] shadow-[inset_0_0_0_1px_#2a2a2a]">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-9.5Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
+            <VerdaraLogo size={38} />
             <span className="dovv-wordmark text-2xl tracking-tight">
               VERDARA
             </span>
@@ -251,20 +231,33 @@ export default function StudioShell({
                     : "01 / City Teleport & Coordinate Search"}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {CITY_SPECIMENS.map((c) => {
-                    const active = activePresetId === c.id;
+                  {WORLD_CITY_CATALOG.slice(0, 10).map((c) => {
+                    const active =
+                      Math.abs(geo.lat - c.lat) < 0.25 &&
+                      Math.abs(geo.lng - c.lng) < 0.25;
                     return (
                       <button
-                        key={c.id}
+                        key={c.slug}
                         type="button"
-                        onClick={() => teleportToCity(c.id)}
-                        className={`min-h-[40px] cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+                        onClick={() => {
+                          if (c.presetId) {
+                            teleportToCity(c.presetId);
+                          } else {
+                            setCustomCoordinates(
+                              c.lat,
+                              c.lng,
+                              c.city,
+                              c.countryCode
+                            );
+                          }
+                        }}
+                        className={`min-h-[38px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition ${
                           active
                             ? "bg-[#c6f432] font-semibold text-[#111111]"
                             : "bg-[#171717] text-[#c9c7c0] shadow-[inset_0_0_0_1px_#2a2a2a] hover:text-white"
                         }`}
                       >
-                        {c.label} ({c.iso} · {c.koppen})
+                        {c.city} ({c.countryCode})
                       </button>
                     );
                   })}
