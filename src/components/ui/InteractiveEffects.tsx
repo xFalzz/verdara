@@ -11,12 +11,13 @@ import { calculateHousingFootprint } from "@/lib/science/calculator";
 import { formatCurrency, formatTemp } from "@/lib/science/units";
 
 /**
- * 0. VERDARA BESPOKE ARCHITECTURAL BRAND MONOGRAM (<VerdaraLogo />)
- * Modernist architectural "V" monolith:
- * - Left Cantilever: Living architectural concrete & timber wing (Rich Emerald #14733f -> #1e9e5a)
- * - Right Cantilever: Solar photovoltaic glass wing (Electric Lime #c6f432 -> #e2ff54)
- * - Central Spatial Aperture: Diamond light well with core geo/solar node (#0a0b0d light well, #c6f432 core)
- * - Zero generic clip-art: High-precision Swiss/Bauhaus architectural vector craftsmanship.
+ * 0. VERDARA BESPOKE ARCHITECTURAL BRAND LOGO (<VerdaraLogo />)
+ * Modernist architectural "V" spatial prism:
+ * - Left Cantilever: Living architectural timber & micro-climate wing (Forest Emerald #1e9e5a -> #0e562e)
+ * - Right Cantilever: Solar photovoltaic glass wing with precision louvers (Electric Lime #e8ff66 -> #b6eb1a)
+ * - Chamfer Bevels: Dual 3D isometric facets catching ambient light
+ * - Central Spatial Aperture: Diamond light well with living water node (#2a9dbd)
+ * - Zero generic clip-art: High-precision Swiss/Bauhaus architectural vector craftsmanship
  */
 export function VerdaraLogo({
   size = 38,
@@ -25,10 +26,9 @@ export function VerdaraLogo({
   size?: number;
   className?: string;
 }) {
-  const gradId = React.useId().replace(/:/g, "");
   return (
     <span
-      className={`th-logo-mark inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#090a0d] shadow-[inset_0_0_0_1.5px_#23262d,0_6px_20px_-6px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-105 ${className}`}
+      className={`th-logo-mark inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#08090c] shadow-[inset_0_0_0_1.5px_#232730,0_8px_20px_-6px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-105 ${className}`}
       style={{ width: size, height: size }}
     >
       <svg
@@ -40,71 +40,107 @@ export function VerdaraLogo({
       >
         <defs>
           <linearGradient
-            id={`v-emerald-${gradId}`}
-            x1="14"
-            y1="16"
+            id="vd-emerald"
+            x1="15"
+            y1="17"
             x2="32"
             y2="49"
             gradientUnits="userSpaceOnUse"
           >
             <stop offset="0%" stopColor="#1e9e5a" />
-            <stop offset="100%" stopColor="#106337" />
+            <stop offset="100%" stopColor="#0e562e" />
           </linearGradient>
           <linearGradient
-            id={`v-lime-${gradId}`}
-            x1="50"
-            y1="16"
+            id="vd-lime"
+            x1="49"
+            y1="17"
             x2="32"
             y2="49"
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0%" stopColor="#e2ff54" />
-            <stop offset="100%" stopColor="#b2e81e" />
+            <stop offset="0%" stopColor="#e8ff66" />
+            <stop offset="100%" stopColor="#b6eb1a" />
+          </linearGradient>
+          <linearGradient
+            id="vd-bevel-l"
+            x1="15"
+            y1="13"
+            x2="30"
+            y2="17"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#2ee07e" />
+            <stop offset="100%" stopColor="#1a8b4e" />
+          </linearGradient>
+          <linearGradient
+            id="vd-bevel-r"
+            x1="49"
+            y1="13"
+            x2="34"
+            y2="17"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#c6f432" />
           </linearGradient>
         </defs>
 
-        {/* Left Architectural Structural Blade (Emerald Wing) */}
+        {/* Left Cantilever Wing: Living Architecture (Emerald) */}
         <path
-          d="M14 16 L25.5 16 L32 38 L32 49 L14 16 Z"
-          fill={`url(#v-emerald-${gradId})`}
+          d="M15 17 L26 17 L32 35.5 L32 49 L15 17 Z"
+          fill="url(#vd-emerald)"
         />
+        {/* Left Chamfer Bevel */}
+        <path d="M15 17 L19 13 L30 13 L26 17 Z" fill="url(#vd-bevel-l)" />
 
-        {/* Right Cantilever Solar Wing (Electric Lime Facet) */}
+        {/* Right Cantilever Wing: Solar Kinetic (Lime) */}
         <path
-          d="M50 16 L38.5 16 L32 38 L32 49 L50 16 Z"
-          fill={`url(#v-lime-${gradId})`}
+          d="M49 17 L38 17 L32 35.5 L32 49 L49 17 Z"
+          fill="url(#vd-lime)"
         />
+        {/* Right Chamfer Bevel */}
+        <path d="M49 17 L45 13 L34 13 L38 17 Z" fill="url(#vd-bevel-r)" />
 
-        {/* Central Spatial Aperture / Light Well (Precision Diamond) */}
+        {/* Central Spatial Aperture (Diamond Light Well) */}
         <path
-          d="M32 23 L37 32.5 L32 42 L27 32.5 Z"
-          fill="#090a0d"
+          d="M32 21 L37.5 29 L32 37 L26.5 29 Z"
+          fill="#08090c"
           stroke="#c6f432"
-          strokeWidth="1.5"
+          strokeWidth="1.2"
         />
 
-        {/* Solar Micro-Grid Slits on Right Wing */}
+        {/* Photovoltaic Precision Louver Cuts on Right Solar Wing */}
         <line
           x1="39"
-          y1="21"
-          x2="46"
-          y2="21"
-          stroke="#090a0d"
-          strokeWidth="1.75"
+          y1="22.5"
+          x2="45.5"
+          y2="22.5"
+          stroke="#08090c"
+          strokeWidth="1.5"
           strokeLinecap="round"
         />
         <line
-          x1="36"
-          y1="27"
+          x1="36.5"
+          y1="28"
           x2="43"
-          y2="27"
-          stroke="#090a0d"
-          strokeWidth="1.75"
+          y2="28"
+          stroke="#08090c"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <line
+          x1="34"
+          y1="33.5"
+          x2="39.5"
+          y2="33.5"
+          stroke="#08090c"
+          strokeWidth="1.5"
           strokeLinecap="round"
         />
 
-        {/* Core Living Water & Energy Node */}
-        <circle cx="32" cy="32.5" r="2.2" fill="#c6f432" />
+        {/* Living Water Node */}
+        <circle cx="32" cy="29" r="2.8" fill="#2a9dbd" />
+        <circle cx="31.2" cy="28.2" r="1.1" fill="#ffffff" />
       </svg>
     </span>
   );

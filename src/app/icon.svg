@@ -1,31 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="v-emerald" x1="14" y1="16" x2="32" y2="49" gradientUnits="userSpaceOnUse">
+    <linearGradient id="vd-fav-emerald" x1="15" y1="17" x2="32" y2="49" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#1e9e5a" />
-      <stop offset="100%" stop-color="#106337" />
+      <stop offset="100%" stop-color="#0e562e" />
     </linearGradient>
-    <linearGradient id="v-lime" x1="50" y1="16" x2="32" y2="49" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#e2ff54" />
-      <stop offset="100%" stop-color="#b2e81e" />
+    <linearGradient id="vd-fav-lime" x1="49" y1="17" x2="32" y2="49" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e8ff66" />
+      <stop offset="100%" stop-color="#b6eb1a" />
+    </linearGradient>
+    <linearGradient id="vd-fav-bevel-l" x1="15" y1="13" x2="30" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2ee07e" />
+      <stop offset="100%" stop-color="#1a8b4e" />
+    </linearGradient>
+    <linearGradient id="vd-fav-bevel-r" x1="49" y1="13" x2="34" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#c6f432" />
     </linearGradient>
   </defs>
 
-  <rect width="64" height="64" rx="18" fill="#090a0d" />
-  <rect x="1.5" y="1.5" width="61" height="61" rx="16.5" stroke="#23262d" stroke-width="1.5" />
+  <!-- Obsidian Squircle Base -->
+  <rect width="64" height="64" rx="18" fill="#08090c" />
+  <rect x="1.5" y="1.5" width="61" height="61" rx="16.5" stroke="#232730" stroke-width="1.2" />
 
-  <!-- Left Architectural Structural Blade (Emerald) -->
-  <path d="M14 16 L25.5 16 L32 38 L32 49 L14 16 Z" fill="url(#v-emerald)" />
+  <!-- Left Cantilever Wing: Living Architecture (Emerald) -->
+  <path d="M15 17 L26 17 L32 35.5 L32 49 L15 17 Z" fill="url(#vd-fav-emerald)" />
+  <path d="M15 17 L19 13 L30 13 L26 17 Z" fill="url(#vd-fav-bevel-l)" />
 
-  <!-- Right Cantilever Solar Blade (Electric Lime) -->
-  <path d="M50 16 L38.5 16 L32 38 L32 49 L50 16 Z" fill="url(#v-lime)" />
+  <!-- Right Cantilever Wing: Solar Kinetic (Lime) -->
+  <path d="M49 17 L38 17 L32 35.5 L32 49 L49 17 Z" fill="url(#vd-fav-lime)" />
+  <path d="M49 17 L45 13 L34 13 L38 17 Z" fill="url(#vd-fav-bevel-r)" />
 
-  <!-- Central Spatial Aperture / Light Well -->
-  <path d="M32 23 L37 32.5 L32 42 L27 32.5 Z" fill="#090a0d" stroke="#c6f432" stroke-width="1.5" />
+  <!-- Central Spatial Aperture (Diamond Light Well) -->
+  <path d="M32 21 L37.5 29 L32 37 L26.5 29 Z" fill="#08090c" stroke="#c6f432" stroke-width="1.2" />
 
-  <!-- Solar Micro-Grid Slits on Right Wing -->
-  <line x1="39" y1="21" x2="46" y2="21" stroke="#090a0d" stroke-width="1.75" stroke-linecap="round" />
-  <line x1="36" y1="27" x2="43" y2="27" stroke="#090a0d" stroke-width="1.75" stroke-linecap="round" />
+  <!-- Photovoltaic Precision Louver Cuts on Right Solar Wing -->
+  <line x1="39" y1="22.5" x2="45.5" y2="22.5" stroke="#08090c" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="36.5" y1="28" x2="43" y2="28" stroke="#08090c" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="34" y1="33.5" x2="39.5" y2="33.5" stroke="#08090c" stroke-width="1.5" stroke-linecap="round" />
 
-  <!-- Core Living Water & Energy Node -->
-  <circle cx="32" cy="32.5" r="2.2" fill="#c6f432" />
+  <!-- Living Water Node -->
+  <circle cx="32" cy="29" r="2.8" fill="#2a9dbd" />
+  <circle cx="31.2" cy="28.2" r="1.1" fill="#ffffff" />
 </svg>
