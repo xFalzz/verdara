@@ -107,6 +107,7 @@ export default function LandingPage() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [headerNotchOpen, setHeaderNotchOpen] = useState(false);
   const [headerNotchSlide, setHeaderNotchSlide] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const pageRef = useRef<HTMLDivElement | null>(null);
   const domeRef = useRef<SVGSVGElement | null>(null);
@@ -117,6 +118,15 @@ export default function LandingPage() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 70);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const idx = CITY_SPECIMENS.findIndex((c) => c.id === activePresetId);
@@ -455,6 +465,69 @@ export default function LandingPage() {
         isId={isId}
       />
 
+      {/* FLOATING MINIMALIST SCROLL NAVBAR (Appears elegantly when scrolled down) */}
+      <nav
+        aria-label={isId ? "Navigasi Cepat" : "Quick Navigation"}
+        className={`fixed top-4 left-1/2 z-50 flex w-[min(94vw,880px)] -translate-x-1/2 items-center justify-between rounded-full border px-4 py-2 transition-all duration-300 ease-out ${
+          isScrolled
+            ? "translate-y-0 opacity-100 pointer-events-auto shadow-[0_16px_40px_rgba(0,0,0,0.4)]"
+            : "-translate-y-8 opacity-0 pointer-events-none"
+        } ${
+          isLight
+            ? "border-black/10 bg-white/92 text-[#111] backdrop-blur-xl"
+            : "border-white/12 bg-[#090a0d]/92 text-white backdrop-blur-xl"
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition hover:opacity-80"
+            aria-label="Verdara Home"
+          >
+            <VerdaraLogo size={30} />
+            <span className="dovv-wordmark text-xl tracking-tight">
+              VERDARA
+            </span>
+          </Link>
+          <span className="hidden h-3.5 w-[1px] bg-current opacity-20 sm:inline-block" />
+          <div className="hidden sm:inline-block">
+            <CompactWorldCityPicker
+              isLight={isLight}
+              isId={isId}
+              variant="header"
+              align="left"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setLocale(locale === "en" ? "id" : "en")}
+            className="min-h-[36px] cursor-pointer rounded-full px-2.5 text-xs font-semibold hover:bg-current/10 transition"
+          >
+            {locale === "id" ? "ID" : "EN"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTheme(isLight ? "dark" : "light")}
+            className="min-h-[36px] cursor-pointer rounded-full px-2.5 text-xs font-medium hover:bg-current/10 transition"
+          >
+            {isLight ? "Day" : "Night"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              loginAsJudgeDemo();
+              router.push("/dashboard");
+            }}
+            className="zeggo-btn flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded-full bg-[#c6f432] px-3.5 text-xs font-bold text-[#080808] transition hover:bg-[#d4ff4d]"
+          >
+            <ZeggoRollText text={isId ? "Kota 3D ↗" : "Living Town ↗"} />
+          </button>
+        </div>
+      </nav>
+
       {/* 1. DOVV STUDIO SINGLE-LINE TOP CHROME + COMPACT CITY/COUNTRY PICKER */}
       <header className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-2 px-4 pt-5 pb-2 sm:px-10 sm:pt-6">
         <div className="flex min-w-0 shrink-0 items-center gap-2.5">
@@ -732,7 +805,7 @@ export default function LandingPage() {
       {/* 2. CHAPTER 01: DOVV STUDIO HERO SECTION WITH COMPACT CITY/COUNTRY POPOVER */}
       <section
         id="chapter-hero"
-        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-6 pb-9 text-center sm:px-10 sm:pt-12"
+        className="relative mx-auto flex min-h-[calc(100dvh-80px)] max-w-[1440px] flex-col items-center justify-between px-4 pt-4 pb-8 text-center sm:px-10 sm:pt-6 sm:pb-12"
       >
         {/* Compact Country & City Popover Pill (Small, Simple, Zero Page Clutter) */}
         <div className="gsap-hero-item relative z-30">
@@ -855,7 +928,7 @@ export default function LandingPage() {
       {/* 3. CHAPTER 02: TOWNHOUSE.DEV "WATCH IT RUN, BREAK, AND HEAL" LIVE 3D STAGE */}
       <section
         id="chapter-town"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-10"
+        className="scroll-mt-24 mx-auto max-w-[1440px] px-3 pt-12 sm:px-10 sm:pt-20"
       >
         <div className="gsap-town-stage dovv-stage-frame h-[620px] w-full sm:h-[680px] lg:h-[720px]">
           {/* Interactive 3D Townhouse Diorama */}

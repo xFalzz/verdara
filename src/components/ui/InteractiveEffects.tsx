@@ -11,11 +11,12 @@ import { calculateHousingFootprint } from "@/lib/science/calculator";
 import { formatCurrency, formatTemp } from "@/lib/science/units";
 
 /**
- * 0. VERDARA BESPOKE ARCHITECTURAL BRAND LOGO (<VerdaraLogo />)
- * Combines:
- * - DOVV Lime (#c6f432) pitched solar-grid roofline forming an inverted V-crest
- * - Townhouse Emerald (#1e9e5a) living house gable & twin structural columns
- * - Townhouse Cyan (#2a9dbd) rainwater cistern arch & water droplet core
+ * 0. VERDARA BESPOKE ARCHITECTURAL BRAND MONOGRAM (<VerdaraLogo />)
+ * Modernist architectural "V" monolith:
+ * - Left Cantilever: Living architectural concrete & timber wing (Rich Emerald #14733f -> #1e9e5a)
+ * - Right Cantilever: Solar photovoltaic glass wing (Electric Lime #c6f432 -> #e2ff54)
+ * - Central Spatial Aperture: Diamond light well with core geo/solar node (#0a0b0d light well, #c6f432 core)
+ * - Zero generic clip-art: High-precision Swiss/Bauhaus architectural vector craftsmanship.
  */
 export function VerdaraLogo({
   size = 38,
@@ -24,9 +25,10 @@ export function VerdaraLogo({
   size?: number;
   className?: string;
 }) {
+  const gradId = React.useId().replace(/:/g, "");
   return (
     <span
-      className={`th-logo-mark inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#080808] shadow-[inset_0_0_0_1.5px_#2a2a2a,0_6px_16px_-6px_rgba(0,0,0,0.45)] transition-transform duration-300 ${className}`}
+      className={`th-logo-mark inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#090a0d] shadow-[inset_0_0_0_1.5px_#23262d,0_6px_20px_-6px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-105 ${className}`}
       style={{ width: size, height: size }}
     >
       <svg
@@ -36,22 +38,73 @@ export function VerdaraLogo({
         fill="none"
         aria-hidden="true"
       >
-        {/* Solar Roofline Crest (DOVV Lime) */}
+        <defs>
+          <linearGradient
+            id={`v-emerald-${gradId}`}
+            x1="14"
+            y1="16"
+            x2="32"
+            y2="49"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#1e9e5a" />
+            <stop offset="100%" stopColor="#106337" />
+          </linearGradient>
+          <linearGradient
+            id={`v-lime-${gradId}`}
+            x1="50"
+            y1="16"
+            x2="32"
+            y2="49"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#e2ff54" />
+            <stop offset="100%" stopColor="#b2e81e" />
+          </linearGradient>
+        </defs>
+
+        {/* Left Architectural Structural Blade (Emerald Wing) */}
         <path
-          d="M8 28L32 9L56 28L48.5 34.5L32 21.5L15.5 34.5L8 28Z"
-          fill="#c6f432"
+          d="M14 16 L25.5 16 L32 38 L32 49 L14 16 Z"
+          fill={`url(#v-emerald-${gradId})`}
         />
-        {/* Living Townhouse Gable & V-Pillars (Townhouse OK Emerald) */}
+
+        {/* Right Cantilever Solar Wing (Electric Lime Facet) */}
         <path
-          d="M15 33L32 19.5L49 33V50C49 52.2091 47.2091 54 45 54H37V40H27V54H19C16.7909 54 15 52.2091 15 50V33Z"
-          fill="#1e9e5a"
+          d="M50 16 L38.5 16 L32 38 L32 49 L50 16 Z"
+          fill={`url(#v-lime-${gradId})`}
         />
-        {/* Rainwater Cistern Arch & Core (Townhouse Water Cyan) */}
+
+        {/* Central Spatial Aperture / Light Well (Precision Diamond) */}
         <path
-          d="M23.5 45C23.5 40.3056 27.3056 36.5 32 36.5C36.6944 36.5 40.5 40.3056 40.5 45V54H23.5V45Z"
-          fill="#2a9dbd"
+          d="M32 23 L37 32.5 L32 42 L27 32.5 Z"
+          fill="#090a0d"
+          stroke="#c6f432"
+          strokeWidth="1.5"
         />
-        <circle cx="32" cy="45" r="3.4" fill="#f5f5f3" />
+
+        {/* Solar Micro-Grid Slits on Right Wing */}
+        <line
+          x1="39"
+          y1="21"
+          x2="46"
+          y2="21"
+          stroke="#090a0d"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+        />
+        <line
+          x1="36"
+          y1="27"
+          x2="43"
+          y2="27"
+          stroke="#090a0d"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+        />
+
+        {/* Core Living Water & Energy Node */}
+        <circle cx="32" cy="32.5" r="2.2" fill="#c6f432" />
       </svg>
     </span>
   );

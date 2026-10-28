@@ -1,11 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="18" fill="#080808" />
-  <rect x="2" y="2" width="60" height="60" rx="16" stroke="#262626" stroke-width="2" />
-  <!-- Isometric Townhouse Roof & V-Solar Crest -->
-  <path d="M12 29L32 13L52 29L45 34.5L32 24L19 34.5L12 29Z" fill="#c6f432" />
-  <!-- Living Townhouse Emerald Gable & V-Pillars -->
-  <path d="M18 33.5L32 22.5L46 33.5V48C46 49.6569 44.6569 51 43 51H36V39H28V51H21C19.3431 51 18 49.6569 18 48V33.5Z" fill="#1e9e5a" />
-  <!-- Rainwater Cistern Cyan Loop -->
-  <path d="M25 44C25 40.134 28.134 37 32 37C35.866 37 39 40.134 39 44V51H25V44Z" fill="#2a9dbd" />
-  <circle cx="32" cy="44" r="3" fill="#f5f5f3" />
+  <defs>
+    <linearGradient id="v-emerald" x1="14" y1="16" x2="32" y2="49" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e9e5a" />
+      <stop offset="100%" stop-color="#106337" />
+    </linearGradient>
+    <linearGradient id="v-lime" x1="50" y1="16" x2="32" y2="49" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e2ff54" />
+      <stop offset="100%" stop-color="#b2e81e" />
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="18" fill="#090a0d" />
+  <rect x="1.5" y="1.5" width="61" height="61" rx="16.5" stroke="#23262d" stroke-width="1.5" />
+
+  <!-- Left Architectural Structural Blade (Emerald) -->
+  <path d="M14 16 L25.5 16 L32 38 L32 49 L14 16 Z" fill="url(#v-emerald)" />
+
+  <!-- Right Cantilever Solar Blade (Electric Lime) -->
+  <path d="M50 16 L38.5 16 L32 38 L32 49 L50 16 Z" fill="url(#v-lime)" />
+
+  <!-- Central Spatial Aperture / Light Well -->
+  <path d="M32 23 L37 32.5 L32 42 L27 32.5 Z" fill="#090a0d" stroke="#c6f432" stroke-width="1.5" />
+
+  <!-- Solar Micro-Grid Slits on Right Wing -->
+  <line x1="39" y1="21" x2="46" y2="21" stroke="#090a0d" stroke-width="1.75" stroke-linecap="round" />
+  <line x1="36" y1="27" x2="43" y2="27" stroke="#090a0d" stroke-width="1.75" stroke-linecap="round" />
+
+  <!-- Core Living Water & Energy Node -->
+  <circle cx="32" cy="32.5" r="2.2" fill="#c6f432" />
 </svg>
