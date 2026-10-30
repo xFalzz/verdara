@@ -9,6 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   resolvePresetGeoContext,
+  resolveWorldCityGeoContext,
   type CityPreset,
 } from "@/lib/science/presets";
 import { calculateHousingFootprint } from "@/lib/science/calculator";
@@ -41,17 +42,124 @@ const EcoIslandCanvas = dynamic(
   }
 );
 
-const CITY_SPECIMENS: {
-  id: CityPreset["id"];
-  label: string;
+interface CountryDeckSpecimen {
+  slug: string;
+  countryEn: string;
+  countryId: string;
   iso: string;
   koppen: string;
-}[] = [
-  { id: "menlo_park", label: "Menlo Park", iso: "US-CA", koppen: "Csb" },
-  { id: "london", label: "London", iso: "GB", koppen: "Cfb" },
-  { id: "tokyo", label: "Tokyo", iso: "JP", koppen: "Cfa" },
-  { id: "dubai", label: "Dubai", iso: "AE", koppen: "BWh" },
-  { id: "yogyakarta", label: "Yogyakarta", iso: "ID", koppen: "Am" },
+  stationCity: string;
+  lat: number;
+  lng: number;
+  presetId?: CityPreset["id"];
+}
+
+const COUNTRY_CLIMATE_DECK: CountryDeckSpecimen[] = [
+  {
+    slug: "indonesia",
+    countryEn: "Indonesia",
+    countryId: "Indonesia",
+    iso: "ID",
+    koppen: "Am",
+    stationCity: "Yogyakarta / Jakarta",
+    lat: -7.8,
+    lng: 110.36,
+    presetId: "yogyakarta",
+  },
+  {
+    slug: "united_states",
+    countryEn: "United States",
+    countryId: "Amerika Serikat",
+    iso: "US",
+    koppen: "Csb",
+    stationCity: "California / Menlo Park",
+    lat: 37.48,
+    lng: -122.15,
+    presetId: "menlo_park",
+  },
+  {
+    slug: "united_kingdom",
+    countryEn: "United Kingdom",
+    countryId: "Inggris Raya",
+    iso: "GB",
+    koppen: "Cfb",
+    stationCity: "London Basin",
+    lat: 51.51,
+    lng: -0.13,
+    presetId: "london",
+  },
+  {
+    slug: "japan",
+    countryEn: "Japan",
+    countryId: "Jepang",
+    iso: "JP",
+    koppen: "Cfa",
+    stationCity: "Tokyo Kanto",
+    lat: 35.68,
+    lng: 139.65,
+    presetId: "tokyo",
+  },
+  {
+    slug: "uae",
+    countryEn: "United Arab Emirates",
+    countryId: "Uni Emirat Arab",
+    iso: "AE",
+    koppen: "BWh",
+    stationCity: "Dubai / Abu Dhabi",
+    lat: 25.2,
+    lng: 55.27,
+    presetId: "dubai",
+  },
+  {
+    slug: "singapore",
+    countryEn: "Singapore",
+    countryId: "Singapura",
+    iso: "SG",
+    koppen: "Af",
+    stationCity: "Marina South",
+    lat: 1.35,
+    lng: 103.82,
+  },
+  {
+    slug: "germany",
+    countryEn: "Germany",
+    countryId: "Jerman",
+    iso: "DE",
+    koppen: "Cfb",
+    stationCity: "Berlin Brandenburg",
+    lat: 52.52,
+    lng: 13.4,
+  },
+  {
+    slug: "brazil",
+    countryEn: "Brazil",
+    countryId: "Brasil",
+    iso: "BR",
+    koppen: "Cfa",
+    stationCity: "Sao Paulo Plateau",
+    lat: -23.55,
+    lng: -46.63,
+  },
+  {
+    slug: "australia",
+    countryEn: "Australia",
+    countryId: "Australia",
+    iso: "AU",
+    koppen: "Cfa",
+    stationCity: "Sydney Basin",
+    lat: -33.87,
+    lng: 151.21,
+  },
+  {
+    slug: "switzerland",
+    countryEn: "Switzerland",
+    countryId: "Swiss",
+    iso: "CH",
+    koppen: "Dfb",
+    stationCity: "Zurich Alpine",
+    lat: 47.37,
+    lng: 8.54,
+  },
 ];
 
 const MONTHS_SHORT = [
@@ -72,7 +180,7 @@ const MONTHS_SHORT = [
 const LANDING_CHAPTERS: ScrollRailChapter[] = [
   { id: "chapter-hero", labelEn: "Overview", labelId: "Ringkasan" },
   { id: "chapter-town", labelEn: "3D Eco-District", labelId: "Distrik 3D" },
-  { id: "chapter-slides", labelEn: "5 Climate Decks", labelId: "5 Dek Iklim" },
+  { id: "chapter-slides", labelEn: "10 Country Decks", labelId: "10 Dek Negara" },
   { id: "chapter-how", labelEn: "How It Works", labelId: "Cara Kerja" },
   { id: "chapter-tools", labelEn: "4 Core Tools", labelId: "4 Fitur Utama" },
   {
@@ -102,7 +210,7 @@ export default function LandingPage() {
     setUnits,
     setTheme,
     teleportToCity,
-    loginAsJudgeDemo,
+    setCustomCoordinates,
     logout,
   } = useVerdaraStore();
 
@@ -111,6 +219,11 @@ export default function LandingPage() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [headerNotchOpen, setHeaderNotchOpen] = useState(false);
   const [headerNotchSlide, setHeaderNotchSlide] = useState(0);
+
+  // Interactive Drag-to-Slide state for the Country Climate Deck
+  const [isDraggingDeck, setIsDraggingDeck] = useState(false);
+  const [dragOffsetPx, setDragOffsetPx] = useState(0);
+  const dragStartXRef = useRef<number | null>(null);
 
   const pageRef = useRef<HTMLDivElement | null>(null);
   const domeRef = useRef<SVGSVGElement | null>(null);
@@ -123,13 +236,60 @@ export default function LandingPage() {
   }, [theme]);
 
   useEffect(() => {
-    const idx = CITY_SPECIMENS.findIndex((c) => c.id === activePresetId);
-    if (idx !== -1) {
-      setActiveSlide(idx);
+    const matchIdx = COUNTRY_CLIMATE_DECK.findIndex(
+      (c) =>
+        geo.countryCode.toUpperCase().startsWith(c.iso) ||
+        (c.presetId && c.presetId === activePresetId)
+    );
+    if (matchIdx !== -1) {
+      setActiveSlide(matchIdx);
     }
-  }, [activePresetId]);
+  }, [activePresetId, geo.countryCode]);
 
-  // GSAP + ScrollTrigger Choreographed Page Animations
+  const applyCountrySpecimen = (spec: CountryDeckSpecimen, idx: number) => {
+    setActiveSlide(idx);
+    if (spec.presetId) {
+      teleportToCity(spec.presetId);
+    } else {
+      setCustomCoordinates(
+        spec.lat,
+        spec.lng,
+        isId ? spec.countryId : spec.countryEn,
+        spec.iso
+      );
+    }
+  };
+
+  const handleDeckPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Do not hijack clicks on interactive buttons or links inside the slide
+    if ((e.target as HTMLElement).closest("button, a")) return;
+    dragStartXRef.current = e.clientX;
+    setIsDraggingDeck(true);
+    setDragOffsetPx(0);
+  };
+
+  const handleDeckPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingDeck || dragStartXRef.current === null) return;
+    const deltaX = e.clientX - dragStartXRef.current;
+    setDragOffsetPx(Math.max(-260, Math.min(260, deltaX)));
+  };
+
+  const handleDeckPointerUp = () => {
+    if (!isDraggingDeck) return;
+    if (dragOffsetPx < -55) {
+      setActiveSlide((s) => (s + 1) % COUNTRY_CLIMATE_DECK.length);
+    } else if (dragOffsetPx > 55) {
+      setActiveSlide(
+        (s) =>
+          (s + COUNTRY_CLIMATE_DECK.length - 1) % COUNTRY_CLIMATE_DECK.length
+      );
+    }
+    dragStartXRef.current = null;
+    setIsDraggingDeck(false);
+    setDragOffsetPx(0);
+  };
+
+  // GSAP + ScrollTrigger Choreographed Page Animations (Velocity Skew, Scrubbed Bento, ScrollTrigger.batch)
   useEffect(() => {
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -265,7 +425,7 @@ export default function LandingPage() {
         }
       );
 
-      // 8. DOVV Studio Curved SVG Dome scrub
+      // 8. Curved SVG Dome scrub
       if (domeRef.current) {
         gsap.fromTo(
           domeRef.current,
@@ -301,23 +461,83 @@ export default function LandingPage() {
         }
       );
 
-      // 10. Meta Hackathon Judging Cards stagger
+      // 10. GSAP ScrollTrigger.batch() ("Stagger items in on scroll" from demos.gsap.com)
+      gsap.set(".gsap-judge-card, .gsap-batch-card", { y: 34, opacity: 0 });
+      ScrollTrigger.batch(".gsap-judge-card, .gsap-batch-card", {
+        start: "top 88%",
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            opacity: 1,
+            y: 0,
+            duration: 0.68,
+            stagger: 0.1,
+            ease: "power3.out",
+            overwrite: true,
+          }),
+      });
+
+      // 11. GSAP Scrubbed Bento Gallery (from demos.gsap.com/plugin/scrolltrigger/)
+      gsap.utils
+        .toArray<HTMLElement>(".gsap-scrub-bento-item")
+        .forEach((cell, idx) => {
+          gsap.fromTo(
+            cell,
+            {
+              y: idx % 2 === 0 ? 44 : 68,
+              scale: 0.93,
+              opacity: 0.45,
+            },
+            {
+              y: 0,
+              scale: 1,
+              opacity: 1,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: ".gsap-scrub-bento-grid",
+                start: "top 92%",
+                end: "center 52%",
+                scrub: 0.65,
+              },
+            }
+          );
+        });
+
+      // 12. GSAP Scroll-Driven Kinetic Marquee Band
       gsap.fromTo(
-        ".gsap-judge-card",
-        { y: 32, opacity: 0 },
+        ".gsap-marquee-track",
+        { xPercent: 0 },
         {
-          y: 0,
-          opacity: 1,
-          duration: 0.65,
-          stagger: 0.1,
-          ease: "power3.out",
+          xPercent: -22,
+          ease: "none",
           scrollTrigger: {
-            trigger: ".gsap-judge-grid",
-            start: "top 88%",
-            toggleActions: "play none none none",
+            trigger: "#chapter-climate",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.5,
           },
         }
       );
+
+      // 13. GSAP Velocity Skew (from demos.gsap.com/plugin/scrolltrigger/)
+      const skewSetter = gsap.quickSetter(".gsap-skew", "skewY", "deg");
+      const proxy = { skew: 0 };
+      const clampSkew = gsap.utils.clamp(-2.6, 2.6);
+
+      ScrollTrigger.create({
+        onUpdate: (self) => {
+          const skew = clampSkew(self.getVelocity() / -420);
+          if (Math.abs(skew) > Math.abs(proxy.skew)) {
+            proxy.skew = skew;
+            gsap.to(proxy, {
+              skew: 0,
+              duration: 0.65,
+              ease: "power3",
+              overwrite: true,
+              onUpdate: () => skewSetter(proxy.skew),
+            });
+          }
+        },
+      });
     }, pageRef);
 
     return () => ctx.revert();
@@ -900,12 +1120,12 @@ export default function LandingPage() {
         id="chapter-town"
         className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-8"
       >
-        <div className="gsap-town-stage dovv-stage-frame h-[650px] w-full sm:h-[710px] lg:h-[760px]">
+        <div className="gsap-town-stage dovv-stage-frame h-[640px] w-full sm:h-[700px] lg:h-[750px]">
           {/* Grand Interactive 3D Eco-District */}
           <EcoIslandCanvas
             biome={geo.biome}
             level={level}
-            isNight={isNightPreview || townSimMode === "break"}
+            isNight={isNightPreview}
             simMode={townSimMode}
             unlockedItems={unlockedItems}
             solarKwp={housingCalc.solar.kwp}
@@ -918,27 +1138,27 @@ export default function LandingPage() {
             locale={locale}
           />
 
-          {/* Top-Left Townhouse Simulation Bar ("Watch it Run, Break, and Heal") */}
-          <div className="absolute top-3 left-3 right-3 sm:right-auto sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1 rounded-2xl sm:rounded-full bg-[#080808]/90 p-1.5 backdrop-blur-md shadow-lg">
+          {/* Top-Left Minimalist Simulation Mode Switcher ("Run, Break, Heal") */}
+          <div className="absolute top-3 left-3 right-3 sm:right-auto sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1 rounded-2xl sm:rounded-full border border-white/12 bg-[#08090c]/88 p-1 backdrop-blur-xl shadow-lg">
             {(
               [
                 {
                   id: "run",
-                  labelEn: "01 Normal Day (Run)",
+                  labelEn: "01 Normal Day",
                   labelId: "01 Hari Normal",
-                  dot: "bg-[#1e9e5a]",
+                  dot: "bg-[#10b981]",
                 },
                 {
                   id: "break",
-                  labelEn: "02 Storm Surge (Break)",
-                  labelId: "02 Uji Badai & Panas",
-                  dot: "bg-[#e5484d]",
+                  labelEn: "02 Storm Surge",
+                  labelId: "02 Uji Badai",
+                  dot: "bg-[#ef4444]",
                 },
                 {
                   id: "heal",
-                  labelEn: "03 AI Solution (Heal)",
-                  labelId: "03 Solusi AI Meta",
-                  dot: "bg-[#2a9dbd]",
+                  labelEn: "03 AI Solution",
+                  labelId: "03 Solusi AI",
+                  dot: "bg-[#c6f432]",
                 },
               ] as const
             ).map((tab) => {
@@ -948,9 +1168,9 @@ export default function LandingPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setTownSimMode(tab.id)}
-                  className={`flex min-h-[36px] flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1 font-mono text-[11px] sm:text-xs font-medium transition ${
+                  className={`flex min-h-[34px] flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-medium transition ${
                     active
-                      ? "bg-white font-semibold text-[#111]"
+                      ? "bg-white font-semibold text-[#08090c] shadow-sm"
                       : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
                   }`}
                 >
@@ -963,30 +1183,31 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Top-Right Lighting & Biome Pill inside Stage */}
-          <div className="absolute top-4 right-4 z-10 hidden flex-wrap items-center gap-2 lg:flex">
-            <span className="rounded-full bg-[#080808]/90 px-3.5 py-1.5 font-mono text-xs font-medium text-white backdrop-blur-md">
+          {/* Top-Right Compact Jurisdiction & Day/Night Toggle */}
+          <div className="absolute top-4 right-4 z-10 hidden items-center gap-1.5 lg:flex">
+            <span className="rounded-full border border-white/12 bg-[#08090c]/88 px-3.5 py-1.5 font-mono text-[11px] font-medium text-white backdrop-blur-xl">
               {geo.city} ({geo.countryCode}) · {geo.koppen.code} (
               {geo.biome.toUpperCase()})
             </span>
             <button
               type="button"
               onClick={() => setIsNightPreview(!isNightPreview)}
-              className="min-h-[38px] cursor-pointer rounded-full bg-white/95 px-3.5 py-1.5 font-mono text-xs font-semibold text-[#111] shadow-md transition hover:bg-white"
+              className="min-h-[34px] cursor-pointer rounded-full border border-black/10 bg-white/95 px-3.5 py-1.5 font-mono text-[11px] font-semibold text-[#111] shadow-md transition hover:bg-white"
             >
-              {isNightPreview ? "Switch to Daylight" : "Switch to Night Glow"}
+              {isNightPreview ? "☀ Daylight" : "☾ Night Glow"}
             </button>
           </div>
 
-          {/* BOTTOM-LEFT FLOATING ARCHITECTURAL CARD */}
+          {/* BOTTOM-LEFT MINIMALIST TELEMETRY & SIMULATION DELTA CARD */}
           <div
-            className={`absolute bottom-14 left-3 right-3 z-10 rounded-[20px] border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 sm:right-auto sm:bottom-5 sm:left-5 sm:w-[min(460px,44vw)] sm:p-5 ${
+            className={`absolute bottom-14 left-3 right-3 z-10 rounded-[20px] border p-3.5 shadow-2xl backdrop-blur-xl transition-all duration-300 sm:right-auto sm:bottom-4 sm:left-4 sm:w-[375px] sm:p-4 ${
               isLight
-                ? "border-[#151515]/10 bg-white/92 text-[#151515]"
-                : "border-white/10 bg-[#16171a]/92 text-[#f2f1ec]"
+                ? "border-black/10 bg-white/90 text-[#151515]"
+                : "border-white/12 bg-[#0d0f13]/90 text-[#f2f1ec]"
             }`}
           >
-            <div className="flex flex-wrap items-center gap-2.5 font-mono text-[10px] sm:text-[11px]">
+            {/* Compact Status Header */}
+            <div className="flex items-center justify-between gap-2 font-mono text-[10px]">
               <span
                 className={`inline-flex items-center gap-1.5 font-semibold ${simConfig.badge1.text}`}
               >
@@ -995,71 +1216,110 @@ export default function LandingPage() {
                 />
                 {simConfig.badge1.label}
               </span>
-              <span
-                className={`inline-flex items-center gap-1.5 font-semibold ${simConfig.badge2.text}`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${simConfig.badge2.dot}`}
-                />
-                {simConfig.badge2.label}
-              </span>
-              <span
-                className={`inline-flex items-center gap-1.5 font-semibold ${simConfig.badge3.text}`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${simConfig.badge3.dot}`}
-                />
-                {simConfig.badge3.label}
+              <span className="rounded-full bg-current/8 px-2 py-0.5 font-mono text-[10px] opacity-75">
+                {formatArea(housingCalc.footprintM2, units, locale)}
               </span>
             </div>
 
-            <h2 className="townhouse-title mt-2 text-lg sm:text-2xl lg:text-3xl">
+            <h2 className="townhouse-title mt-1.5 text-base sm:text-lg font-semibold leading-snug">
               {simConfig.title}
             </h2>
 
-            <p
-              className={`mt-1.5 text-xs sm:text-sm leading-relaxed ${
-                isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
+            {/* 3-Column Live Mode Delta Comparison Bar (Clearly Shows 3D Mode Changes) */}
+            <div
+              className={`mt-2.5 grid grid-cols-3 gap-1.5 rounded-xl border p-2 font-mono text-[10px] ${
+                isLight
+                  ? "border-black/8 bg-[#f5f5f2]"
+                  : "border-white/10 bg-white/5"
               }`}
             >
-              {simConfig.desc}
-            </p>
+              <div>
+                <span className="block text-[9px] uppercase opacity-60">
+                  {isId ? "SURYA" : "SOLAR"}
+                </span>
+                <span
+                  className={`font-bold ${
+                    townSimMode === "heal"
+                      ? "text-[#14733f] dark:text-[#c6f432]"
+                      : townSimMode === "break"
+                      ? "text-[#b8252a] dark:text-[#f87171]"
+                      : ""
+                  }`}
+                >
+                  {townSimMode === "heal"
+                    ? `${(housingCalc.solar.kwp * 1.25).toFixed(1)} kWp ↑`
+                    : townSimMode === "break"
+                    ? `-32% Cloud`
+                    : `${housingCalc.solar.kwp} kWp`}
+                </span>
+              </div>
+              <div className="border-x border-current/10 px-2">
+                <span className="block text-[9px] uppercase opacity-60">
+                  {isId ? "AIR & KANAL" : "HYDRO"}
+                </span>
+                <span
+                  className={`font-bold ${
+                    townSimMode === "break"
+                      ? "text-[#b8252a] dark:text-[#f87171]"
+                      : "text-[#146f8a] dark:text-[#38bdf8]"
+                  }`}
+                >
+                  {townSimMode === "break"
+                    ? "+18cm Flood"
+                    : townSimMode === "heal"
+                    ? "0cm · Drained"
+                    : `${Math.round(housingCalc.rainwater.litersYear / 1000)}k L/yr`}
+                </span>
+              </div>
+              <div className="pl-1">
+                <span className="block text-[9px] uppercase opacity-60">
+                  {isId ? "SUHU ATAP" : "THERMAL"}
+                </span>
+                <span
+                  className={`font-bold ${
+                    townSimMode === "break"
+                      ? "text-[#b8252a] dark:text-[#f87171]"
+                      : "text-[#14733f] dark:text-[#5ce69b]"
+                  }`}
+                >
+                  {townSimMode === "break"
+                    ? "+4.2°C Spike"
+                    : townSimMode === "heal"
+                    ? `-2.8°C Cool`
+                    : `${housingCalc.thermal.tciScore}/100 OK`}
+                </span>
+              </div>
+            </div>
 
-            <div className="mt-3.5 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex items-center gap-2">
               <Link
                 href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-                className={`zeggo-btn inline-flex min-h-[42px] items-center rounded-[10px] px-4 text-xs sm:text-sm font-medium transition ${
+                className={`zeggo-btn inline-flex min-h-[38px] flex-1 items-center justify-center rounded-lg px-3 text-xs font-semibold transition ${
                   isLight
                     ? "bg-[#151515] text-[#f6f6f3] hover:bg-[#2a2a2a]"
-                    : "bg-[#f2f1ec] text-[#0f1012] hover:bg-white"
+                    : "bg-[#c6f432] text-[#080808] hover:bg-[#d4f759]"
                 }`}
               >
-                <ZeggoRollText
-                  text={
-                    isAuthenticated
-                      ? isId
-                        ? "Buka Studio Kota 3D"
-                        : "Inspect Full 3D Studio"
-                      : isId
-                      ? "Login & Buka Studio 3D"
-                      : "Sign In & Inspect Studio"
-                  }
-                />
+                {isAuthenticated
+                  ? isId
+                    ? "Buka Studio 3D →"
+                    : "Open 3D Studio →"
+                  : isId
+                  ? "Login & Buka Studio →"
+                  : "Sign In & Inspect →"}
               </Link>
               <Link
                 href={isAuthenticated ? "/radar" : "/login?next=/radar"}
-                className="zeggo-btn inline-flex min-h-[42px] items-center rounded-[10px] border border-current/20 px-3.5 text-xs sm:text-sm font-medium"
+                className="inline-flex min-h-[38px] items-center justify-center rounded-lg border border-current/20 px-3 text-xs font-medium transition hover:bg-current/5"
               >
-                <ZeggoRollText
-                  text={isId ? "Atur Luas Atap Rumah" : "Adjust Roof Size"}
-                />
+                {isId ? "Atur Atap" : "Roof Size"}
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. CHAPTER 03: DOVV STUDIO 01/05 INTERACTIVE HORIZONTAL SLIDE DECK CAROUSEL */}
+      {/* 4. CHAPTER 03: DRAGGABLE 10-COUNTRY CLIMATE DECK CAROUSEL (COUNTRY NAMES + DRAG SLIDE) */}
       <section
         id="chapter-slides"
         className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-20 pb-12 sm:px-10"
@@ -1068,32 +1328,38 @@ export default function LandingPage() {
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               {isId
-                ? "01 / Bandingkan 5 Zona Iklim Utama Dunia"
-                : "01 / Compare 5 Benchmark Climate Zones"}
+                ? "01 / Bandingkan 10 Negara & Zona Iklim Dunia (Tarik / Geser Kartu)"
+                : "01 / Compare 10 Countries & Global Climate Zones (Drag / Slide Cards)"}
             </p>
             <h2 className="mt-2 text-[clamp(28px,4.2vw,58px)] font-normal leading-[1.06] tracking-[-0.04em]">
               {isId
-                ? "Geser kartu untuk melihat bagaimana cuaca memengaruhi rumah Anda."
-                : "Slide through 5 climate zones to see how local weather shapes a home."}
+                ? "Tarik atau geser kartu negara untuk melihat pengaruh iklim pada rumah Anda."
+                : "Drag or slide through 10 countries to see how local climate shapes a home."}
             </h2>
           </div>
 
-          {/* DOVV Studio Slide Counter (01/05) + Circular Prev/Next Buttons */}
-          <div className="flex items-center gap-3">
+          {/* Slide Counter (01/10) + Drag Hint + Circular Prev/Next Buttons */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="hidden rounded-full border border-current/15 px-3 py-1 font-mono text-[11px] opacity-70 sm:inline-block">
+              {isId ? "↔ Tarik Kartu" : "↔ Drag Card"}
+            </span>
             <span
               aria-live="polite"
               className="dovv-wordmark text-3xl sm:text-4xl tabular-nums"
             >
-              0{activeSlide + 1}/0{CITY_SPECIMENS.length}
+              {String(activeSlide + 1).padStart(2, "0")}/
+              {String(COUNTRY_CLIMATE_DECK.length).padStart(2, "0")}
             </span>
             <button
               type="button"
               onClick={() =>
                 setActiveSlide(
-                  (s) => (s + CITY_SPECIMENS.length - 1) % CITY_SPECIMENS.length
+                  (s) =>
+                    (s + COUNTRY_CLIMATE_DECK.length - 1) %
+                    COUNTRY_CLIMATE_DECK.length
                 )
               }
-              aria-label="Previous city specimen slide"
+              aria-label="Previous country slide"
               className="flex h-11 w-11 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded-full bg-[#080808] text-white transition hover:scale-105 hover:bg-[#222]"
             >
               ←
@@ -1101,9 +1367,9 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() =>
-                setActiveSlide((s) => (s + 1) % CITY_SPECIMENS.length)
+                setActiveSlide((s) => (s + 1) % COUNTRY_CLIMATE_DECK.length)
               }
-              aria-label="Next city specimen slide"
+              aria-label="Next country slide"
               className="flex h-11 w-11 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded-full bg-[#080808] text-white transition hover:scale-105 hover:bg-[#222]"
             >
               →
@@ -1111,32 +1377,52 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Horizontal Slide Viewport */}
-        <div className="gsap-slide-frame overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626]">
+        {/* Interactive Drag-to-Slide Country Viewport */}
+        <div
+          onPointerDown={handleDeckPointerDown}
+          onPointerMove={handleDeckPointerMove}
+          onPointerUp={handleDeckPointerUp}
+          onPointerCancel={handleDeckPointerUp}
+          onPointerLeave={handleDeckPointerUp}
+          className="gsap-slide-frame country-deck-viewport gsap-skew overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626] select-none"
+        >
           <div
             className="dovv-slide-track"
             style={{
-              transform: `translate3d(-${activeSlide * 100}%, 0, 0)`,
+              transform: `translate3d(calc(-${activeSlide * 100}% + ${dragOffsetPx}px), 0, 0)`,
+              transition: isDraggingDeck
+                ? "none"
+                : "transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            {CITY_SPECIMENS.map((spec, idx) => {
-              const preset = resolvePresetGeoContext(spec.id, 10);
+            {COUNTRY_CLIMATE_DECK.map((spec, idx) => {
+              const countryGeo = spec.presetId
+                ? resolvePresetGeoContext(spec.presetId, 10)
+                : resolveWorldCityGeoContext({
+                    lat: spec.lat,
+                    lng: spec.lng,
+                    city: spec.countryEn,
+                    countryCode: spec.iso,
+                  });
               const calc = calculateHousingFootprint({
                 footprintM2: housingCalc.footprintM2,
-                ghiKwhM2Day: preset.ghiKwhM2Day,
-                annualPrecipMm: preset.koppen.pAnnMm,
-                electricityTariff: preset.policy.electricityTariff,
-                gridEfKgPerKwh: preset.policy.gridEfKgKwh,
-                currency: preset.policy.currency,
-                warmMonthMaxTempC: preset.warmMonthMaxTempC,
-                greenCoverRatio: preset.greenCoverRatio,
-                builtCoverRatio: preset.builtCoverRatio,
+                ghiKwhM2Day: countryGeo.ghiKwhM2Day,
+                annualPrecipMm: countryGeo.koppen.pAnnMm,
+                electricityTariff: countryGeo.policy.electricityTariff,
+                gridEfKgPerKwh: countryGeo.policy.gridEfKgKwh,
+                currency: countryGeo.policy.currency,
+                warmMonthMaxTempC: countryGeo.warmMonthMaxTempC,
+                greenCoverRatio: countryGeo.greenCoverRatio,
+                builtCoverRatio: countryGeo.builtCoverRatio,
               });
-              const isCurrent = activePresetId === spec.id;
+              const isCurrent =
+                geo.countryCode.toUpperCase().startsWith(spec.iso) ||
+                (spec.presetId !== undefined && activePresetId === spec.presetId);
+              const countryDisplayName = isId ? spec.countryId : spec.countryEn;
 
               return (
                 <div
-                  key={spec.id}
+                  key={spec.slug}
                   className="w-full shrink-0 pr-1 sm:pr-4"
                   aria-hidden={activeSlide !== idx}
                 >
@@ -1144,63 +1430,59 @@ export default function LandingPage() {
                     <div className="space-y-4 lg:col-span-6">
                       <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
                         <span className="rounded-full bg-[#c6f432] px-3 py-1 font-bold text-[#080808]">
-                          ZONE 0{idx + 1} · {spec.iso}
+                          COUNTRY {String(idx + 1).padStart(2, "0")} · {spec.iso}
                         </span>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-white">
-                          {preset.koppen.code} ({preset.koppen.nameEn})
+                          {countryGeo.koppen.code} ({countryGeo.koppen.nameEn})
                         </span>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-[#c6f432]">
-                          {preset.biome.toUpperCase()}
+                          {spec.stationCity}
                         </span>
                       </div>
 
-                      <h3 className="dovv-wordmark text-4xl sm:text-7xl text-white">
-                        {preset.city}
+                      {/* Giant Display Headline: COUNTRY NAME */}
+                      <h3 className="dovv-wordmark text-4xl sm:text-6xl xl:text-7xl text-white uppercase">
+                        {countryDisplayName}
                       </h3>
 
                       <p className="max-w-xl text-xs sm:text-base leading-relaxed text-[#c9c7c0]">
                         {isId
-                          ? preset.koppen.descriptionId
-                          : preset.koppen.descriptionEn}
+                          ? countryGeo.koppen.descriptionId
+                          : countryGeo.koppen.descriptionEn}
                       </p>
 
                       <div className="flex flex-wrap items-center gap-3 pt-2">
                         <button
                           type="button"
-                          onClick={() => teleportToCity(spec.id)}
-                          className={`zeggo-btn inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-5 sm:px-6 text-xs sm:text-sm font-semibold transition ${
+                          onClick={() => applyCountrySpecimen(spec, idx)}
+                          className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-5 sm:px-6 text-xs sm:text-sm font-semibold transition ${
                             isCurrent
                               ? "bg-[#c6f432] text-[#080808]"
                               : "bg-white text-[#080808] hover:bg-[#c6f432]"
                           }`}
                         >
-                          <ZeggoRollText
-                            text={
-                              isCurrent
-                                ? isId
-                                  ? `Sedang Aktif (${preset.city})`
-                                  : `Currently Active (${preset.city})`
-                                : isId
-                                ? `Terapkan Kota ${preset.city}`
-                                : `Load ${preset.city} in 3D Town`
-                            }
-                          />
+                          <span className="h-2 w-2 rounded-full bg-[#080808]" />
+                          <span>
+                            {isCurrent
+                              ? isId
+                                ? `Negara Aktif (${countryDisplayName})`
+                                : `Active Country (${countryDisplayName})`
+                              : isId
+                              ? `Terapkan ${countryDisplayName} ke 3D`
+                              : `Load ${countryDisplayName} in 3D Town`}
+                          </span>
                         </button>
                         <Link
-                          href="/radar"
-                          onClick={() => teleportToCity(spec.id)}
-                          className="zeggo-btn inline-flex min-h-[44px] items-center rounded-full border border-white/25 px-5 text-xs sm:text-sm font-medium text-white hover:bg-white/10"
+                          href={isAuthenticated ? "/radar" : "/login?next=/radar"}
+                          onClick={() => applyCountrySpecimen(spec, idx)}
+                          className="inline-flex min-h-[44px] items-center rounded-full border border-white/25 px-5 text-xs sm:text-sm font-medium text-white transition hover:bg-white/10"
                         >
-                          <ZeggoRollText
-                            text={
-                              isId ? "Lihat di Peta 3D" : "View on 3D Map"
-                            }
-                          />
+                          {isId ? "Lihat di Peta 3D" : "View on 3D Map"}
                         </Link>
                       </div>
                     </div>
 
-                    {/* Right Telemetry Cards inside Slide */}
+                    {/* Right Telemetry Cards inside Country Slide */}
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-6">
                       <div className="th-node-card rounded-2xl bg-[#141619] p-4 sm:p-5 pl-6 shadow-[inset_0_0_0_1px_#2a2d34]">
                         <span className="th-map-bar bg-[#c6f432]" />
@@ -1235,7 +1517,7 @@ export default function LandingPage() {
                           )}
                         </p>
                         <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
-                          {preset.koppen.pAnnMm} mm/yr · Tank{" "}
+                          {countryGeo.koppen.pAnnMm} mm/yr · Tank{" "}
                           {calc.rainwater.recommendedCisternLiters}L
                         </p>
                       </div>
@@ -1249,8 +1531,8 @@ export default function LandingPage() {
                           {calc.thermal.tciScore}/100
                         </p>
                         <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
-                          {formatTemp(preset.currentTempC, units)} · Cool Roof -
-                          {calc.thermal.coolingTargetDegC}°C
+                          {formatTemp(countryGeo.currentTempC, units)} · Cool
+                          Roof -{calc.thermal.coolingTargetDegC}°C
                         </p>
                       </div>
 
@@ -1260,10 +1542,10 @@ export default function LandingPage() {
                           {isId ? "TITIK DAUR ULANG" : "RECYCLING DROP-OFFS"}
                         </span>
                         <p className="mt-1 font-mono text-2xl sm:text-3xl font-bold text-white">
-                          {preset.hubs.length} Hubs
+                          {countryGeo.hubs.length} Hubs
                         </p>
                         <p className="mt-1 truncate font-mono text-xs text-[#c9c7c0]">
-                          {preset.hubs[0]?.name}
+                          {countryGeo.hubs[0]?.name}
                         </p>
                       </div>
                     </div>
@@ -1273,28 +1555,29 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Slide Dots Bar */}
+          {/* 10-Country Selector Pills Bar inside Card */}
           <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5">
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {CITY_SPECIMENS.map((c, idx) => (
+            <div className="country-pill-rail flex flex-wrap gap-1.5 sm:gap-2">
+              {COUNTRY_CLIMATE_DECK.map((c, idx) => (
                 <button
-                  key={c.id}
+                  key={c.slug}
                   type="button"
-                  onClick={() => setActiveSlide(idx)}
+                  onClick={() => applyCountrySpecimen(c, idx)}
                   className={`min-h-[36px] cursor-pointer rounded-full px-3 sm:px-3.5 text-xs font-mono transition ${
                     activeSlide === idx
                       ? "bg-[#c6f432] font-bold text-[#080808]"
                       : "bg-white/10 text-[#c9c7c0] hover:bg-white/20"
                   }`}
                 >
-                  0{idx + 1} {c.label}
+                  {String(idx + 1).padStart(2, "0")}{" "}
+                  {isId ? c.countryId : c.countryEn}
                 </button>
               ))}
             </div>
-            <span className="font-mono text-[11px] text-[#aaa9ad]">
+            <span className="font-mono text-[11px] text-[#c6f432]">
               {isId
-                ? "Klik panah ← → untuk berpindah zona iklim"
-                : "Click ← → arrows to compare climate zones"}
+                ? "↔ Tarik kartu dengan mouse/jari atau klik negara"
+                : "↔ Drag card left/right or click any country"}
             </span>
           </div>
         </div>
@@ -2038,19 +2321,230 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+
+            {/* Part C: 07 / SEAMLESS BLACK CONTINUATION - GSAP SCRUBBED BENTO GALLERY & LIVE SYSTEM MATRIX */}
+            <div className="border-t border-[#222222] pt-16">
+              <div className="gsap-section-heading flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
+                    07 /{" "}
+                    {isId
+                      ? "Matriks Telemetri Global & Spesifikasi Fisika Real-Time"
+                      : "Global Telemetry Matrix & Live Engineering Specifications"}
+                  </p>
+                  <h3 className="mt-2 text-2xl sm:text-4xl font-normal tracking-[-0.03em] text-white">
+                    {isId
+                      ? "Detail mesin kalkulasi ilmiah, keamanan siber, dan kesiapan skala global."
+                      : "Deep-dive into the deterministic physics engine, security guardrails, and global scale."}
+                  </h3>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href="/docs"
+                    className="inline-flex min-h-[40px] items-center rounded-full border border-white/20 bg-white/5 px-4 font-mono text-xs text-white transition hover:bg-white/15"
+                  >
+                    {isId ? "Buka Dokumen Teknis (/docs) →" : "Technical Docs (/docs) →"}
+                  </Link>
+                  <Link
+                    href="/faq"
+                    className="inline-flex min-h-[40px] items-center rounded-full border border-[#c6f432]/40 bg-[#c6f432]/10 px-4 font-mono text-xs text-[#c6f432] transition hover:bg-[#c6f432]/20"
+                  >
+                    {isId ? "Pusat Bantuan (/faq) →" : "Platform FAQ (/faq) →"}
+                  </Link>
+                </div>
+              </div>
+
+              {/* GSAP Scrubbed Bento Gallery (Inspired by demos.gsap.com/plugin/scrolltrigger/) */}
+              <div className="gsap-scrub-bento-grid mt-8 grid grid-cols-1 gap-4 md:grid-cols-12">
+                {/* Bento Cell 1 (7 Cols): NREL PVWatts v8 + DIN 1989-1 Live Formula Ledger */}
+                <div className="gsap-scrub-bento-item gsap-skew flex flex-col justify-between rounded-[26px] bg-gradient-to-br from-[#141815] via-[#101214] to-[#0c0e10] p-6 sm:p-7 shadow-[inset_0_0_0_1px_#262b28] md:col-span-7">
+                  <div>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="rounded-full bg-[#c6f432]/15 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432]">
+                        NREL PVWATTS v8 · DIN 1989-1
+                      </span>
+                      <span className="font-mono text-xs text-[#aaa9ad]">
+                        {geo.city} ({geo.countryCode})
+                      </span>
+                    </div>
+                    <h4 className="mt-4 text-xl sm:text-2xl font-medium text-white">
+                      {isId
+                        ? "Kalkulasi Fisika Deterministik Tanpa Angka Halusinasi AI"
+                        : "Zero-Hallucination Deterministic Solar & Rainwater Physics"}
+                    </h4>
+                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#aaa9ad]">
+                      {isId
+                        ? "Seluruh estimasi kWh surya, ukuran tangki air hujan, dan jumlah sumur resapan biopori dihitung dari persamaan fisika standar internasional yang disesuaikan dengan lintang dan suhu lokal."
+                        : "Every solar kWh yield, cistern volume, and biopore well count is computed from peer-reviewed engineering formulas calibrated to local latitude and temperature derating."}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 font-mono">
+                    <div className="rounded-2xl bg-black/50 p-3.5 border border-white/8">
+                      <span className="text-[10px] text-[#aaa9ad]">
+                        ANNUAL SOLAR YIELD
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-[#c6f432]">
+                        {Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh
+                      </p>
+                      <span className="text-[10px] text-[#10b981]">
+                        {housingCalc.solar.panelCountEst} Bifacial Modules
+                      </span>
+                    </div>
+                    <div className="rounded-2xl bg-black/50 p-3.5 border border-white/8">
+                      <span className="text-[10px] text-[#aaa9ad]">
+                        RAIN HARVEST / YR
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-cyan-300">
+                        {formatVolume(
+                          housingCalc.rainwater.litersYear,
+                          units,
+                          locale
+                        )}
+                      </p>
+                      <span className="text-[10px] text-cyan-400/80">
+                        Cistern {housingCalc.rainwater.recommendedCisternLiters}L
+                      </span>
+                    </div>
+                    <div className="rounded-2xl bg-black/50 p-3.5 border border-white/8">
+                      <span className="text-[10px] text-[#aaa9ad]">
+                        CO₂e AVOIDED / YR
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-white">
+                        {housingCalc.solar.co2eKgYear.toLocaleString()} kg
+                      </p>
+                      <span className="text-[10px] text-amber-300">
+                        +{housingCalc.infiltration.bioporeUnits} Biopore Wells
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bento Cell 2 (5 Cols): Enterprise Database v3.2 & OWASP Security Shield */}
+                <div className="gsap-scrub-bento-item gsap-skew flex flex-col justify-between rounded-[26px] bg-[#121316] p-6 sm:p-7 shadow-[inset_0_0_0_1px_#25272c] md:col-span-5">
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="rounded-full bg-[#2a9dbd]/20 px-3 py-1 font-mono text-[11px] font-semibold text-cyan-300">
+                        DATABASE v3.2 + OWASP ASVS
+                      </span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#10b981]" />
+                    </div>
+                    <h4 className="mt-4 text-xl sm:text-2xl font-medium text-white">
+                      {isId
+                        ? "Gerbang Login Ketat, Rate Limiter, & Audit Keamanan"
+                        : "Strict Auth Gate, Sliding-Window Rate Limiter & Audit Ledger"}
+                    </h4>
+                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#aaa9ad]">
+                      {isId
+                        ? "Dilengkapi middleware keamanan HTTP Edge (CSP nosniff, X-Frame-Options DENY, proteksi CSRF) serta autentikasi wajib sebelum mengakses ruang kerja Studio."
+                        : "Protected by Edge HTTP security headers (nosniff, X-Frame-Options DENY, CSRF origin verification) and mandatory sign-in before entering Studio workspaces."}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 space-y-2 font-mono text-xs">
+                    <div className="flex items-center justify-between rounded-xl bg-black/45 px-3.5 py-2.5 border border-white/8">
+                      <span className="text-[#aaa9ad]">AUTH SESSION GATE</span>
+                      <span className="text-[#c6f432]">
+                        {isAuthenticated ? "UNLOCKED (ACTIVE)" : "PROTECTED (/LOGIN)"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-black/45 px-3.5 py-2.5 border border-white/8">
+                      <span className="text-[#aaa9ad]">EDGE RATE LIMITER</span>
+                      <span className="text-cyan-300">30 REQ/MIN · IP GUARD</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-black/45 px-3.5 py-2.5 border border-white/8">
+                      <span className="text-[#aaa9ad]">API CREDIT SHIELD</span>
+                      <span className="text-[#10b981]">
+                        ${remainingCredit} / $150.00 READY
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bento Bottom Row: 3 Equal Scrubbed Cards (4 Cols Each) */}
+                {[
+                  {
+                    badge: "195+ COUNTRIES",
+                    color: "text-[#c6f432]",
+                    titleEn: "Global Köppen-Geiger Synthesis",
+                    titleId: "Sintesis Iklim 195+ Negara Dunia",
+                    descEn:
+                      "Instant climate classification (Af, Am, BWh, Csb, Cfb, Cfa, Dfb) and 12-month ERA5 curves for any coordinate on Earth.",
+                    descId:
+                      "Klasifikasi iklim otomatis dan kurva cuaca 12 bulan ERA5 untuk negara dan koordinat mana pun di seluruh dunia.",
+                  },
+                  {
+                    badge: "60 FPS WEBGL",
+                    color: "text-cyan-300",
+                    titleEn: "Procedural 3D PBR Architecture",
+                    titleId: "Arsitektur 3D PBR 60 FPS Ringan",
+                    descEn:
+                      "Zero-bloat procedural CLT Solar Pavilion, dynamic flood/heal canal physics, and single-draw-call GPU particles.",
+                    descId:
+                      "Geometri arsitektur prosedural ringan dengan simulasi banjir/solusi AI real-time dan partikel ramah GPU.",
+                  },
+                  {
+                    badge: "JUDGE READY",
+                    color: "text-amber-300",
+                    titleEn: "1-Click Level 5 Judge Sandbox",
+                    titleId: "Demo Juri Level 5 Satu Klik",
+                    descEn:
+                      "Sign in with 1-Click Judge Demo on /login to unlock all 6 eco-structures, SAM 3.1 presets, and Muse Spark council.",
+                    descId:
+                      "Masuk dengan 1-Click Judge Demo di halaman /login untuk membuka seluruh 6 bangunan ekologis dan fitur AI.",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.badge}
+                    className="gsap-scrub-bento-item gsap-batch-card rounded-[24px] bg-[#121316] p-5 sm:p-6 shadow-[inset_0_0_0_1px_#24262b] md:col-span-4"
+                  >
+                    <span className={`font-mono text-xs font-semibold ${item.color}`}>
+                      ● {item.badge}
+                    </span>
+                    <h4 className="mt-2.5 text-lg font-medium text-white">
+                      {isId ? item.titleId : item.titleEn}
+                    </h4>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#aaa9ad]">
+                      {isId ? item.descId : item.descEn}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Part D: GSAP Scroll-Driven Kinetic Telemetry Marquee Band (Seamless inside #080808) */}
+              <div className="mt-14 overflow-hidden rounded-2xl border border-white/10 bg-[#0d0f12] py-3.5">
+                <div className="gsap-marquee-track verdara-marquee items-center gap-8 font-mono text-xs uppercase tracking-[0.16em] text-[#aaa9ad]">
+                  {[0, 1].map((loopIdx) => (
+                    <div key={loopIdx} className="flex shrink-0 items-center gap-8">
+                      <span className="text-[#c6f432]">
+                        ● VERDARA SPATIAL ECO-TWIN v3.2
+                      </span>
+                      <span>META SAM 3.1 VISION SEGMENTATION</span>
+                      <span className="text-cyan-300">
+                        ● META MUSE SPARK 3-AGENT COUNCIL
+                      </span>
+                      <span>NREL PVWATTS v8 SOLAR ENGINE</span>
+                      <span className="text-[#10b981]">
+                        ● DIN 1989-1 HYDROLOGICAL CISTERN
+                      </span>
+                      <span>195+ COUNTRIES · 60 FPS WEBGL</span>
+                      <span className="text-amber-300">
+                        ● OWASP ASVS SECURITY GUARD
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 8. DOVV STUDIO GIANT ARCHITECTURAL FOOTER (.footer + .hello-text + 4-Cell Grid) */}
-      <footer
-        className={`w-full overflow-clip pb-28 ${
-          isLight ? "bg-[#f5f5f3] text-[#0b0b0b]" : "bg-[#0b0c0e] text-white"
-        }`}
-      >
+      {/* 8. SEAMLESS BLACK ARCHITECTURAL FOOTER (CONNECTED DIRECTLY TO #CHAPTER-CLIMATE) */}
+      <footer className="w-full overflow-clip bg-[#080808] pb-28 text-white border-t border-white/10">
         <div className="mx-auto max-w-[1440px] px-4 pt-14 pb-6">
           <Link
-            href="/dashboard"
+            href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
             className="block select-none text-center transition-opacity hover:opacity-85"
           >
             <DovvInteractiveWordmark
@@ -2060,17 +2554,9 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <div
-          className={`mx-auto grid max-w-[1440px] grid-cols-1 border-t md:grid-cols-2 xl:grid-cols-4 ${
-            isLight ? "border-black/15" : "border-white/15"
-          }`}
-        >
+        <div className="mx-auto grid max-w-[1440px] grid-cols-1 border-t border-white/15 md:grid-cols-2 xl:grid-cols-4">
           {/* Cell 1: Brand & Judge Demo Action */}
-          <div
-            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
-              isLight ? "border-black/15" : "border-white/15"
-            }`}
-          >
+          <div className="flex flex-col gap-3.5 border-b border-white/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
             <div className="flex items-center gap-3">
               <VerdaraLogo size={40} />
               <div>
@@ -2089,7 +2575,7 @@ export default function LandingPage() {
             </p>
             <Link
               href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-              className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#080808] px-5 text-sm font-medium text-white transition hover:bg-[#222]"
+              className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#c6f432] px-5 text-sm font-semibold text-[#080808] transition hover:bg-[#d5f759]"
             >
               <ZeggoRollText
                 text={
@@ -2102,11 +2588,7 @@ export default function LandingPage() {
           </div>
 
           {/* Cell 2: Spatial Workspaces & Docs */}
-          <div
-            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
-              isLight ? "border-black/15" : "border-white/15"
-            }`}
-          >
+          <div className="flex flex-col gap-3.5 border-b border-white/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
               02 / Workspaces &amp; Docs
             </span>
@@ -2123,7 +2605,7 @@ export default function LandingPage() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="dovv-wordmark inline-block text-2xl transition-all hover:pl-2 hover:opacity-65"
+                    className="dovv-wordmark inline-block text-2xl transition-all hover:pl-2 hover:text-[#c6f432]"
                   >
                     {link.label}
                   </Link>
@@ -2133,11 +2615,7 @@ export default function LandingPage() {
           </div>
 
           {/* Cell 3: Scientific Citations */}
-          <div
-            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 md:border-b-0 xl:border-r ${
-              isLight ? "border-black/15" : "border-white/15"
-            }`}
-          >
+          <div className="flex flex-col gap-3.5 border-b border-white/15 p-6 sm:p-8 md:border-b-0 xl:border-r">
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
               03 / Meta AI &amp; Science Stack
             </span>
@@ -2155,9 +2633,9 @@ export default function LandingPage() {
           <div className="flex flex-col justify-between gap-4 p-6 sm:p-8">
             <div className="space-y-2">
               <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
-                04 / Active World City
+                04 / Active World Jurisdiction
               </span>
-              <p className="dovv-wordmark text-3xl">
+              <p className="dovv-wordmark text-3xl text-[#c6f432]">
                 {geo.city} ({geo.countryCode})
               </p>
               <div className="flex items-center gap-2 text-sm opacity-75">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import SmoothScroll from "@/components/ui/SmoothScroll";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -46,6 +47,7 @@ export default function RootLayout({
         className="min-h-screen antialiased selection:bg-[#c6f432] selection:text-[#151515]"
       >
         {children}
+        <SmoothScroll />
       </body>
     </html>
   );

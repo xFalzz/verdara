@@ -11,6 +11,7 @@ import {
 } from "@/lib/science/presets";
 import { calculateHousingFootprint } from "@/lib/science/calculator";
 import { formatCurrency, formatTemp } from "@/lib/science/units";
+import { smoothScrollTo } from "@/components/ui/SmoothScroll";
 
 /**
  * 0. VERDARA BESPOKE ARCHITECTURAL BRAND LOGO (<VerdaraLogo />)
@@ -611,7 +612,7 @@ export function TownhouseScrollRail({
     if (!target) return;
     const el = document.getElementById(target.id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      smoothScrollTo(el);
     }
   };
 

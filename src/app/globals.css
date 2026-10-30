@@ -55,7 +55,6 @@
     margin: 0;
     padding: 0;
     overflow-x: clip;
-    scroll-behavior: smooth;
     background-color: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
@@ -344,6 +343,65 @@
   gap: 2px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14),
     0 14px 36px -10px rgba(0, 0, 0, 0.65);
+}
+
+@media (max-width: 640px) {
+  .dovv-bottom-dock {
+    bottom: 10px;
+    max-width: calc(100vw - 20px);
+    scrollbar-width: none;
+  }
+  .dovv-bottom-dock::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Lenis smooth scroll (recommended base styles) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* Draggable country deck */
+.country-deck-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+}
+.country-deck-viewport:active {
+  cursor: grabbing;
+}
+.country-deck-track {
+  display: flex;
+  will-change: transform;
+}
+.country-pill-rail {
+  scrollbar-width: none;
+}
+.country-pill-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Velocity-driven skew targets */
+.gsap-skew {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Scroll-velocity marquee in the dark closing band */
+.verdara-marquee {
+  display: flex;
+  width: max-content;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
