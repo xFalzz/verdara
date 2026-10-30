@@ -12,10 +12,10 @@ declare global {
 }
 
 /**
- * Site-wide smooth scrolling.
- * Lenis drives the native scroll position, GSAP's ticker drives Lenis,
- * and every Lenis frame updates ScrollTrigger so scrubbed animations stay in sync.
- * Skipped entirely for users who prefer reduced motion.
+ * Clean, lightweight inertial smooth scrolling.
+ * Uses a responsive lerp factor (0.14) and native requestAnimationFrame loop
+ * so scrolling feels crisp, immediate, and never rubbery or laggy.
+ * Excludes WebGL canvases and nested scrollable containers automatically.
  */
 export default function SmoothScroll() {
   useEffect(() => {
@@ -24,27 +24,31 @@ export default function SmoothScroll() {
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({
-      duration: 1.1,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      lerp: 0.14,
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.4,
-      anchors: { offset: -72 },
-      // Let inner scroll areas (popovers, lists, code blocks) scroll natively.
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.15,
+      syncTouch: false,
+      autoRaf: false,
+      anchors: { offset: -76 },
       prevent: (node: HTMLElement) =>
         !!node.closest?.(
-          "[data-lenis-prevent], .overflow-y-auto, .overflow-auto, .overflow-x-auto"
+          "[data-lenis-prevent], .overflow-y-auto, .overflow-auto, .overflow-x-auto, canvas"
         ),
     });
     window.__verdaraLenis = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
-    const tick = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(tick);
-    gsap.ticker.lagSmoothing(0);
+
+    let rafId = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      rafId = window.requestAnimationFrame(raf);
+    };
+    rafId = window.requestAnimationFrame(raf);
 
     return () => {
-      gsap.ticker.remove(tick);
+      window.cancelAnimationFrame(rafId);
       lenis.destroy();
       delete window.__verdaraLenis;
     };
@@ -54,10 +58,10 @@ export default function SmoothScroll() {
 }
 
 /** Smoothly scroll to an element, falling back to native behaviour without Lenis. */
-export function smoothScrollTo(target: HTMLElement | string, offset = -72) {
+export function smoothScrollTo(target: HTMLElement | string, offset = -76) {
   const lenis = typeof window !== "undefined" ? window.__verdaraLenis : undefined;
   if (lenis) {
-    lenis.scrollTo(target, { offset, duration: 1.2 });
+    lenis.scrollTo(target, { offset, duration: 0.9 });
     return;
   }
   const el =

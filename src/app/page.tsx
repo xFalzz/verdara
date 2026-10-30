@@ -289,7 +289,7 @@ export default function LandingPage() {
     setDragOffsetPx(0);
   };
 
-  // GSAP + ScrollTrigger Choreographed Page Animations (Velocity Skew, Scrubbed Bento, ScrollTrigger.batch)
+  // Subtle, Clean GSAP + ScrollTrigger Entrance Animations (No Excessive Skew or Layout Distortion)
   useEffect(() => {
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -299,245 +299,96 @@ export default function LandingPage() {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      // 1. Hero entrance stagger
+      // 1. Subtle hero entrance stagger
       gsap.fromTo(
         ".gsap-hero-item",
-        { y: 24, opacity: 0 },
+        { y: 14, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.75,
-          stagger: 0.09,
-          ease: "power3.out",
+          duration: 0.55,
+          stagger: 0.06,
+          ease: "power2.out",
           clearProps: "transform,opacity",
         }
       );
 
-      // 2. 3D Living Town Stage scroll-linked scale & lift
-      gsap.fromTo(
-        ".gsap-town-stage",
-        { scale: 0.94, y: 36 },
-        {
-          scale: 1,
-          y: 0,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: "#chapter-town",
-            start: "top 88%",
-            end: "top 25%",
-            scrub: 0.5,
-          },
-        }
-      );
-
-      // 3. Section headings reveal
+      // 2. Section headings gentle lift
       gsap.utils.toArray<HTMLElement>(".gsap-section-heading").forEach((el) => {
         gsap.fromTo(
           el,
-          { y: 32, opacity: 0 },
+          { y: 18, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 0.75,
-            ease: "power3.out",
+            duration: 0.55,
+            ease: "power2.out",
+            clearProps: "transform,opacity",
             scrollTrigger: {
               trigger: el,
-              start: "top 86%",
+              start: "top 90%",
               toggleActions: "play none none none",
             },
           }
         );
       });
 
-      // 4. Slide deck frame entrance
-      gsap.fromTo(
-        ".gsap-slide-frame",
-        { y: 40, opacity: 0, scale: 0.98 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: "#chapter-slides",
-            start: "top 80%",
-            toggleActions: "play none none none",
-          },
-        }
-      );
-
-      // 5. Zeggo Sticky-Left + Scrolling-Right step cards
-      gsap.utils.toArray<HTMLElement>(".gsap-step-card").forEach((card, i) => {
+      // 3. Zeggo Sticky-Left + Scrolling-Right step cards
+      gsap.utils.toArray<HTMLElement>(".gsap-step-card").forEach((card) => {
         gsap.fromTo(
           card,
-          { y: 42, opacity: 0 },
+          { y: 18, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 0.7,
-            delay: i * 0.05,
-            ease: "power3.out",
+            duration: 0.5,
+            ease: "power2.out",
+            clearProps: "transform,opacity",
             scrollTrigger: {
               trigger: card,
-              start: "top 88%",
+              start: "top 92%",
               toggleActions: "play none none none",
             },
           }
         );
       });
 
-      // 6. Zeggo 12-Column Diagonal Staircase Cascade
+      // 4. Zeggo 12-Column Diagonal Staircase Cascade
       gsap.fromTo(
         ".gsap-stair-card",
-        { y: 36, x: -16, opacity: 0 },
+        { y: 18, opacity: 0 },
         {
           y: 0,
-          x: 0,
           opacity: 1,
-          duration: 0.7,
-          stagger: 0.12,
-          ease: "back.out(1.25)",
+          duration: 0.5,
+          stagger: 0.08,
+          ease: "power2.out",
+          clearProps: "transform,opacity",
           scrollTrigger: {
             trigger: ".gsap-stair-grid",
-            start: "top 85%",
+            start: "top 90%",
             toggleActions: "play none none none",
           },
         }
       );
 
-      // 7. 4 Core Bento Workspace Cards
-      gsap.fromTo(
-        ".gsap-bento-card",
-        { y: 46, opacity: 0, scale: 0.97 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.75,
-          stagger: 0.12,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: "#chapter-tools",
-            start: "top 80%",
-            toggleActions: "play none none none",
-          },
-        }
-      );
-
-      // 8. Curved SVG Dome scrub
-      if (domeRef.current) {
-        gsap.fromTo(
-          domeRef.current,
-          { scaleY: 0.25 },
-          {
-            scaleY: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: "#chapter-climate",
-              start: "top 95%",
-              end: "top 35%",
-              scrub: 0.4,
-            },
-          }
-        );
-      }
-
-      // 9. 12-Month ERA5 Rainfall Bars growth
+      // 5. 12-Month ERA5 Rainfall Bars growth
       gsap.fromTo(
         ".gsap-era5-bar",
         { scaleY: 0 },
         {
           scaleY: 1,
           transformOrigin: "bottom center",
-          duration: 0.7,
-          stagger: 0.04,
-          ease: "back.out(1.4)",
+          duration: 0.55,
+          stagger: 0.03,
+          ease: "power2.out",
           scrollTrigger: {
             trigger: ".gsap-era5-chart",
-            start: "top 85%",
+            start: "top 88%",
             toggleActions: "play none none none",
           },
         }
       );
-
-      // 10. GSAP ScrollTrigger.batch() ("Stagger items in on scroll" from demos.gsap.com)
-      gsap.set(".gsap-judge-card, .gsap-batch-card", { y: 34, opacity: 0 });
-      ScrollTrigger.batch(".gsap-judge-card, .gsap-batch-card", {
-        start: "top 88%",
-        onEnter: (batch) =>
-          gsap.to(batch, {
-            opacity: 1,
-            y: 0,
-            duration: 0.68,
-            stagger: 0.1,
-            ease: "power3.out",
-            overwrite: true,
-          }),
-      });
-
-      // 11. GSAP Scrubbed Bento Gallery (from demos.gsap.com/plugin/scrolltrigger/)
-      gsap.utils
-        .toArray<HTMLElement>(".gsap-scrub-bento-item")
-        .forEach((cell, idx) => {
-          gsap.fromTo(
-            cell,
-            {
-              y: idx % 2 === 0 ? 44 : 68,
-              scale: 0.93,
-              opacity: 0.45,
-            },
-            {
-              y: 0,
-              scale: 1,
-              opacity: 1,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: ".gsap-scrub-bento-grid",
-                start: "top 92%",
-                end: "center 52%",
-                scrub: 0.65,
-              },
-            }
-          );
-        });
-
-      // 12. GSAP Scroll-Driven Kinetic Marquee Band
-      gsap.fromTo(
-        ".gsap-marquee-track",
-        { xPercent: 0 },
-        {
-          xPercent: -22,
-          ease: "none",
-          scrollTrigger: {
-            trigger: "#chapter-climate",
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 0.5,
-          },
-        }
-      );
-
-      // 13. GSAP Velocity Skew (from demos.gsap.com/plugin/scrolltrigger/)
-      const skewSetter = gsap.quickSetter(".gsap-skew", "skewY", "deg");
-      const proxy = { skew: 0 };
-      const clampSkew = gsap.utils.clamp(-2.6, 2.6);
-
-      ScrollTrigger.create({
-        onUpdate: (self) => {
-          const skew = clampSkew(self.getVelocity() / -420);
-          if (Math.abs(skew) > Math.abs(proxy.skew)) {
-            proxy.skew = skew;
-            gsap.to(proxy, {
-              skew: 0,
-              duration: 0.65,
-              ease: "power3",
-              overwrite: true,
-              onUpdate: () => skewSetter(proxy.skew),
-            });
-          }
-        },
-      });
     }, pageRef);
 
     return () => ctx.revert();
@@ -1384,15 +1235,16 @@ export default function LandingPage() {
           onPointerUp={handleDeckPointerUp}
           onPointerCancel={handleDeckPointerUp}
           onPointerLeave={handleDeckPointerUp}
-          className="gsap-slide-frame country-deck-viewport gsap-skew overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626] select-none"
+          className="gsap-slide-frame country-deck-viewport overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626] select-none"
         >
+          <div className="overflow-hidden w-full">
           <div
             className="dovv-slide-track"
             style={{
               transform: `translate3d(calc(-${activeSlide * 100}% + ${dragOffsetPx}px), 0, 0)`,
               transition: isDraggingDeck
                 ? "none"
-                : "transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)",
+                : "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
             {COUNTRY_CLIMATE_DECK.map((spec, idx) => {
@@ -1423,7 +1275,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={spec.slug}
-                  className="w-full shrink-0 pr-1 sm:pr-4"
+                  className="w-full shrink-0"
                   aria-hidden={activeSlide !== idx}
                 >
                   <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
@@ -1553,6 +1405,7 @@ export default function LandingPage() {
                 </div>
               );
             })}
+          </div>
           </div>
 
           {/* 10-Country Selector Pills Bar inside Card */}
@@ -2540,12 +2393,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. SEAMLESS BLACK ARCHITECTURAL FOOTER (CONNECTED DIRECTLY TO #CHAPTER-CLIMATE) */}
-      <footer className="w-full overflow-clip bg-[#080808] pb-28 text-white border-t border-white/10">
+      {/* 8. WHITE ARCHITECTURAL FOOTER (CLEAN LIGHT / PAPER CONTRAST) */}
+      <footer className="w-full overflow-clip bg-[#f5f5f3] pb-28 text-[#111111] border-t border-black/15">
         <div className="mx-auto max-w-[1440px] px-4 pt-14 pb-6">
           <Link
             href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-            className="block select-none text-center transition-opacity hover:opacity-85"
+            className="block select-none text-center text-[#111111] transition-opacity hover:opacity-85"
           >
             <DovvInteractiveWordmark
               lines={["VERDARA TOWN"]}
@@ -2554,29 +2407,30 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <div className="mx-auto grid max-w-[1440px] grid-cols-1 border-t border-white/15 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-1 border-t border-black/15 md:grid-cols-2 xl:grid-cols-4">
           {/* Cell 1: Brand & Judge Demo Action */}
-          <div className="flex flex-col gap-3.5 border-b border-white/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
+          <div className="flex flex-col gap-3.5 border-b border-black/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
             <div className="flex items-center gap-3">
               <VerdaraLogo size={40} />
               <div>
-                <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
+                <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
                   01 / Judge Quick-Start
                 </span>
-                <p className="text-lg font-semibold tracking-tight">
+                <p className="text-lg font-semibold tracking-tight text-[#111111]">
                   Verdara Spatial Eco-Town
                 </p>
               </div>
             </div>
-            <p className="text-xs sm:text-sm opacity-80">
+            <p className="text-xs sm:text-sm text-[#444440]">
               {isId
                 ? "Klik tombol di bawah untuk langsung masuk ke Kota 3D Level 5 dengan seluruh 6 bangunan ekologis terbuka."
                 : "Click below to launch the Level 5 Judge Demo Town with all 6 ecological structures unlocked."}
             </p>
             <Link
               href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-              className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#c6f432] px-5 text-sm font-semibold text-[#080808] transition hover:bg-[#d5f759]"
+              className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#080808] px-5 text-sm font-semibold text-white transition hover:bg-[#1e9e5a]"
             >
+              <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
               <ZeggoRollText
                 text={
                   isAuthenticated
@@ -2588,8 +2442,8 @@ export default function LandingPage() {
           </div>
 
           {/* Cell 2: Spatial Workspaces & Docs */}
-          <div className="flex flex-col gap-3.5 border-b border-white/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
-            <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
+          <div className="flex flex-col gap-3.5 border-b border-black/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
+            <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
               02 / Workspaces &amp; Docs
             </span>
             <ul className="flex flex-col gap-2">
@@ -2605,7 +2459,7 @@ export default function LandingPage() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="dovv-wordmark inline-block text-2xl transition-all hover:pl-2 hover:text-[#c6f432]"
+                    className="dovv-wordmark inline-block text-2xl text-[#111111] transition-all hover:pl-2 hover:text-[#1e9e5a]"
                   >
                     {link.label}
                   </Link>
@@ -2615,11 +2469,11 @@ export default function LandingPage() {
           </div>
 
           {/* Cell 3: Scientific Citations */}
-          <div className="flex flex-col gap-3.5 border-b border-white/15 p-6 sm:p-8 md:border-b-0 xl:border-r">
-            <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
+          <div className="flex flex-col gap-3.5 border-b border-black/15 p-6 sm:p-8 md:border-b-0 xl:border-r">
+            <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
               03 / Meta AI &amp; Science Stack
             </span>
-            <ul className="space-y-1.5 text-sm opacity-80">
+            <ul className="space-y-1.5 text-sm text-[#333330]">
               <li>Meta SAM 3.1 Concept Segmentation</li>
               <li>Meta Muse Spark &amp; muse-spark-open</li>
               <li>Meta Muse Image Eco-Retrofit</li>
@@ -2632,13 +2486,13 @@ export default function LandingPage() {
           {/* Cell 4: Live Jurisdiction & Status */}
           <div className="flex flex-col justify-between gap-4 p-6 sm:p-8">
             <div className="space-y-2">
-              <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
+              <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
                 04 / Active World Jurisdiction
               </span>
-              <p className="dovv-wordmark text-3xl text-[#c6f432]">
+              <p className="dovv-wordmark text-3xl text-[#14733f]">
                 {geo.city} ({geo.countryCode})
               </p>
-              <div className="flex items-center gap-2 text-sm opacity-75">
+              <div className="flex items-center gap-2 text-sm text-[#444440]">
                 <span className="h-2 w-2 rounded-full bg-[#16c847]" />
                 <span>
                   {geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}° · Köppen{" "}
@@ -2647,7 +2501,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <p className="font-mono text-xs opacity-55">
+            <p className="font-mono text-xs text-[#555550]">
               Verdara Spatial Studio · 195+ Countries · 60 FPS WebGL
             </p>
           </div>
