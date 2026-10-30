@@ -113,13 +113,13 @@ const initialCalc = calculateHousingFootprint({
 });
 
 export const useVerdaraStore = create<VerdaraState>((set, get) => ({
-  isAuthenticated: true,
-  isJudgeDemo: true,
-  displayName: "Demo Specimen: Menlo Park (Judge)",
-  email: "judge+demo@verdara.app",
+  isAuthenticated: false,
+  isJudgeDemo: false,
+  displayName: "Guest Visitor",
+  email: "",
 
   locale: "en",
-  units: "imperial",
+  units: "metric",
   theme: "light",
 
   activePresetId: "menlo_park",
@@ -174,6 +174,22 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
       builtCoverRatio: mpGeo.builtCoverRatio,
     });
 
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(
+          "verdara_auth_session_v3",
+          JSON.stringify({
+            isAuthenticated: true,
+            isJudgeDemo: true,
+            displayName: "Demo Specimen: Menlo Park (Judge)",
+            email: "judge+menlopark@verdara.app",
+          })
+        );
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
+
     set({
       isAuthenticated: true,
       isJudgeDemo: true,
@@ -199,9 +215,27 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
   },
 
   resetToStarterPlot: () => {
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(
+          "verdara_auth_session_v3",
+          JSON.stringify({
+            isAuthenticated: true,
+            isJudgeDemo: false,
+            displayName: "Starter Plot (Level 1)",
+            email: "starter@verdara.app",
+          })
+        );
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
+
     set({
+      isAuthenticated: true,
       isJudgeDemo: false,
       displayName: "Starter Plot (Level 1)",
+      email: "starter@verdara.app",
       xp: 0,
       level: 1,
       progressPct: 0,
@@ -217,6 +251,21 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
   loginWithEmail: (email, name) => {
     const cleanName =
       name?.trim() || email.split("@")[0] || "Verdara Resident";
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(
+          "verdara_auth_session_v3",
+          JSON.stringify({
+            isAuthenticated: true,
+            isJudgeDemo: false,
+            displayName: cleanName,
+            email,
+          })
+        );
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
     set({
       isAuthenticated: true,
       isJudgeDemo: false,
@@ -226,9 +275,18 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
   },
 
   logout: () => {
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.removeItem("verdara_auth_session_v3");
+      } catch {
+        // Ignore storage errors
+      }
+    }
     set({
       isAuthenticated: false,
       isJudgeDemo: false,
+      displayName: "Guest Visitor",
+      email: "",
     });
   },
 

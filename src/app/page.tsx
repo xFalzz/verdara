@@ -22,9 +22,9 @@ import {
   VerdaraLogo,
   ZeggoRollText,
   DovvInteractiveWordmark,
-  DovvHoloSticker,
   TownhouseScrollRail,
   CompactWorldCityPicker,
+  VerdaraBottomDock,
   type ScrollRailChapter,
 } from "@/components/ui/InteractiveEffects";
 
@@ -34,7 +34,7 @@ const EcoIslandCanvas = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex h-full w-full items-center justify-center bg-[#e9e8e2] font-mono text-xs text-[#4b4b48]">
-        Loading 3D Townhouse Canvas...
+        Loading Grand 3D Eco-District Canvas...
       </div>
     ),
   }
@@ -70,7 +70,7 @@ const MONTHS_SHORT = [
 
 const LANDING_CHAPTERS: ScrollRailChapter[] = [
   { id: "chapter-hero", labelEn: "Overview", labelId: "Ringkasan" },
-  { id: "chapter-town", labelEn: "Living Town 3D", labelId: "Kota 3D Hidup" },
+  { id: "chapter-town", labelEn: "3D Eco-District", labelId: "Distrik 3D" },
   { id: "chapter-slides", labelEn: "5 Climate Decks", labelId: "5 Dek Iklim" },
   { id: "chapter-how", labelEn: "How It Works", labelId: "Cara Kerja" },
   { id: "chapter-tools", labelEn: "4 Core Tools", labelId: "4 Fitur Utama" },
@@ -95,11 +95,14 @@ export default function LandingPage() {
     level,
     unlockedItems,
     aiShield,
+    isAuthenticated,
+    displayName,
     setLocale,
     setUnits,
     setTheme,
     teleportToCity,
     loginAsJudgeDemo,
+    logout,
   } = useVerdaraStore();
 
   const [isNightPreview, setIsNightPreview] = useState(false);
@@ -455,157 +458,195 @@ export default function LandingPage() {
         isId={isId}
       />
 
-      {/* 1. DOVV STUDIO SINGLE-LINE TOP CHROME + COMPACT CITY/COUNTRY PICKER */}
-      <header className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-2 px-4 pt-5 pb-2 sm:px-10 sm:pt-6">
-        <div className="flex min-w-0 shrink-0 items-center gap-2.5">
-          <Link
-            href="/"
-            className="flex min-h-[42px] shrink-0 items-center gap-2"
-            aria-label="Verdara Home"
-          >
-            <VerdaraLogo size={38} />
-            <span className="dovv-wordmark text-2xl sm:text-[28px] tracking-tight">
-              VERDARA
-            </span>
-          </Link>
+      {/* 1. CLEAN, STRUCTURED STICKY TOP HEADER */}
+      <header
+        className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors duration-200 ${
+          isLight
+            ? "border-black/10 bg-[#f5f5f3]/90"
+            : "border-white/10 bg-[#0b0c0e]/90"
+        }`}
+      >
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 sm:px-8">
+          {/* Left: Brand Identity + Primary Navigation Links */}
+          <div className="flex min-w-0 items-center gap-3 lg:gap-5">
+            <Link
+              href="/"
+              className="flex min-h-[44px] shrink-0 items-center gap-2.5"
+              aria-label="Verdara Home"
+            >
+              <VerdaraLogo size={34} />
+              <div className="flex flex-col leading-none">
+                <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
+                  VERDARA
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.14em] opacity-60">
+                  SPATIAL ECO-TWIN
+                </span>
+              </div>
+            </Link>
 
-          {/* Single-Row Quick City Switcher + Compact 195+ Countries Popover */}
-          <div
-            role="group"
-            aria-label={isId ? "Pilih Kota" : "Select City"}
-            className="hidden items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] xl:flex"
-          >
-            {CITY_SPECIMENS.map((c, idx) => {
-              const active =
-                activePresetId === c.id &&
-                geo.city.toLowerCase().includes(c.label.toLowerCase());
-              return (
+            {/* Clean Structured Section & Page Links */}
+            <nav
+              aria-label={isId ? "Menu Bagian" : "Section Menu"}
+              className={`hidden items-center gap-1 rounded-full border p-1 lg:flex ${
+                isLight
+                  ? "border-black/10 bg-white/80"
+                  : "border-white/10 bg-[#14161a]/90"
+              }`}
+            >
+              <a
+                href="#chapter-town"
+                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {isId ? "Distrik 3D" : "3D District"}
+              </a>
+              <a
+                href="#chapter-slides"
+                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {isId ? "5 Zona Iklim" : "5 Climates"}
+              </a>
+              <a
+                href="#chapter-tools"
+                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {isId ? "Fitur AI" : "AI Tools"}
+              </a>
+              <Link
+                href="/docs"
+                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-semibold text-[#14733f] dark:text-[#c6f432] transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {isId ? "Dokumen" : "Docs"}
+              </Link>
+              <Link
+                href="/faq"
+                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                FAQ
+              </Link>
+            </nav>
+
+            {/* Compact Country & City Selector in Header */}
+            <div className="hidden xl:block">
+              <CompactWorldCityPicker
+                isLight={isLight}
+                isId={isId}
+                variant="header"
+                align="left"
+              />
+            </div>
+          </div>
+
+          {/* Right: Structured Utility Pill + Strict Auth Gate CTA */}
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {/* Grouped Preferences Pill (Locale, Units, Theme) */}
+            <div
+              className={`inline-flex items-center gap-0.5 rounded-full border p-1 ${
+                isLight
+                  ? "border-black/10 bg-white"
+                  : "border-white/12 bg-[#15171b]"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setLocale(locale === "en" ? "id" : "en")}
+                className="min-h-[34px] cursor-pointer rounded-full px-2.5 text-xs font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+                title={isId ? "Ganti Bahasa" : "Switch Language"}
+              >
+                {locale === "id" ? "ID" : "EN"}
+              </button>
+              <span className="h-3.5 w-px bg-current opacity-15" />
+              <button
+                type="button"
+                onClick={() =>
+                  setUnits(units === "metric" ? "imperial" : "metric")
+                }
+                className="hidden min-h-[34px] cursor-pointer items-center rounded-full px-2.5 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10 sm:inline-flex"
+                title={isId ? "Ganti Satuan" : "Switch Units"}
+              >
+                {units === "metric" ? "m² · L" : "ft² · gal"}
+              </button>
+              <span className="hidden h-3.5 w-px bg-current opacity-15 sm:inline-block" />
+              <button
+                type="button"
+                onClick={() => setTheme(isLight ? "dark" : "light")}
+                className="min-h-[34px] cursor-pointer rounded-full px-2.5 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+                title={isId ? "Mode Terang / Gelap" : "Light / Dark Mode"}
+              >
+                {isLight ? "☀ Day" : "☾ Night"}
+              </button>
+            </div>
+
+            {/* Judge Brief Quick Drawer Toggle */}
+            <button
+              type="button"
+              onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
+              aria-expanded={headerNotchOpen}
+              className="zeggo-btn hidden min-h-[42px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-3.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#2c2c2c] transition hover:bg-[#1a1a1a] md:flex"
+            >
+              <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
+              <ZeggoRollText
+                text={
+                  headerNotchOpen
+                    ? isId
+                      ? "Tutup Info"
+                      : "Close Brief"
+                    : isId
+                    ? "Info Juri"
+                    : "Judge Brief"
+                }
+              />
+            </button>
+
+            {/* Auth-Aware Primary Studio Button */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href="/dashboard"
+                  className="zeggo-btn group flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#1e9e5a] px-4 text-xs sm:text-sm font-semibold whitespace-nowrap text-white transition hover:bg-[#178249]"
+                >
+                  <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
+                  <ZeggoRollText
+                    text={
+                      isId
+                        ? `Studio (${displayName.split(" ")[0]})`
+                        : `Studio (${displayName.split(" ")[0]})`
+                    }
+                  />
+                  <span>→</span>
+                </Link>
                 <button
-                  key={c.id}
                   type="button"
-                  onClick={() => {
-                    teleportToCity(c.id);
-                    setActiveSlide(idx);
-                  }}
-                  className={`min-h-[34px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
-                    active
-                      ? "bg-[#c6f432] font-semibold text-[#080808]"
-                      : "text-[#c9c7c0] hover:bg-[#1c1c1c] hover:text-white"
+                  onClick={logout}
+                  className={`min-h-[42px] cursor-pointer rounded-full border px-3 text-xs font-medium transition ${
+                    isLight
+                      ? "border-black/15 bg-white text-[#111] hover:bg-black/5"
+                      : "border-white/15 bg-[#16181c] text-white hover:bg-white/10"
                   }`}
                 >
-                  {c.label}{" "}
-                  <span className="font-mono text-[10px] opacity-75">
-                    {c.koppen}
-                  </span>
+                  {isId ? "Keluar" : "Logout"}
                 </button>
-              );
-            })}
-            <CompactWorldCityPicker
-              isLight={isLight}
-              isId={isId}
-              variant="header"
-              align="left"
-            />
+              </div>
+            ) : (
+              <Link
+                href="/login?next=/dashboard"
+                className="zeggo-btn group flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#080808] px-4 text-xs sm:text-sm font-semibold whitespace-nowrap text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition hover:bg-[#222]"
+              >
+                <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
+                <ZeggoRollText
+                  text={isId ? "Login / Buka Studio" : "Sign In / Studio"}
+                />
+                <span>→</span>
+              </Link>
+            )}
           </div>
-        </div>
-
-        {/* Right Controls + DOVV Notch Trigger + Zeggo Roll CTA (Single Row, Never Wraps) */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            onClick={() => setLocale(locale === "en" ? "id" : "en")}
-            className={`min-h-[40px] shrink-0 cursor-pointer rounded-full px-3 text-xs font-semibold whitespace-nowrap transition ${
-              isLight
-                ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
-                : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
-            }`}
-          >
-            {locale === "id" ? "ID" : "EN"}
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              setUnits(units === "metric" ? "imperial" : "metric")
-            }
-            className={`hidden min-h-[40px] shrink-0 cursor-pointer items-center rounded-full px-3 text-xs font-medium whitespace-nowrap transition sm:inline-flex ${
-              isLight
-                ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
-                : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
-            }`}
-          >
-            {units === "metric" ? "Metric (m²)" : "Imperial (ft²)"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setTheme(isLight ? "dark" : "light")}
-            className={`min-h-[40px] shrink-0 cursor-pointer rounded-full px-3 text-xs font-medium whitespace-nowrap transition ${
-              isLight
-                ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:bg-[#eee]"
-                : "bg-[#16181c] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
-            }`}
-          >
-            {isLight ? "Daylight" : "Night"}
-          </button>
-
-          {/* DOVV Top-Right Expandable Notch Button */}
-          <button
-            type="button"
-            onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
-            aria-expanded={headerNotchOpen}
-            className="zeggo-btn hidden min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-3.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#1a1a1a] lg:flex"
-          >
-            <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-            <ZeggoRollText
-              text={
-                headerNotchOpen
-                  ? isId
-                    ? "Tutup"
-                    : "Close"
-                  : isId
-                  ? "Info Juri (03)"
-                  : "Judge Brief (03)"
-              }
-            />
-            <span className="font-mono text-sm leading-none">
-              {headerNotchOpen ? "×" : "+"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              loginAsJudgeDemo();
-              router.push("/dashboard");
-            }}
-            className="zeggo-btn group flex min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-4 text-xs sm:text-sm font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] transition hover:bg-[#222]"
-          >
-            <ZeggoRollText
-              text={isId ? "Buka Kota 3D" : "Open Living Town"}
-            />
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-            >
-              <path
-                d="M7 17 17 7M8.5 7H17v8.5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
         </div>
       </header>
 
-      {/* DOVV STUDIO EXPANDABLE TOP-RIGHT NOTCH WITH MINI SLIDE CAROUSEL */}
+      {/* EXPANDABLE JUDGE BRIEF DRAWER */}
       {headerNotchOpen && (
-        <div className="mx-auto mt-3 max-w-[1440px] px-4 sm:px-10">
-          <div className="ml-auto max-w-[680px] rounded-[34px] bg-[#080808] p-5 text-white shadow-[inset_0_0_0_2px_#2c2c2c,0_24px_60px_-12px_rgba(0,0,0,0.65)]">
+        <div className="mx-auto mt-3 max-w-[1440px] px-4 sm:px-8">
+          <div className="ml-auto max-w-[680px] rounded-[28px] bg-[#080808] p-5 text-white shadow-[inset_0_0_0_1.5px_#2c2c2c,0_24px_60px_-12px_rgba(0,0,0,0.65)]">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
               <div className="flex flex-col justify-between space-y-3 sm:col-span-5">
                 <div>
@@ -620,27 +661,28 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      loginAsJudgeDemo();
-                      router.push("/dashboard");
-                    }}
-                    className="min-h-[38px] flex-1 cursor-pointer rounded-full bg-[#c6f432] px-3 text-xs font-semibold text-[#080808]"
-                  >
-                    Lv.5 Judge Demo
-                  </button>
                   <Link
-                    href="/settings"
-                    className="flex min-h-[38px] items-center justify-center rounded-full bg-white/10 px-3 text-xs font-medium text-white"
+                    href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
+                    className="flex min-h-[40px] flex-1 items-center justify-center rounded-full bg-[#c6f432] px-3 text-xs font-semibold text-[#080808]"
                   >
-                    Shield
+                    {isAuthenticated
+                      ? isId
+                        ? "Buka Studio →"
+                        : "Open Studio →"
+                      : isId
+                      ? "Login Juri (Lv.5)"
+                      : "Judge Sign-In (Lv.5)"}
+                  </Link>
+                  <Link
+                    href="/docs"
+                    className="flex min-h-[40px] items-center justify-center rounded-full bg-white/10 px-3 text-xs font-medium text-white"
+                  >
+                    Docs
                   </Link>
                 </div>
               </div>
 
-              {/* Mini 3-Slide Deck inside Notch (.slides) */}
-              <div className="overflow-hidden rounded-[26px] bg-[#171717] p-4 shadow-[inset_0_0_0_1.5px_#2c2c2c] sm:col-span-7">
+              <div className="overflow-hidden rounded-[22px] bg-[#171717] p-4 shadow-[inset_0_0_0_1.5px_#2c2c2c] sm:col-span-7">
                 <div className="mb-2.5 flex items-center justify-between">
                   <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#c6f432]">
                     SLIDE 0{headerNotchSlide + 1}/03
@@ -729,140 +771,389 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* 2. CHAPTER 01: DOVV STUDIO HERO SECTION WITH COMPACT CITY/COUNTRY POPOVER */}
+      {/* 2. CHAPTER 01: ORIGINAL VERDARA ARCHITECTURAL SPLIT-BLUEPRINT & TELEMETRY HERO */}
       <section
         id="chapter-hero"
-        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-6 pb-9 text-center sm:px-10 sm:pt-12"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-6 pb-8 sm:px-8 sm:pt-10"
       >
-        {/* Compact Country & City Popover Pill (Small, Simple, Zero Page Clutter) */}
-        <div className="gsap-hero-item relative z-30">
-          <CompactWorldCityPicker
-            isLight={isLight}
-            isId={isId}
-            variant="hero"
-            align="center"
-          />
-        </div>
-
-        {/* Giant Interactive Variable Display Wordmark + DOVV Draggable Holographic Foil Stickers */}
-        <div className="gsap-hero-item relative mt-6 sm:mt-7 flex w-full max-w-[1240px] flex-col items-center justify-center">
-          <h1 className="sr-only">
-            {isId
-              ? "Verdara: Ubah rumah dan lingkungan Anda menjadi kota hijau 3D. Hitung panel surya, panen air hujan, dan nilai daur ulang di kota mana pun di dunia dengan Meta SAM 3.1 dan Muse Spark."
-              : "Verdara: Turn your home and neighborhood into a 3D living eco-town. Measure rooftop solar, rainwater harvest, and recycling value in any city on Earth with Meta SAM 3.1 and Muse Spark."}
-          </h1>
-
-          {/* Draggable Holo Sticker 1: Top-Left Orange */}
-          <DovvHoloSticker
-            label="Meta SAM 3.1 + Muse Spark"
-            sublabel="Drag Sticker"
-            variant="orange"
-            rotationDeg={-8}
-            className="absolute -top-7 left-2 z-20 hidden md:block lg:left-6"
-          />
-
-          {/* Draggable Holo Sticker 2: Top-Right Lime */}
-          <DovvHoloSticker
-            label={`${housingCalc.solar.kwp} kWp · ${formatCurrency(
-              housingCalc.solar.savingsYear,
-              housingCalc.solar.currency,
-              locale
-            )}/yr`}
-            sublabel={`${geo.city} (${geo.countryCode})`}
-            variant="lime"
-            rotationDeg={9}
-            className="absolute -top-6 right-2 z-20 hidden md:block lg:right-8"
-          />
-
-          {/* Draggable Holo Sticker 3: Bottom-Right Gold */}
-          <DovvHoloSticker
-            label="195+ Countries · Real Physics"
-            sublabel="NREL PVWatts · ERA5 Weather"
-            variant="gold"
-            rotationDeg={-6}
-            className="absolute -bottom-6 right-6 z-20 hidden lg:block"
-          />
-
-          {/* DOVV Studio Cursor-Proximity Variable Font Wave Wordmark */}
-          <DovvInteractiveWordmark
-            lines={
-              isId
-                ? ["LIHAT KOTA HIJAU", "HIDUP MILIK ANDA"]
-                : ["SEE INSIDE YOUR", "LIVING ECO-TOWN"]
-            }
-            className="text-center text-[clamp(42px,12.2vw,178px)] tracking-tight"
-          />
-        </div>
-
-        {/* Plain-Language Subtitle & Zeggo Character-Roll Pill Buttons */}
-        <p
-          className={`gsap-hero-item mt-5 sm:mt-6 max-w-[680px] px-2 text-sm sm:text-lg leading-[1.55] tracking-[-0.015em] ${
-            isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
-          }`}
-        >
-          {isId
-            ? "Pilih kota Anda di atas atau foto rumah Anda. Verdara menggambar rumah Anda sebagai kota 3D yang hidup, menghitung berapa listrik surya, air hujan, dan uang daur ulang yang bisa Anda hemat, lalu memandu perbaikannya bersama 3 pakar AI Meta."
-            : "Pick any city above or snap a photo of your home. Verdara draws your plot as a living 3D town, calculates exactly how much solar power, rainwater, and recycling cash you can save, and guides your upgrades with 3 Meta AI specialists."}
-        </p>
-
-        <div className="gsap-hero-item mt-6 sm:mt-7 flex w-full sm:w-auto flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 px-2">
-          <button
-            type="button"
-            onClick={() => {
-              loginAsJudgeDemo();
-              router.push("/dashboard");
-            }}
-            className="zeggo-btn flex min-h-[48px] cursor-pointer items-center justify-center rounded-full bg-[#080808] px-7 text-sm sm:text-[15px] font-medium text-white transition hover:bg-[#222222]"
-          >
-            <ZeggoRollText
-              text={
-                isId
-                  ? "Buka Kota Hidup 3D (Demo Juri Lv.5)"
-                  : "Enter 3D Living Town (Lv.5 Judge Demo)"
-              }
-            />
-          </button>
-
-          <Link
-            href="/lens"
-            className={`zeggo-btn flex min-h-[48px] items-center justify-center rounded-full px-6 text-sm sm:text-[15px] font-medium transition ${
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
+          {/* LEFT 7 COLUMNS: EDITORIAL ARCHITECTURAL BRIEF & LIVE PHYSICS LEDGER */}
+          <div
+            className={`gsap-hero-item flex flex-col justify-between rounded-[28px] border p-6 sm:p-8 lg:col-span-7 ${
               isLight
-                ? "text-[#111] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.22)] hover:shadow-[inset_0_0_0_1px_#000]"
-                : "text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)] hover:shadow-[inset_0_0_0_1px_#fff]"
+                ? "border-black/10 bg-white shadow-[0_20px_50px_-24px_rgba(0,0,0,0.08)]"
+                : "border-white/10 bg-[#121418] shadow-[0_20px_50px_-24px_rgba(0,0,0,0.6)]"
             }`}
           >
-            <ZeggoRollText
-              text={
-                isId
-                  ? "Pindai Foto dengan Meta SAM 3.1"
-                  : "Scan Photo with Meta SAM 3.1"
-              }
-            />
-          </Link>
-        </div>
+            <div>
+              {/* Top Telemetry Bar + Compact World City Picker */}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pb-5 border-b border-current/10">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1e9e5a]/15 px-3 py-1 font-mono text-[11px] font-semibold text-[#14733f] dark:text-[#5ce69b]">
+                    <span className="h-2 w-2 rounded-full bg-[#1e9e5a]" />
+                    META SAM 3.1 + MUSE SPARK
+                  </span>
+                  <span className="rounded-full border border-current/15 px-2.5 py-1 font-mono text-[11px] opacity-75">
+                    NREL PVWatts v8 · DIN 1989-1
+                  </span>
+                </div>
+                <CompactWorldCityPicker
+                  isLight={isLight}
+                  isId={isId}
+                  variant="hero"
+                  align="left"
+                />
+              </div>
 
-        {/* ZEGGO.COM.SG SIGNATURE SCROLL INDICATOR LINE (.zeggo-scroll-indicator) */}
-        <div className="gsap-hero-item mt-7 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.14em] opacity-65">
-          <span>
-            {isId
-              ? "Gulir halaman atau putar kota 3D di bawah"
-              : "Scroll page or orbit the 3D town below"}
-          </span>
-          <span className="zeggo-scroll-indicator" aria-hidden="true" />
+              {/* Original Architectural Display Headline */}
+              <h1 className="mt-6 font-sans text-[clamp(30px,4.4vw,60px)] font-bold leading-[1.03] tracking-[-0.035em]">
+                {isId ? (
+                  <>
+                    Rancang &amp; Simulasikan{" "}
+                    <span className="text-[#14733f] dark:text-[#c6f432]">
+                      Distrik Ekologis 3D
+                    </span>{" "}
+                    untuk Rumah dan Kota Anda.
+                  </>
+                ) : (
+                  <>
+                    Architect &amp; Simulate a{" "}
+                    <span className="text-[#14733f] dark:text-[#c6f432]">
+                      Living 3D Eco-District
+                    </span>{" "}
+                    for Any Plot on Earth.
+                  </>
+                )}
+              </h1>
+
+              <p
+                className={`mt-4 max-w-[640px] text-sm sm:text-base leading-relaxed ${
+                  isLight ? "text-[#4b4b48]" : "text-[#c9c7c0]"
+                }`}
+              >
+                {isId
+                  ? `Pilih negara dan kota mana pun atau pindai foto bangunan dengan kamera AI Meta SAM 3.1. Verdara menghitung produksi listrik surya (${housingCalc.solar.kwp} kWp), kapasitas tangki air hujan, dan resapan biopori secara presisi untuk ${geo.city}.`
+                  : `Select any city worldwide or scan a building photo with Meta SAM 3.1 vision. Verdara computes rooftop solar capacity (${housingCalc.solar.kwp} kWp), rainwater harvesting volume, and biopore flood resilience for ${geo.city} in real time.`}
+              </p>
+
+              {/* 3 Live Physics Telemetry Cards */}
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div
+                  className={`rounded-2xl border p-4 ${
+                    isLight
+                      ? "border-black/8 bg-[#f7f7f4]"
+                      : "border-white/10 bg-[#181b20]"
+                  }`}
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#14733f] dark:text-[#5ce69b]">
+                    01 · SOLAR ARRAY
+                  </span>
+                  <p className="mt-1 font-mono text-xl sm:text-2xl font-bold">
+                    {housingCalc.solar.kwp} kWp
+                  </p>
+                  <p className="mt-0.5 text-xs opacity-75">
+                    {formatCurrency(
+                      housingCalc.solar.savingsYear,
+                      housingCalc.solar.currency,
+                      locale
+                    )}
+                    {isId ? "/thn dihemat" : "/yr saved"}
+                  </p>
+                </div>
+
+                <div
+                  className={`rounded-2xl border p-4 ${
+                    isLight
+                      ? "border-black/8 bg-[#f7f7f4]"
+                      : "border-white/10 bg-[#181b20]"
+                  }`}
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#146f8a] dark:text-[#58c4e3]">
+                    02 · RAIN HARVEST
+                  </span>
+                  <p className="mt-1 font-mono text-xl sm:text-2xl font-bold">
+                    {formatVolume(
+                      housingCalc.rainwater.litersYear,
+                      units,
+                      locale
+                    )}
+                  </p>
+                  <p className="mt-0.5 text-xs opacity-75">
+                    {isId
+                      ? `Tangki ${housingCalc.rainwater.recommendedCisternLiters}L`
+                      : `${housingCalc.rainwater.recommendedCisternLiters}L Cistern`}
+                  </p>
+                </div>
+
+                <div
+                  className={`rounded-2xl border p-4 ${
+                    isLight
+                      ? "border-black/8 bg-[#f7f7f4]"
+                      : "border-white/10 bg-[#181b20]"
+                  }`}
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#8a5608] dark:text-[#f5b851]">
+                    03 · FLOOD &amp; THERMAL
+                  </span>
+                  <p className="mt-1 font-mono text-xl sm:text-2xl font-bold">
+                    {housingCalc.infiltration.bioporeUnits}{" "}
+                    {isId ? "Biopori" : "Biopores"}
+                  </p>
+                  <p className="mt-0.5 text-xs opacity-75">
+                    {isId
+                      ? `Skor Nyaman ${housingCalc.thermal.tciScore}/100`
+                      : `Comfort Index ${housingCalc.thermal.tciScore}/100`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Action Bar inside Left Hero Card */}
+            <div className="mt-6 flex flex-wrap items-center gap-3 pt-5 border-t border-current/10">
+              <Link
+                href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
+                className="zeggo-btn inline-flex min-h-[46px] items-center justify-center gap-2 rounded-full bg-[#080808] px-6 text-sm font-semibold text-white transition hover:bg-[#222]"
+              >
+                <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
+                <ZeggoRollText
+                  text={
+                    isAuthenticated
+                      ? isId
+                        ? "Buka Studio Dashboard (Lv.5)"
+                        : "Open Studio Dashboard (Lv.5)"
+                      : isId
+                      ? "Login untuk Masuk ke Studio"
+                      : "Sign In to Enter Studio"
+                  }
+                />
+                <span>→</span>
+              </Link>
+
+              <a
+                href="#chapter-town"
+                className={`zeggo-btn inline-flex min-h-[46px] items-center justify-center rounded-full px-5 text-sm font-medium transition ${
+                  isLight
+                    ? "bg-[#f0efe9] text-[#111] hover:bg-[#e5e4dc]"
+                    : "bg-white/10 text-white hover:bg-white/15"
+                }`}
+              >
+                <ZeggoRollText
+                  text={isId ? "Jelajahi Distrik 3D ↓" : "Explore 3D District ↓"}
+                />
+              </a>
+
+              <Link
+                href="/docs"
+                className="inline-flex min-h-[46px] items-center justify-center rounded-full border border-current/20 px-4 text-xs sm:text-sm font-medium transition hover:bg-current/5"
+              >
+                {isId ? "Dokumentasi (/docs)" : "Documentation (/docs)"}
+              </Link>
+
+              <Link
+                href="/faq"
+                className="inline-flex min-h-[46px] items-center justify-center rounded-full border border-current/20 px-4 text-xs sm:text-sm font-medium transition hover:bg-current/5"
+              >
+                FAQ
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT 5 COLUMNS: LIVE SPATIAL CAD BLUEPRINT & BENCHMARK CLIMATE SWITCHER */}
+          <div className="gsap-hero-item flex flex-col justify-between rounded-[28px] bg-[#0b0e12] p-6 sm:p-7 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12),0_20px_50px_-24px_rgba(0,0,0,0.65)] lg:col-span-5">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#c6f432]">
+                    SPATIAL CAD TELEMETRY · v3.2
+                  </span>
+                  <h2 className="mt-1 font-sans text-lg font-semibold text-white">
+                    {geo.city} ({geo.countryCode} · Köppen {geo.koppen.code})
+                  </h2>
+                </div>
+                <span className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-[#5ce69b]">
+                  {geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}°
+                </span>
+              </div>
+
+              {/* Architectural Isometric Blueprint SVG */}
+              <div className="relative mt-4 overflow-hidden rounded-2xl border border-white/10 bg-[#07090c] p-4">
+                <svg
+                  viewBox="0 0 420 210"
+                  className="h-[188px] w-full"
+                  role="img"
+                  aria-label="Verdara CLT Solar Pavilion and Hydrological Cistern Blueprint"
+                >
+                  <defs>
+                    <pattern
+                      id="cad-grid"
+                      width="20"
+                      height="20"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path
+                        d="M 20 0 L 0 0 0 20"
+                        fill="none"
+                        stroke="rgba(198,244,50,0.08)"
+                        strokeWidth="0.75"
+                      />
+                    </pattern>
+                    <linearGradient id="cad-solar" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#1e9e5a" stopOpacity="0.55" />
+                      <stop offset="100%" stopColor="#0f3878" stopOpacity="0.85" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="420" height="210" fill="url(#cad-grid)" />
+
+                  {/* Isometric Base Platform & Canal */}
+                  <polygon
+                    points="60,155 210,192 365,148 215,112"
+                    fill="rgba(30,158,90,0.12)"
+                    stroke="#1e9e5a"
+                    strokeWidth="1.2"
+                  />
+                  {/* Hydrological Canal */}
+                  <polygon
+                    points="75,162 210,195 232,186 96,154"
+                    fill="rgba(14,165,233,0.28)"
+                    stroke="#38bdf8"
+                    strokeWidth="1"
+                  />
+
+                  {/* Main CLT Pavilion Walls */}
+                  <polygon
+                    points="125,135 225,160 225,96 125,74"
+                    fill="rgba(255,255,255,0.06)"
+                    stroke="rgba(255,255,255,0.45)"
+                    strokeWidth="1.2"
+                  />
+                  <polygon
+                    points="225,160 305,134 305,72 225,96"
+                    fill="rgba(255,255,255,0.11)"
+                    stroke="rgba(255,255,255,0.45)"
+                    strokeWidth="1.2"
+                  />
+
+                  {/* Monocrystalline Solar Roof Deck */}
+                  <polygon
+                    points="115,74 225,100 315,70 205,46"
+                    fill="url(#cad-solar)"
+                    stroke="#c6f432"
+                    strokeWidth="1.5"
+                  />
+                  {/* Solar Grid Lines */}
+                  <line
+                    x1="155"
+                    y1="64"
+                    x2="255"
+                    y2="88"
+                    stroke="rgba(198,244,50,0.5)"
+                    strokeWidth="0.9"
+                  />
+                  <line
+                    x1="185"
+                    y1="55"
+                    x2="285"
+                    y2="79"
+                    stroke="rgba(198,244,50,0.5)"
+                    strokeWidth="0.9"
+                  />
+
+                  {/* Rainwater Harvesting Cistern Cylinder */}
+                  <rect
+                    x="318"
+                    y="92"
+                    width="34"
+                    height="46"
+                    rx="6"
+                    fill="rgba(56,189,248,0.22)"
+                    stroke="#38bdf8"
+                    strokeWidth="1.3"
+                  />
+
+                  {/* Callout Labels */}
+                  <g fontFamily="monospace" fontSize="9.5" fill="#e2e8f0">
+                    <rect
+                      x="14"
+                      y="14"
+                      width="136"
+                      height="22"
+                      rx="5"
+                      fill="rgba(15,23,42,0.85)"
+                      stroke="rgba(198,244,50,0.4)"
+                    />
+                    <text x="22" y="28" fill="#c6f432">
+                      PV: {housingCalc.solar.panelCountEst} panels ({housingCalc.solar.kwp}kWp)
+                    </text>
+
+                    <rect
+                      x="266"
+                      y="16"
+                      width="140"
+                      height="22"
+                      rx="5"
+                      fill="rgba(15,23,42,0.85)"
+                      stroke="rgba(56,189,248,0.4)"
+                    />
+                    <text x="274" y="30" fill="#38bdf8">
+                      CISTERN: {housingCalc.rainwater.recommendedCisternLiters}L
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            {/* Instant 5-Climate Benchmark Selector inside Right Console */}
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-[#aaa9ad]">
+                <span>
+                  {isId
+                    ? "UJI 5 ZONA IKLIM BENCHMARK:"
+                    : "TEST 5 BENCHMARK CLIMATE ZONES:"}
+                </span>
+                <span className="text-[#c6f432]">LIVE SYNC</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5 lg:grid-cols-3 xl:grid-cols-5">
+                {CITY_SPECIMENS.map((c, idx) => {
+                  const active =
+                    activePresetId === c.id &&
+                    geo.city.toLowerCase().includes(c.label.toLowerCase());
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        teleportToCity(c.id);
+                        setActiveSlide(idx);
+                      }}
+                      className={`min-h-[40px] cursor-pointer rounded-xl px-2.5 py-1.5 text-left font-mono text-[11px] transition ${
+                        active
+                          ? "bg-[#c6f432] font-bold text-[#080808]"
+                          : "bg-white/6 text-[#d4d4d8] hover:bg-white/12"
+                      }`}
+                    >
+                      <div className="truncate">{c.label}</div>
+                      <div className="text-[9px] opacity-75">{c.koppen}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 3. CHAPTER 02: TOWNHOUSE.DEV "WATCH IT RUN, BREAK, AND HEAL" LIVE 3D STAGE */}
+      {/* 3. CHAPTER 02: GRAND 3D ECO-DISTRICT ("WATCH IT RUN, BREAK, AND HEAL") */}
       <section
         id="chapter-town"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-10"
+        className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-8"
       >
-        <div className="gsap-town-stage dovv-stage-frame h-[620px] w-full sm:h-[680px] lg:h-[720px]">
-          {/* Interactive 3D Townhouse Diorama */}
+        <div className="gsap-town-stage dovv-stage-frame h-[650px] w-full sm:h-[710px] lg:h-[760px]">
+          {/* Grand Interactive 3D Eco-District */}
           <EcoIslandCanvas
             biome={geo.biome}
             level={level}
             isNight={isNightPreview || townSimMode === "break"}
+            simMode={townSimMode}
             unlockedItems={unlockedItems}
             solarKwp={housingCalc.solar.kwp}
             solarKwhYear={housingCalc.solar.kwhYear}
@@ -904,7 +1195,7 @@ export default function LandingPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setTownSimMode(tab.id)}
-                  className={`flex min-h-[34px] flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] sm:text-xs font-medium transition ${
+                  className={`flex min-h-[36px] flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1 font-mono text-[11px] sm:text-xs font-medium transition ${
                     active
                       ? "bg-white font-semibold text-[#111]"
                       : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
@@ -934,12 +1225,12 @@ export default function LandingPage() {
             </button>
           </div>
 
-          {/* TOWNHOUSE.DEV SIGNATURE BOTTOM-LEFT FLOATING PAPER CARD (.static-hero-words) */}
+          {/* BOTTOM-LEFT FLOATING ARCHITECTURAL CARD */}
           <div
-            className={`absolute bottom-3 left-3 right-3 z-10 rounded-[18px] border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 sm:right-auto sm:bottom-6 sm:left-6 sm:w-[min(540px,48vw)] sm:p-6 ${
+            className={`absolute bottom-14 left-3 right-3 z-10 rounded-[20px] border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 sm:right-auto sm:bottom-5 sm:left-5 sm:w-[min(460px,44vw)] sm:p-5 ${
               isLight
-                ? "border-[#151515]/10 bg-white/95 text-[#151515]"
-                : "border-white/10 bg-[#16171a]/95 text-[#f2f1ec]"
+                ? "border-[#151515]/10 bg-white/92 text-[#151515]"
+                : "border-white/10 bg-[#16171a]/92 text-[#f2f1ec]"
             }`}
           >
             <div className="flex flex-wrap items-center gap-2.5 font-mono text-[10px] sm:text-[11px]">
@@ -969,7 +1260,7 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <h2 className="townhouse-title mt-2 text-xl sm:text-3xl lg:text-4xl">
+            <h2 className="townhouse-title mt-2 text-lg sm:text-2xl lg:text-3xl">
               {simConfig.title}
             </h2>
 
@@ -983,7 +1274,7 @@ export default function LandingPage() {
 
             <div className="mt-3.5 flex flex-wrap items-center gap-2">
               <Link
-                href="/dashboard"
+                href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
                 className={`zeggo-btn inline-flex min-h-[42px] items-center rounded-[10px] px-4 text-xs sm:text-sm font-medium transition ${
                   isLight
                     ? "bg-[#151515] text-[#f6f6f3] hover:bg-[#2a2a2a]"
@@ -992,12 +1283,18 @@ export default function LandingPage() {
               >
                 <ZeggoRollText
                   text={
-                    isId ? "Buka Dasbor Kota 3D" : "Inspect Full Living Town"
+                    isAuthenticated
+                      ? isId
+                        ? "Buka Studio Kota 3D"
+                        : "Inspect Full 3D Studio"
+                      : isId
+                      ? "Login & Buka Studio 3D"
+                      : "Sign In & Inspect Studio"
                   }
                 />
               </Link>
               <Link
-                href="/radar"
+                href={isAuthenticated ? "/radar" : "/login?next=/radar"}
                 className="zeggo-btn inline-flex min-h-[42px] items-center rounded-[10px] border border-current/20 px-3.5 text-xs sm:text-sm font-medium"
               >
                 <ZeggoRollText
@@ -2037,26 +2334,28 @@ export default function LandingPage() {
                 ? "Klik tombol di bawah untuk langsung masuk ke Kota 3D Level 5 dengan seluruh 6 bangunan ekologis terbuka."
                 : "Click below to launch the Level 5 Judge Demo Town with all 6 ecological structures unlocked."}
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                loginAsJudgeDemo();
-                router.push("/dashboard");
-              }}
+            <Link
+              href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
               className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#080808] px-5 text-sm font-medium text-white transition hover:bg-[#222]"
             >
-              <ZeggoRollText text="Launch Lv.5 Judge Town ↗" />
-            </button>
+              <ZeggoRollText
+                text={
+                  isAuthenticated
+                    ? "Open Lv.5 Studio Town ↗"
+                    : "Sign In for Lv.5 Judge Town ↗"
+                }
+              />
+            </Link>
           </div>
 
-          {/* Cell 2: Spatial Workspaces (Archivo Condensed Uppercase Links) */}
+          {/* Cell 2: Spatial Workspaces & Docs */}
           <div
             className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
-              02 / Workspaces
+              02 / Workspaces &amp; Docs
             </span>
             <ul className="flex flex-col gap-2">
               {[
@@ -2064,7 +2363,8 @@ export default function LandingPage() {
                 { href: "/lens", label: "SAM 3.1 LENS" },
                 { href: "/radar", label: "3D ROOF RADAR" },
                 { href: "/council", label: "SPECIALIST COUNCIL" },
-                { href: "/academy", label: "FIELD PROOFS" },
+                { href: "/docs", label: "DOCUMENTS (/DOCS)" },
+                { href: "/faq", label: "FAQ & GUIDE (/FAQ)" },
                 { href: "/settings", label: "CREDIT SHIELD" },
               ].map((link) => (
                 <li key={link.href}>
@@ -2086,7 +2386,7 @@ export default function LandingPage() {
             }`}
           >
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-55">
-              03 / Meta AI & Science Stack
+              03 / Meta AI &amp; Science Stack
             </span>
             <ul className="space-y-1.5 text-sm opacity-80">
               <li>Meta SAM 3.1 Concept Segmentation</li>
@@ -2094,7 +2394,7 @@ export default function LandingPage() {
               <li>Meta Muse Image Eco-Retrofit</li>
               <li>NREL PVWatts v8 Rooftop Solar Model</li>
               <li>Open-Meteo ERA5 10-Yr Climatology</li>
-              <li>US EPA WARM v16 Material Factors</li>
+              <li>Enterprise Database v3.2 &amp; OWASP Guard</li>
             </ul>
           </div>
 
@@ -2123,63 +2423,8 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* DOVV STUDIO FIXED BOTTOM PILL DOCK WITH ZEGGO ROLL TEXT */}
-      <nav
-        aria-label={isId ? "Navigasi Utama" : "Primary Navigation"}
-        className="dovv-bottom-dock max-w-[96vw] overflow-x-auto"
-      >
-        {[
-          { href: "/", labelEn: "Index", labelId: "Indeks", active: true },
-          {
-            href: "/dashboard",
-            labelEn: "Living Town",
-            labelId: "Kota 3D",
-            active: false,
-          },
-          {
-            href: "/lens",
-            labelEn: "SAM 3.1 Lens",
-            labelId: "Lensa SAM 3.1",
-            active: false,
-          },
-          {
-            href: "/radar",
-            labelEn: "3D Radar",
-            labelId: "Radar 3D",
-            active: false,
-          },
-          {
-            href: "/council",
-            labelEn: "Council",
-            labelId: "Dewan AI",
-            active: false,
-          },
-          {
-            href: "/academy",
-            labelEn: "Field Proofs",
-            labelId: "Bukti Aksi",
-            active: false,
-          },
-          {
-            href: "/settings",
-            labelEn: "Shield",
-            labelId: "Perisai",
-            active: false,
-          },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`zeggo-btn flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-3.5 sm:px-4 text-xs sm:text-sm font-medium transition ${
-              item.active
-                ? "bg-[#c6f432] font-semibold text-[#080808]"
-                : "text-white hover:bg-[#222222]"
-            }`}
-          >
-            <ZeggoRollText text={isId ? item.labelId : item.labelEn} />
-          </Link>
-        ))}
-      </nav>
+      {/* CLEAN STRUCTURED BOTTOM COMMAND DOCK */}
+      <VerdaraBottomDock />
     </div>
   );
 }

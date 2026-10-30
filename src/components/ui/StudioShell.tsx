@@ -4,29 +4,13 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
-import {
-  WORLD_CITY_CATALOG,
-  type CityPreset,
-} from "@/lib/science/presets";
-import { formatTemp } from "@/lib/science/units";
+import { WORLD_CITY_CATALOG } from "@/lib/science/presets";
 import {
   VerdaraLogo,
   ZeggoRollText,
   CompactWorldCityPicker,
+  VerdaraBottomDock,
 } from "@/components/ui/InteractiveEffects";
-
-const CITY_SPECIMENS: {
-  id: CityPreset["id"];
-  label: string;
-  iso: string;
-  koppen: string;
-}[] = [
-  { id: "menlo_park", label: "Menlo Park", iso: "US-CA", koppen: "Csb" },
-  { id: "london", label: "London", iso: "GB", koppen: "Cfb" },
-  { id: "tokyo", label: "Tokyo", iso: "JP", koppen: "Cfa" },
-  { id: "dubai", label: "Dubai", iso: "AE", koppen: "BWh" },
-  { id: "yogyakarta", label: "Yogyakarta", iso: "ID", koppen: "Am" },
-];
 
 export default function StudioShell({
   children,
@@ -36,10 +20,11 @@ export default function StudioShell({
   const pathname = usePathname();
   const router = useRouter();
   const {
+    isAuthenticated,
+    displayName,
     locale,
     units,
     theme,
-    activePresetId,
     geo,
     housingCalc,
     level,
@@ -51,8 +36,11 @@ export default function StudioShell({
     teleportToCity,
     setCustomCoordinates,
     loginAsJudgeDemo,
+    loginWithEmail,
+    logout,
   } = useVerdaraStore();
 
+  const [authChecked, setAuthChecked] = useState(false);
   const [notchOpen, setNotchOpen] = useState(false);
   const [notchSlide, setNotchSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,6 +53,36 @@ export default function StudioShell({
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
+  // Restore session from sessionStorage if present; otherwise enforce login redirect
+  useEffect(() => {
+    if (isAuthenticated) {
+      setAuthChecked(true);
+      return;
+    }
+    try {
+      const raw = window.sessionStorage.getItem("verdara_auth_session_v3");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.isAuthenticated) {
+          if (parsed.isJudgeDemo) {
+            loginAsJudgeDemo();
+          } else {
+            loginWithEmail(
+              parsed.email || "resident@verdara.app",
+              parsed.displayName || "Verdara Resident"
+            );
+          }
+          setAuthChecked(true);
+          return;
+        }
+      }
+    } catch {
+      // Proceed to login redirect
+    }
+    setAuthChecked(true);
+    router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
+  }, [isAuthenticated, pathname, router, loginAsJudgeDemo, loginWithEmail]);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && notchOpen) {
@@ -75,13 +93,14 @@ export default function StudioShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [notchOpen]);
 
-  const navItems = [
-    { href: "/", labelEn: "Index", labelId: "Indeks" },
+  const topLinks = [
     { href: "/dashboard", labelEn: "Living Town", labelId: "Kota 3D" },
-    { href: "/lens", labelEn: "SAM 3.1 Lens", labelId: "Lensa SAM 3.1" },
+    { href: "/lens", labelEn: "SAM 3.1 Lens", labelId: "Lensa SAM" },
     { href: "/radar", labelEn: "3D Radar", labelId: "Radar 3D" },
-    { href: "/council", labelEn: "Council", labelId: "Dewan AI" },
+    { href: "/council", labelEn: "AI Council", labelId: "Dewan AI" },
     { href: "/academy", labelEn: "Field Proofs", labelId: "Bukti Aksi" },
+    { href: "/docs", labelEn: "Docs", labelId: "Dokumen" },
+    { href: "/faq", labelEn: "FAQ", labelId: "Tanya Jawab" },
     { href: "/settings", labelEn: "Shield", labelId: "Perisai" },
   ];
 
@@ -117,6 +136,52 @@ export default function StudioShell({
     aiShield.lifetimeCapUsd - aiShield.totalSpendUsd
   ).toFixed(2);
 
+  // Strict Authentication Gate: never render protected workspace until authenticated
+  if (!authChecked || !isAuthenticated) {
+    return (
+      <div
+        className={`flex min-h-screen flex-col items-center justify-center px-4 text-center ${
+          isLight
+            ? "bg-[#f5f5f3] text-[#111111]"
+            : "bg-[#0b0c0e] text-[#f2f1ec]"
+        }`}
+      >
+        <div className="max-w-md rounded-[28px] border border-current/12 bg-[#08090c] p-8 text-white shadow-2xl">
+          <div className="mx-auto mb-4 flex justify-center">
+            <VerdaraLogo size={48} />
+          </div>
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#c6f432]">
+            {isId ? "OTENTIKASI DIPERLUKAN" : "AUTHENTICATION REQUIRED"}
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+            {isId
+              ? "Silakan Masuk Terlebih Dahulu"
+              : "Please Sign In to Access Studio"}
+          </h1>
+          <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+            {isId
+              ? "Mengalihkan Anda ke Portal Login Verdara. Anda dapat masuk dengan akun email atau menggunakan 1-Click Judge Demo (Lv.5)."
+              : "Redirecting to the Verdara Session Portal. You can sign in with your resident email or launch the 1-Click Judge Demo (Lv.5)."}
+          </p>
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+            <Link
+              href={`/login?next=${encodeURIComponent(pathname || "/dashboard")}`}
+              className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#c6f432] px-5 text-xs font-bold text-[#080808] transition hover:bg-[#d6ff4d]"
+            >
+              {isId ? "Buka Halaman Login →" : "Go to Login Portal →"}
+            </Link>
+            <Link
+              href="/"
+              className="flex min-h-[44px] items-center justify-center rounded-full bg-white/10 px-4 text-xs font-medium text-white hover:bg-white/20"
+            >
+              {isId ? "Beranda" : "Home"}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`min-h-screen pb-28 transition-colors duration-200 ${
@@ -132,95 +197,146 @@ export default function StudioShell({
         {isId ? "Lewati ke ruang kerja utama" : "Skip to main workspace"}
       </a>
 
-      {/* DOVV STUDIO + TOWNHOUSE SINGLE-ROW FLOATING TOP CHROME */}
-      <header className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-2 px-4 pt-5 pb-3 sm:px-8">
-        <div className="flex min-w-0 shrink-0 items-center gap-2.5">
-          <Link
-            href="/"
-            className="group flex min-h-[42px] shrink-0 items-center gap-2"
-          >
-            <VerdaraLogo size={36} />
-            <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
-              VERDARA
-            </span>
-          </Link>
+      {/* CLEAN, STRUCTURED SINGLE-ROW STUDIO HEADER */}
+      <header className="sticky top-0 z-40 border-b border-current/8 bg-inherit/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
+          {/* Left: Brand & City Picker */}
+          <div className="flex min-w-0 shrink-0 items-center gap-3">
+            <Link
+              href="/"
+              className="group flex min-h-[40px] shrink-0 items-center gap-2.5"
+            >
+              <VerdaraLogo size={36} />
+              <div className="flex flex-col text-left">
+                <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
+                  VERDARA
+                </span>
+                <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] opacity-60 sm:block">
+                  Spatial Eco-OS · Lv.{level}
+                </span>
+              </div>
+            </Link>
 
-          {/* Compact City/Country Popover Pill */}
-          <CompactWorldCityPicker
-            isLight={isLight}
-            isId={isId}
-            variant="hero"
-            align="left"
-          />
-        </div>
+            <span className="hidden h-5 w-[1px] bg-current/15 sm:inline-block" />
 
-        {/* City Pills + DOVV Studio Expandable Notch Trigger (Single Row) */}
-        <div className="flex shrink-0 items-center gap-2">
-          <div
-            role="group"
-            aria-label={isId ? "Pilih Kota" : "Select City"}
-            className="hidden items-center gap-1 rounded-full bg-[#080808] p-1 shadow-[inset_0_0_0_1px_#262626] xl:flex"
-          >
-            {CITY_SPECIMENS.map((c) => {
-              const active =
-                activePresetId === c.id &&
-                geo.city.toLowerCase().includes(c.label.toLowerCase());
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => teleportToCity(c.id)}
-                  className={`min-h-[34px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
-                    active
-                      ? "bg-[#c6f432] font-semibold text-[#111111]"
-                      : "text-[#c9c7c0] hover:bg-[#1c1c1c] hover:text-white"
-                  }`}
-                >
-                  {c.label}{" "}
-                  <span className="font-mono text-[10px] opacity-75">
-                    {c.koppen}
-                  </span>
-                </button>
-              );
-            })}
+            <CompactWorldCityPicker
+              isLight={isLight}
+              isId={isId}
+              variant="hero"
+              align="left"
+            />
           </div>
 
-          <button
-            type="button"
-            onClick={() => setNotchOpen(!notchOpen)}
-            aria-expanded={notchOpen}
-            className="zeggo-btn flex min-h-[42px] shrink-0 cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-3.5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_2px_#2c2c2c] transition hover:bg-[#181818]"
+          {/* Center: Clean Structured Navigation Links (Desktop) */}
+          <nav
+            aria-label={isId ? "Menu Ruang Kerja" : "Workspace Menu"}
+            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 xl:flex"
           >
-            <span className="font-mono text-[11px] text-[#c6f432]">
-              Lv.{level} · {xp} XP
-            </span>
-            <span className="hidden h-3.5 w-[1px] bg-white/20 sm:inline-block" />
-            <span className="hidden sm:inline">
-              <ZeggoRollText
-                text={
-                  notchOpen
-                    ? isId
-                      ? "Tutup"
-                      : "Close"
-                    : isId
-                    ? "Studio (03)"
-                    : "Studio (03)"
+            {topLinks.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
+                    active
+                      ? "bg-[#08090c] font-semibold text-[#c6f432] shadow-sm"
+                      : "opacity-75 hover:bg-current/8 hover:opacity-100"
+                  }`}
+                >
+                  {isId ? item.labelId : item.labelEn}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right: Compact Preferences, Studio Notch & Logout */}
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div
+              className={`hidden items-center rounded-full border p-0.5 md:flex ${
+                isLight
+                  ? "border-black/10 bg-white"
+                  : "border-white/12 bg-[#14161b]"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setLocale(locale === "en" ? "id" : "en")}
+                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] font-semibold transition hover:bg-current/10"
+              >
+                {locale.toUpperCase()}
+              </button>
+              <span className="h-3.5 w-[1px] bg-current/15" />
+              <button
+                type="button"
+                onClick={() =>
+                  setUnits(units === "metric" ? "imperial" : "metric")
                 }
-              />
-            </span>
-            <span className="font-mono text-sm leading-none">
-              {notchOpen ? "×" : "+"}
-            </span>
-          </button>
+                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+              >
+                {units === "metric" ? "m²" : "ft²"}
+              </button>
+              <span className="h-3.5 w-[1px] bg-current/15" />
+              <button
+                type="button"
+                onClick={() => setTheme(isLight ? "dark" : "light")}
+                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+              >
+                {isLight ? "Day" : "Night"}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setNotchOpen(!notchOpen)}
+              aria-expanded={notchOpen}
+              className="zeggo-btn flex min-h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full bg-[#08090c] px-3.5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#262932] transition hover:bg-[#16181f]"
+            >
+              <span className="font-mono text-[11px] text-[#c6f432]">
+                {xp} XP
+              </span>
+              <span className="hidden sm:inline">
+                <ZeggoRollText
+                  text={
+                    notchOpen
+                      ? isId
+                        ? "Tutup"
+                        : "Close"
+                      : isId
+                      ? "Panel Studio"
+                      : "Studio Panel"
+                  }
+                />
+              </span>
+              <span className="font-mono text-sm leading-none">
+                {notchOpen ? "×" : "+"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.push("/login");
+              }}
+              title={displayName}
+              className={`min-h-[38px] shrink-0 cursor-pointer rounded-full border px-3 text-xs font-medium whitespace-nowrap transition ${
+                isLight
+                  ? "border-black/15 bg-white text-[#111] hover:bg-rose-50 hover:text-rose-700"
+                  : "border-white/15 bg-[#14161b] text-[#e2e1dc] hover:bg-rose-950/40 hover:text-rose-300"
+              }`}
+            >
+              {isId ? "Keluar" : "Logout"}
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* DOVV STUDIO EXPANDABLE NOTCH PANEL WITH MINI SLIDE CAROUSEL (.notch + .slides) */}
+      {/* EXPANDABLE STUDIO PANEL WITH MINI SLIDE CAROUSEL */}
       {notchOpen && (
-        <div className="mx-auto mb-6 max-w-[1440px] px-5 sm:px-8">
-          <div className="rounded-[34px] bg-[#080808] p-5 sm:p-6 text-white shadow-[inset_0_0_0_2px_#2c2c2c,0_20px_50px_-12px_rgba(0,0,0,0.65)]">
+        <div className="mx-auto mt-3 mb-4 max-w-[1440px] px-4 sm:px-8">
+          <div className="rounded-[28px] bg-[#08090c] p-5 sm:p-6 text-white shadow-[inset_0_0_0_1.5px_#262932,0_20px_50px_-12px_rgba(0,0,0,0.65)]">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-              {/* Left Column: City Teleport + Coordinate Search */}
               <div className="space-y-3 lg:col-span-5">
                 <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#aaa9ad]">
                   {isId
@@ -248,10 +364,10 @@ export default function StudioShell({
                             );
                           }
                         }}
-                        className={`min-h-[38px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition ${
+                        className={`min-h-[34px] cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition ${
                           active
                             ? "bg-[#c6f432] font-semibold text-[#111111]"
-                            : "bg-[#171717] text-[#c9c7c0] shadow-[inset_0_0_0_1px_#2a2a2a] hover:text-white"
+                            : "bg-[#15171d] text-[#c9c7c0] shadow-[inset_0_0_0_1px_#2a2d36] hover:text-white"
                         }`}
                       >
                         {c.city} ({c.countryCode})
@@ -269,12 +385,12 @@ export default function StudioShell({
                         ? "Cari kota dunia (mis. Bandung, Zurich)..."
                         : "Search any world city (e.g. Zurich, Austin)..."
                     }
-                    className="min-h-[44px] flex-1 rounded-full bg-[#171717] px-4 text-xs text-white placeholder-[#888] shadow-[inset_0_0_0_1px_#2c2c2c] focus:outline-none"
+                    className="min-h-[40px] flex-1 rounded-full bg-[#15171d] px-4 text-xs text-white placeholder-[#888] shadow-[inset_0_0_0_1px_#2c2f38] focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={searchingGeo}
-                    className="min-h-[44px] cursor-pointer rounded-full bg-white px-5 text-xs font-semibold text-[#080808] transition hover:bg-[#e5e5e0] disabled:opacity-50"
+                    className="min-h-[40px] cursor-pointer rounded-full bg-white px-4 text-xs font-semibold text-[#080808] transition hover:bg-[#e5e5e0] disabled:opacity-50"
                   >
                     {searchingGeo
                       ? "..."
@@ -285,46 +401,48 @@ export default function StudioShell({
                 </form>
               </div>
 
-              {/* Center Column: Studio Preferences */}
               <div className="space-y-3 lg:col-span-3">
                 <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#aaa9ad]">
-                  {isId
-                    ? "02 / Preferensi Studio"
-                    : "02 / Studio Preferences"}
+                  {isId ? "02 / Sesi & Preferensi" : "02 / Session & Preferences"}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setTheme(isLight ? "dark" : "light")}
-                    className="min-h-[42px] cursor-pointer rounded-full bg-[#171717] px-4 py-2 font-mono text-xs font-medium text-white shadow-[inset_0_0_0_1px_#2c2c2c] hover:bg-[#222]"
-                  >
-                    Theme: {isLight ? "Chalk Daylight" : "Obsidian Night"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLocale(locale === "en" ? "id" : "en")}
-                    className="min-h-[42px] cursor-pointer rounded-full bg-[#171717] px-4 py-2 font-mono text-xs font-medium text-white shadow-[inset_0_0_0_1px_#2c2c2c] hover:bg-[#222]"
-                  >
-                    Lang: {locale.toUpperCase()}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setUnits(units === "metric" ? "imperial" : "metric")
-                    }
-                    className="min-h-[42px] cursor-pointer rounded-full bg-[#171717] px-4 py-2 font-mono text-xs font-medium text-white shadow-[inset_0_0_0_1px_#2c2c2c] hover:bg-[#222]"
-                  >
-                    Units:{" "}
-                    {units === "metric"
-                      ? "Metric (m², L)"
-                      : "Imperial (ft², gal)"}
-                  </button>
+                <div className="rounded-2xl bg-[#14161c] p-3.5 shadow-[inset_0_0_0_1px_#262932]">
+                  <p className="font-mono text-[11px] text-[#c6f432]">
+                    ACTIVE SESSION
+                  </p>
+                  <p className="mt-0.5 truncate text-sm font-semibold text-white">
+                    {displayName}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    <Link
+                      href="/docs"
+                      onClick={() => setNotchOpen(false)}
+                      className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-white hover:bg-white/20"
+                    >
+                      Docs
+                    </Link>
+                    <Link
+                      href="/faq"
+                      onClick={() => setNotchOpen(false)}
+                      className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-white hover:bg-white/20"
+                    >
+                      FAQ
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        router.push("/login");
+                      }}
+                      className="cursor-pointer rounded-full bg-rose-500/20 px-3 py-1 font-mono text-[11px] text-rose-300 hover:bg-rose-500/30"
+                    >
+                      {isId ? "Keluar Sesi" : "Sign Out"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Right Column: DOVV STUDIO MINI SLIDE DECK (.slides inside .notch) */}
               <div className="lg:col-span-4">
-                <div className="overflow-hidden rounded-[28px] bg-[#171717] p-4 shadow-[inset_0_0_0_1.5px_#2c2c2c]">
+                <div className="overflow-hidden rounded-[24px] bg-[#14161c] p-4 shadow-[inset_0_0_0_1px_#262932]">
                   <div className="mb-3 flex items-center justify-between">
                     <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#c6f432]">
                       0{notchSlide + 1}/03 · STUDIO DECK
@@ -336,33 +454,16 @@ export default function StudioShell({
                           type="button"
                           onClick={() => setNotchSlide(idx)}
                           aria-label={`Slide ${idx + 1}`}
-                          className={`h-2.5 rounded-full transition-all ${
+                          className={`h-2 rounded-full transition-all ${
                             notchSlide === idx
-                              ? "w-6 bg-[#c6f432]"
-                              : "w-2.5 bg-white/25 hover:bg-white/50"
+                              ? "w-5 bg-[#c6f432]"
+                              : "w-2 bg-white/25 hover:bg-white/50"
                           }`}
                         />
                       ))}
-                      <button
-                        type="button"
-                        onClick={() => setNotchSlide((s) => (s + 2) % 3)}
-                        aria-label="Previous slide"
-                        className="ml-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs hover:bg-white/20"
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNotchSlide((s) => (s + 1) % 3)}
-                        aria-label="Next slide"
-                        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs hover:bg-white/20"
-                      >
-                        →
-                      </button>
                     </div>
                   </div>
 
-                  {/* Horizontal Slide Track with DOVV cubic-bezier(0.32, 1.1, 0.5, 1) */}
                   <div className="overflow-hidden">
                     <div
                       className="dovv-slide-track"
@@ -370,8 +471,7 @@ export default function StudioShell({
                         transform: `translate3d(-${notchSlide * 100}%, 0, 0)`,
                       }}
                     >
-                      {/* Mini Slide 1: Town Telemetry */}
-                      <div className="w-full shrink-0 space-y-2 pr-1">
+                      <div className="w-full shrink-0 space-y-1.5 pr-1">
                         <p className="font-sans text-sm font-semibold text-white">
                           {geo.city} ({geo.koppen.code}) Roof Physics
                         </p>
@@ -382,20 +482,9 @@ export default function StudioShell({
                           )}{" "}
                           m³/yr · TCI {housingCalc.thermal.tciScore}/100
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setNotchOpen(false);
-                            router.push("/radar");
-                          }}
-                          className="mt-1 inline-flex min-h-[36px] cursor-pointer items-center rounded-full bg-[#c6f432] px-3.5 text-xs font-semibold text-[#080808]"
-                        >
-                          Inspect 3D Roof Radar →
-                        </button>
                       </div>
 
-                      {/* Mini Slide 2: 7-Layer AI Credit Shield */}
-                      <div className="w-full shrink-0 space-y-2 pr-1">
+                      <div className="w-full shrink-0 space-y-1.5 pr-1">
                         <div className="flex items-center justify-between font-mono text-xs">
                           <span className="text-[#aaa9ad]">
                             $150 Meta API Pool
@@ -408,46 +497,16 @@ export default function StudioShell({
                           $35 Judge Reserve locked · 6 Golden Specimens cached
                           at $0.00 (&lt;50ms).
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setNotchOpen(false);
-                            router.push("/settings");
-                          }}
-                          className="mt-1 inline-flex min-h-[36px] cursor-pointer items-center rounded-full bg-white/15 px-3.5 text-xs font-medium text-white hover:bg-white/25"
-                        >
-                          Open Credit Shield →
-                        </button>
                       </div>
 
-                      {/* Mini Slide 3: Lv.5 Judge Demo Session */}
-                      <div className="w-full shrink-0 space-y-2 pr-1">
+                      <div className="w-full shrink-0 space-y-1.5 pr-1">
                         <p className="font-sans text-sm font-semibold text-white">
-                          Judge Demo Profile (Lv.5 Unlocked)
+                          Enterprise Database v3.2 Active
                         </p>
                         <p className="text-xs text-[#aaa9ad]">
-                          Unlocks all 6 Townhouse modules (Solar, Cistern,
-                          Biopore, Greenhouse, Albedo, Sorting Hub).
+                          195 Countries · 28 Benchmark Cities · OWASP Security
+                          Headers &amp; CSRF Guard.
                         </p>
-                        <div className="flex gap-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              loginAsJudgeDemo();
-                              setNotchOpen(false);
-                            }}
-                            className="min-h-[36px] flex-1 cursor-pointer rounded-full bg-[#c6f432] px-3 text-xs font-semibold text-[#111]"
-                          >
-                            Activate Lv.5 Town
-                          </button>
-                          <Link
-                            href="/login"
-                            onClick={() => setNotchOpen(false)}
-                            className="flex min-h-[36px] items-center justify-center rounded-full bg-white/10 px-3 text-xs font-medium text-white"
-                          >
-                            Portal
-                          </Link>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -461,33 +520,13 @@ export default function StudioShell({
       {/* MAIN WORKSPACE CONTENT */}
       <main
         id="main-workspace"
-        className="mx-auto max-w-[1440px] px-5 pt-2 sm:px-8"
+        className="mx-auto max-w-[1440px] px-4 pt-5 sm:px-8"
       >
         {children}
       </main>
 
-      {/* DOVV STUDIO FIXED BOTTOM PILL DOCK (.scroll-nav) WITH ZEGGO ROLL TEXT */}
-      <nav
-        aria-label={isId ? "Navigasi Utama" : "Primary Navigation"}
-        className="dovv-bottom-dock max-w-[96vw] overflow-x-auto"
-      >
-        {navItems.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`zeggo-btn flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 text-xs sm:text-sm font-medium transition ${
-                active
-                  ? "bg-[#c6f432] font-semibold text-[#080808]"
-                  : "text-white hover:bg-[#222222]"
-              }`}
-            >
-              <ZeggoRollText text={isId ? item.labelId : item.labelEn} />
-            </Link>
-          );
-        })}
-      </nav>
+      {/* CLEAN ARCHITECTURAL COMMAND DOCK */}
+      <VerdaraBottomDock />
     </div>
   );
 }

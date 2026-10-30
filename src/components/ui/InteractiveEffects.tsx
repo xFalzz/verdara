@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   WORLD_CITY_CATALOG,
@@ -26,6 +28,7 @@ export function VerdaraLogo({
   size?: number;
   className?: string;
 }) {
+  const uid = React.useId().replace(/:/g, "");
   return (
     <span
       className={`th-logo-mark inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#08090c] shadow-[inset_0_0_0_1.5px_#232730,0_8px_20px_-6px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-105 ${className}`}
@@ -40,7 +43,7 @@ export function VerdaraLogo({
       >
         <defs>
           <linearGradient
-            id="vd-emerald"
+            id={`vd-emerald-${uid}`}
             x1="15"
             y1="17"
             x2="32"
@@ -51,7 +54,7 @@ export function VerdaraLogo({
             <stop offset="100%" stopColor="#0e562e" />
           </linearGradient>
           <linearGradient
-            id="vd-lime"
+            id={`vd-lime-${uid}`}
             x1="49"
             y1="17"
             x2="32"
@@ -62,7 +65,7 @@ export function VerdaraLogo({
             <stop offset="100%" stopColor="#b6eb1a" />
           </linearGradient>
           <linearGradient
-            id="vd-bevel-l"
+            id={`vd-bevel-l-${uid}`}
             x1="15"
             y1="13"
             x2="30"
@@ -73,7 +76,7 @@ export function VerdaraLogo({
             <stop offset="100%" stopColor="#1a8b4e" />
           </linearGradient>
           <linearGradient
-            id="vd-bevel-r"
+            id={`vd-bevel-r-${uid}`}
             x1="49"
             y1="13"
             x2="34"
@@ -88,18 +91,24 @@ export function VerdaraLogo({
         {/* Left Cantilever Wing: Living Architecture (Emerald) */}
         <path
           d="M15 17 L26 17 L32 35.5 L32 49 L15 17 Z"
-          fill="url(#vd-emerald)"
+          fill={`url(#vd-emerald-${uid})`}
         />
         {/* Left Chamfer Bevel */}
-        <path d="M15 17 L19 13 L30 13 L26 17 Z" fill="url(#vd-bevel-l)" />
+        <path
+          d="M15 17 L19 13 L30 13 L26 17 Z"
+          fill={`url(#vd-bevel-l-${uid})`}
+        />
 
         {/* Right Cantilever Wing: Solar Kinetic (Lime) */}
         <path
           d="M49 17 L38 17 L32 35.5 L32 49 L49 17 Z"
-          fill="url(#vd-lime)"
+          fill={`url(#vd-lime-${uid})`}
         />
         {/* Right Chamfer Bevel */}
-        <path d="M49 17 L45 13 L34 13 L38 17 Z" fill="url(#vd-bevel-r)" />
+        <path
+          d="M49 17 L45 13 L34 13 L38 17 Z"
+          fill={`url(#vd-bevel-r-${uid})`}
+        />
 
         {/* Central Spatial Aperture (Diamond Light Well) */}
         <path
@@ -1305,5 +1314,174 @@ export function WorldCityExplorer({
         })}
       </div>
     </div>
+  );
+}
+
+/**
+ * 7. VERDARA ARCHITECTURAL COMMAND DOCK (<VerdaraBottomDock />)
+ * Clean, well-structured floating bottom navigation dock with:
+ * - Numbered structural index badges (01..09)
+ * - Direct links to Docs (/docs) and FAQ (/faq)
+ * - Automatic Auth Gate routing: if unauthenticated and clicking a protected studio route,
+ *   routes cleanly to `/login?next=<route>`
+ * - Collapsible minimize toggle so it never blocks page reading
+ */
+export function VerdaraBottomDock() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { locale, isAuthenticated } = useVerdaraStore();
+  const [minimized, setMinimized] = useState(false);
+  const isId = locale === "id";
+
+  const dockItems: {
+    code: string;
+    href: string;
+    labelEn: string;
+    labelId: string;
+    requiresAuth: boolean;
+  }[] = [
+    {
+      code: "01",
+      href: "/",
+      labelEn: "Index",
+      labelId: "Indeks",
+      requiresAuth: false,
+    },
+    {
+      code: "02",
+      href: "/dashboard",
+      labelEn: "Living Town",
+      labelId: "Kota 3D",
+      requiresAuth: true,
+    },
+    {
+      code: "03",
+      href: "/lens",
+      labelEn: "SAM 3.1 Lens",
+      labelId: "Lensa SAM",
+      requiresAuth: true,
+    },
+    {
+      code: "04",
+      href: "/radar",
+      labelEn: "3D Radar",
+      labelId: "Radar 3D",
+      requiresAuth: true,
+    },
+    {
+      code: "05",
+      href: "/council",
+      labelEn: "AI Council",
+      labelId: "Dewan AI",
+      requiresAuth: true,
+    },
+    {
+      code: "06",
+      href: "/academy",
+      labelEn: "Field Proofs",
+      labelId: "Bukti Aksi",
+      requiresAuth: true,
+    },
+    {
+      code: "07",
+      href: "/docs",
+      labelEn: "Docs",
+      labelId: "Dokumen",
+      requiresAuth: false,
+    },
+    {
+      code: "08",
+      href: "/faq",
+      labelEn: "FAQ",
+      labelId: "Tanya Jawab",
+      requiresAuth: false,
+    },
+    {
+      code: "09",
+      href: "/settings",
+      labelEn: "Shield",
+      labelId: "Perisai",
+      requiresAuth: true,
+    },
+  ];
+
+  if (minimized) {
+    return (
+      <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+        <button
+          type="button"
+          onClick={() => setMinimized(false)}
+          className="flex min-h-[40px] cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-[#08090c]/92 px-4 py-1.5 font-mono text-xs font-semibold text-white shadow-xl backdrop-blur-xl transition hover:border-[#c6f432]/60"
+        >
+          <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
+          <span>{isId ? "Buka Menu Navigasi ▴" : "Expand Command Dock ▴"}</span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <nav
+      aria-label={isId ? "Navigasi Utama" : "Primary Navigation"}
+      className="dovv-bottom-dock max-w-[96vw] overflow-x-auto"
+    >
+      {dockItems.map((item) => {
+        const active = pathname === item.href;
+        const locked = item.requiresAuth && !isAuthenticated;
+        const targetHref = locked
+          ? `/login?next=${encodeURIComponent(item.href)}`
+          : item.href;
+
+        return (
+          <Link
+            key={item.href}
+            href={targetHref}
+            onClick={(e) => {
+              if (locked) {
+                e.preventDefault();
+                router.push(targetHref);
+              }
+            }}
+            className={`zeggo-btn flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
+              active
+                ? "bg-[#c6f432] font-semibold text-[#080808] shadow-sm"
+                : "text-[#e5e5e0] hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <span
+              className={`font-mono text-[10px] ${
+                active ? "text-[#080808]/75 font-bold" : "text-[#c6f432]/75"
+              }`}
+            >
+              {item.code}
+            </span>
+            <ZeggoRollText text={isId ? item.labelId : item.labelEn} />
+            {locked && (
+              <span
+                aria-hidden="true"
+                title={
+                  isId ? "Login diperlukan" : "Sign-in required"
+                }
+                className="ml-0.5 font-mono text-[9px] opacity-60"
+              >
+                🔒
+              </span>
+            )}
+          </Link>
+        );
+      })}
+
+      <span className="mx-0.5 h-4 w-[1px] shrink-0 bg-white/15" />
+
+      <button
+        type="button"
+        onClick={() => setMinimized(true)}
+        title={isId ? "Sembunyikan dock" : "Minimize dock"}
+        aria-label={isId ? "Sembunyikan dock" : "Minimize dock"}
+        className="flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-full text-white/65 transition hover:bg-white/10 hover:text-white"
+      >
+        ▾
+      </button>
+    </nav>
   );
 }
