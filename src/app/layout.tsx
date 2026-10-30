@@ -42,6 +42,13 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${archivo.variable} ${inter.variable} ${ibmPlexMono.variable}`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var s=localStorage.getItem("verdara_spatial_store_v3");if(s){var p=JSON.parse(s);var t=p&&p.state&&p.state.theme;if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);}}}catch(e){}`,
+          }}
+        />
+      </head>
       <body
         suppressHydrationWarning
         className="min-h-screen antialiased selection:bg-[#c6f432] selection:text-[#151515]"

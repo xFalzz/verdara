@@ -2,25 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   VerdaraLogo,
   VerdaraBottomDock,
 } from "@/components/ui/InteractiveEffects";
-
-const EcoIslandCanvas = dynamic(
-  () => import("@/components/three/EcoIslandCanvas"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-[#e9e8e2] font-mono text-xs text-[#4b4b48]">
-        Loading 3D Eco-District Preview...
-      </div>
-    ),
-  }
-);
+import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import StudioShell from "@/components/ui/StudioShell";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
@@ -10,18 +9,7 @@ import {
   formatCurrency,
   formatVolume,
 } from "@/lib/science/units";
-
-const EcoIslandCanvas = dynamic(
-  () => import("@/components/three/EcoIslandCanvas"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-[#e9e8e2] font-mono text-xs text-[#4b4b48]">
-        Loading 3D Living Town...
-      </div>
-    ),
-  }
-);
+import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
 
 export default function DashboardPage() {
   const {
@@ -45,6 +33,10 @@ export default function DashboardPage() {
 
   const isId = locale === "id";
   const isLight = theme === "light";
+
+  useEffect(() => {
+    setIsNight(theme === "dark");
+  }, [theme]);
 
   const townModules = [
     {

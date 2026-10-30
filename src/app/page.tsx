@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
@@ -29,18 +28,7 @@ import {
   VerdaraBottomDock,
   type ScrollRailChapter,
 } from "@/components/ui/InteractiveEffects";
-
-const EcoIslandCanvas = dynamic(
-  () => import("@/components/three/EcoIslandCanvas"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-[#e9e8e2] font-mono text-xs text-[#4b4b48]">
-        Loading Grand 3D Eco-District Canvas...
-      </div>
-    ),
-  }
-);
+import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
 
 interface CountryDeckSpecimen {
   slug: string;
@@ -233,6 +221,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    setIsNightPreview(theme === "dark");
   }, [theme]);
 
   useEffect(() => {
@@ -289,7 +278,7 @@ export default function LandingPage() {
     setDragOffsetPx(0);
   };
 
-  // Subtle, Clean GSAP + ScrollTrigger Entrance Animations (No Excessive Skew or Layout Distortion)
+  // Zero-Delay Instant Render on Load/Refresh: Never hide text or cards with opacity:0
   useEffect(() => {
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -299,92 +288,19 @@ export default function LandingPage() {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      // 1. Subtle hero entrance stagger
-      gsap.fromTo(
-        ".gsap-hero-item",
-        { y: 14, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.55,
-          stagger: 0.06,
-          ease: "power2.out",
-          clearProps: "transform,opacity",
-        }
-      );
-
-      // 2. Section headings gentle lift
-      gsap.utils.toArray<HTMLElement>(".gsap-section-heading").forEach((el) => {
-        gsap.fromTo(
-          el,
-          { y: 18, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.55,
-            ease: "power2.out",
-            clearProps: "transform,opacity",
-            scrollTrigger: {
-              trigger: el,
-              start: "top 90%",
-              toggleActions: "play none none none",
-            },
-          }
-        );
-      });
-
-      // 3. Zeggo Sticky-Left + Scrolling-Right step cards
-      gsap.utils.toArray<HTMLElement>(".gsap-step-card").forEach((card) => {
-        gsap.fromTo(
-          card,
-          { y: 18, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.5,
-            ease: "power2.out",
-            clearProps: "transform,opacity",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 92%",
-              toggleActions: "play none none none",
-            },
-          }
-        );
-      });
-
-      // 4. Zeggo 12-Column Diagonal Staircase Cascade
-      gsap.fromTo(
-        ".gsap-stair-card",
-        { y: 18, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.5,
-          stagger: 0.08,
-          ease: "power2.out",
-          clearProps: "transform,opacity",
-          scrollTrigger: {
-            trigger: ".gsap-stair-grid",
-            start: "top 90%",
-            toggleActions: "play none none none",
-          },
-        }
-      );
-
-      // 5. 12-Month ERA5 Rainfall Bars growth
+      // Subtle 12-Month ERA5 Rainfall Bars growth when scrolled into view
       gsap.fromTo(
         ".gsap-era5-bar",
-        { scaleY: 0 },
+        { scaleY: 0.25 },
         {
           scaleY: 1,
           transformOrigin: "bottom center",
-          duration: 0.55,
-          stagger: 0.03,
+          duration: 0.45,
+          stagger: 0.025,
           ease: "power2.out",
           scrollTrigger: {
             trigger: ".gsap-era5-chart",
-            start: "top 88%",
+            start: "top 92%",
             toggleActions: "play none none none",
           },
         }
@@ -1230,12 +1146,24 @@ export default function LandingPage() {
 
         {/* Interactive Drag-to-Slide Country Viewport */}
         <div
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") {
+              setActiveSlide((s) => (s + 1) % COUNTRY_CLIMATE_DECK.length);
+            } else if (e.key === "ArrowLeft") {
+              setActiveSlide(
+                (s) =>
+                  (s + COUNTRY_CLIMATE_DECK.length - 1) %
+                  COUNTRY_CLIMATE_DECK.length
+              );
+            }
+          }}
           onPointerDown={handleDeckPointerDown}
           onPointerMove={handleDeckPointerMove}
           onPointerUp={handleDeckPointerUp}
           onPointerCancel={handleDeckPointerUp}
           onPointerLeave={handleDeckPointerUp}
-          className="gsap-slide-frame country-deck-viewport overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626] select-none"
+          className="gsap-slide-frame country-deck-viewport overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#080808] p-5 sm:p-10 text-white shadow-[inset_0_0_0_2px_#262626] select-none outline-none focus-visible:ring-2 focus-visible:ring-[#c6f432]"
         >
           <div className="overflow-hidden w-full">
           <div
@@ -1302,6 +1230,34 @@ export default function LandingPage() {
                           ? countryGeo.koppen.descriptionId
                           : countryGeo.koppen.descriptionEn}
                       </p>
+
+                      {/* Live Engineering Sub-Metrics Strip per Country */}
+                      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-[#aaa9ad]">
+                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
+                          CO₂e Avoided:{" "}
+                          <strong className="text-[#c6f432]">
+                            {calc.solar.co2eKgYear.toLocaleString()} kg/yr
+                          </strong>
+                        </span>
+                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
+                          Biopores:{" "}
+                          <strong className="text-cyan-300">
+                            +{calc.infiltration.bioporeUnits} Wells
+                          </strong>
+                        </span>
+                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
+                          Solar Array:{" "}
+                          <strong className="text-white">
+                            {calc.solar.panelCountEst} Modules
+                          </strong>
+                        </span>
+                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
+                          Grid EF:{" "}
+                          <strong className="text-amber-300">
+                            {countryGeo.policy.gridEfKgKwh} kg/kWh
+                          </strong>
+                        </span>
+                      </div>
 
                       <div className="flex flex-wrap items-center gap-3 pt-2">
                         <button
@@ -2393,12 +2349,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. WHITE ARCHITECTURAL FOOTER (CLEAN LIGHT / PAPER CONTRAST) */}
-      <footer className="w-full overflow-clip bg-[#f5f5f3] pb-28 text-[#111111] border-t border-black/15">
+      {/* 8. THEME-REACTIVE ARCHITECTURAL FOOTER (WHITE IN DAY MODE / OBSIDIAN IN NIGHT MODE) */}
+      <footer
+        className={`w-full overflow-clip pb-28 transition-colors duration-300 border-t ${
+          isLight
+            ? "bg-[#f5f5f3] text-[#111111] border-black/15"
+            : "bg-[#0b0c0e] text-[#f2f1ec] border-white/15"
+        }`}
+      >
         <div className="mx-auto max-w-[1440px] px-4 pt-14 pb-6">
           <Link
             href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-            className="block select-none text-center text-[#111111] transition-opacity hover:opacity-85"
+            className="block select-none text-center transition-opacity hover:opacity-85"
           >
             <DovvInteractiveWordmark
               lines={["VERDARA TOWN"]}
@@ -2407,30 +2369,46 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <div className="mx-auto grid max-w-[1440px] grid-cols-1 border-t border-black/15 md:grid-cols-2 xl:grid-cols-4">
+        <div
+          className={`mx-auto grid max-w-[1440px] grid-cols-1 border-t md:grid-cols-2 xl:grid-cols-4 ${
+            isLight ? "border-black/15" : "border-white/15"
+          }`}
+        >
           {/* Cell 1: Brand & Judge Demo Action */}
-          <div className="flex flex-col gap-3.5 border-b border-black/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
+          <div
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
+              isLight ? "border-black/15" : "border-white/15"
+            }`}
+          >
             <div className="flex items-center gap-3">
               <VerdaraLogo size={40} />
               <div>
-                <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
+                <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
                   01 / Judge Quick-Start
                 </span>
-                <p className="text-lg font-semibold tracking-tight text-[#111111]">
+                <p className="text-lg font-semibold tracking-tight">
                   Verdara Spatial Eco-Town
                 </p>
               </div>
             </div>
-            <p className="text-xs sm:text-sm text-[#444440]">
+            <p className="text-xs sm:text-sm opacity-80">
               {isId
                 ? "Klik tombol di bawah untuk langsung masuk ke Kota 3D Level 5 dengan seluruh 6 bangunan ekologis terbuka."
                 : "Click below to launch the Level 5 Judge Demo Town with all 6 ecological structures unlocked."}
             </p>
             <Link
               href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-              className="zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full bg-[#080808] px-5 text-sm font-semibold text-white transition hover:bg-[#1e9e5a]"
+              className={`zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full px-5 text-sm font-semibold transition ${
+                isLight
+                  ? "bg-[#080808] text-white hover:bg-[#1e9e5a]"
+                  : "bg-[#c6f432] text-[#080808] hover:bg-[#d5f759]"
+              }`}
             >
-              <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isLight ? "bg-[#c6f432]" : "bg-[#080808]"
+                }`}
+              />
               <ZeggoRollText
                 text={
                   isAuthenticated
@@ -2442,8 +2420,12 @@ export default function LandingPage() {
           </div>
 
           {/* Cell 2: Spatial Workspaces & Docs */}
-          <div className="flex flex-col gap-3.5 border-b border-black/15 p-6 sm:p-8 xl:border-b-0 xl:border-r">
-            <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
+          <div
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
+              isLight ? "border-black/15" : "border-white/15"
+            }`}
+          >
+            <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               02 / Workspaces &amp; Docs
             </span>
             <ul className="flex flex-col gap-2">
@@ -2459,7 +2441,11 @@ export default function LandingPage() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="dovv-wordmark inline-block text-2xl text-[#111111] transition-all hover:pl-2 hover:text-[#1e9e5a]"
+                    className={`dovv-wordmark inline-block text-2xl transition-all hover:pl-2 ${
+                      isLight
+                        ? "hover:text-[#1e9e5a]"
+                        : "hover:text-[#c6f432]"
+                    }`}
                   >
                     {link.label}
                   </Link>
@@ -2469,11 +2455,15 @@ export default function LandingPage() {
           </div>
 
           {/* Cell 3: Scientific Citations */}
-          <div className="flex flex-col gap-3.5 border-b border-black/15 p-6 sm:p-8 md:border-b-0 xl:border-r">
-            <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
+          <div
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 md:border-b-0 xl:border-r ${
+              isLight ? "border-black/15" : "border-white/15"
+            }`}
+          >
+            <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
               03 / Meta AI &amp; Science Stack
             </span>
-            <ul className="space-y-1.5 text-sm text-[#333330]">
+            <ul className="space-y-1.5 text-sm opacity-80">
               <li>Meta SAM 3.1 Concept Segmentation</li>
               <li>Meta Muse Spark &amp; muse-spark-open</li>
               <li>Meta Muse Image Eco-Retrofit</li>
@@ -2486,13 +2476,17 @@ export default function LandingPage() {
           {/* Cell 4: Live Jurisdiction & Status */}
           <div className="flex flex-col justify-between gap-4 p-6 sm:p-8">
             <div className="space-y-2">
-              <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#555550]">
+              <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
                 04 / Active World Jurisdiction
               </span>
-              <p className="dovv-wordmark text-3xl text-[#14733f]">
+              <p
+                className={`dovv-wordmark text-3xl ${
+                  isLight ? "text-[#14733f]" : "text-[#c6f432]"
+                }`}
+              >
                 {geo.city} ({geo.countryCode})
               </p>
-              <div className="flex items-center gap-2 text-sm text-[#444440]">
+              <div className="flex items-center gap-2 text-sm opacity-80">
                 <span className="h-2 w-2 rounded-full bg-[#16c847]" />
                 <span>
                   {geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}° · Köppen{" "}
@@ -2501,7 +2495,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <p className="font-mono text-xs text-[#555550]">
+            <p className="font-mono text-xs opacity-60">
               Verdara Spatial Studio · 195+ Countries · 60 FPS WebGL
             </p>
           </div>

@@ -189,21 +189,14 @@
   }
 }
 
-/* DOVV Die-Cut Sticker with Spring Pop & Hover */
+/* DOVV Die-Cut Sticker with Instant Render & Spring Hover */
 .dovv-sticker {
   user-select: none;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.2));
-  transition: transform 0.4s var(--spring-bounce), filter 0.3s ease;
-  animation: dovv-sticker-pop 0.7s var(--spring-bounce) backwards;
+  transition: transform 0.35s var(--spring-bounce), filter 0.25s ease;
 }
 .dovv-sticker:hover {
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.28));
-}
-@keyframes dovv-sticker-pop {
-  0% {
-    opacity: 0;
-    scale: 0.4;
-  }
 }
 
 /* DOVV Slide Carousel Track (.track) */
