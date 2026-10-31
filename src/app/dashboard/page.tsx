@@ -46,12 +46,12 @@ export default function DashboardPage() {
       titleId: "Array Surya Atap Monokristalin",
       metric: `${housingCalc.solar.kwp} kWp · ${Math.round(
         housingCalc.solar.kwhYear
-      ).toLocaleString()} kWh/yr`,
+      ).toLocaleString()} ${isId ? "kWh/thn" : "kWh/yr"}`,
       sub: `${formatCurrency(
         housingCalc.solar.savingsYear,
         housingCalc.solar.currency,
         locale
-      )}/yr savings`,
+      )}/${isId ? "thn hemat" : "yr savings"}`,
       gradeColor: "#1e9e5a",
     },
     {
@@ -62,24 +62,34 @@ export default function DashboardPage() {
         housingCalc.rainwater.litersYear,
         units,
         locale
-      )}/yr`,
-      sub: `${housingCalc.rainwater.recommendedCisternLiters.toLocaleString()} L buffer tank`,
+      )}/${isId ? "thn" : "yr"}`,
+      sub: `${housingCalc.rainwater.recommendedCisternLiters.toLocaleString()} L ${
+        isId ? "tangki penyangga" : "buffer tank"
+      }`,
       gradeColor: "#2a9dbd",
     },
     {
       code: "compost_dome",
       titleEn: "Aerobic Bio-Compost Dome & Biopores",
       titleId: "Kubah Bio-Kompos Aerobik & Biopori",
-      metric: `${housingCalc.infiltration.bioporeUnits} Biopore Shafts`,
-      sub: `Infiltrates ${housingCalc.infiltration.infiltrationRateLitersHr.toLocaleString()} L/hr`,
+      metric: isId
+        ? `${housingCalc.infiltration.bioporeUnits} Lubang Biopori`
+        : `${housingCalc.infiltration.bioporeUnits} Biopore Shafts`,
+      sub: isId
+        ? `Infiltrasi ${housingCalc.infiltration.infiltrationRateLitersHr.toLocaleString()} L/jam`
+        : `Infiltrates ${housingCalc.infiltration.infiltrationRateLitersHr.toLocaleString()} L/hr`,
       gradeColor: "#1e9e5a",
     },
     {
       code: "sorting_station",
       titleEn: "3-Stream Circular Recovery Depot",
       titleId: "Depot Pemilahan Sirkular 3-Aliran",
-      metric: `${geo.hubs.length} Verified OSM Hubs`,
-      sub: `Nearest: ${geo.hubs[0]?.distanceKm ?? 1.3} km away`,
+      metric: isId
+        ? `${geo.hubs.length} Hub Terverifikasi OSM`
+        : `${geo.hubs.length} Verified OSM Hubs`,
+      sub: isId
+        ? `Terdekat: ${geo.hubs[0]?.distanceKm ?? 1.3} km`
+        : `Nearest: ${geo.hubs[0]?.distanceKm ?? 1.3} km away`,
       gradeColor: "#e9a23b",
     },
   ];
@@ -106,7 +116,13 @@ export default function DashboardPage() {
               onClick={() => setIsNight(!isNight)}
               className="min-h-[44px] cursor-pointer rounded-full bg-[#080808] px-4 text-xs font-medium text-white shadow-[inset_0_0_0_1px_#2c2c2c] transition hover:bg-[#1c1c1c]"
             >
-              {isNight ? "Lighting: Night Glow" : "Lighting: Daylight"}
+              {isNight
+                ? isId
+                  ? "Pencahayaan: Malam"
+                  : "Lighting: Night Glow"
+                : isId
+                ? "Pencahayaan: Siang"
+                : "Lighting: Daylight"}
             </button>
             <button
               type="button"
@@ -154,11 +170,13 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between gap-2 font-mono text-[10px] sm:text-[11px]">
               <span className="inline-flex items-center gap-1.5 font-semibold text-[#1e9e5a]">
                 <span className="h-2 w-2 rounded-full bg-[#1e9e5a]" />
-                TOWN LEVEL {level} ({xp} XP · {progressPct}%)
+                {isId
+                  ? `LEVEL KOTA ${level} (${xp} XP · ${progressPct}%)`
+                  : `TOWN LEVEL ${level} (${xp} XP · ${progressPct}%)`}
               </span>
               <div className="flex items-center gap-1.5">
                 <span className="opacity-65">
-                  {unlockedItems.length} Modules
+                  {unlockedItems.length} {isId ? "Modul" : "Modules"}
                 </span>
                 <button
                   type="button"
@@ -179,8 +197,8 @@ export default function DashboardPage() {
             {!hudMinimized && (
               <>
                 <p className="townhouse-title mt-1.5 text-base sm:text-xl font-semibold">
-                  {formatArea(housingCalc.footprintM2, units, locale)} roof ·{" "}
-                  {housingCalc.solar.kwp} kWp solar
+                  {formatArea(housingCalc.footprintM2, units, locale)} {isId ? "atap" : "roof"} ·{" "}
+                  {housingCalc.solar.kwp} kWp {isId ? "surya" : "solar"}
                 </p>
                 <p className="mt-1 text-[11px] sm:text-xs leading-relaxed opacity-75">
                   {isId
@@ -213,9 +231,9 @@ export default function DashboardPage() {
           <div className="dovv-card">
             <div className="dovv-card-media p-6 space-y-3">
               <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-                <span>02 / GRADED TOWN INFRASTRUCTURE</span>
+                <span>{isId ? "02 / INFRASTRUKTUR BERGRADASI" : "02 / GRADED TOWN INFRASTRUCTURE"}</span>
                 <span className="text-[#c6f432]">
-                  {unlockedItems.length} / 6 UNLOCKED
+                  {unlockedItems.length} / 6 {isId ? "TERBUKA" : "UNLOCKED"}
                 </span>
               </div>
 
@@ -253,7 +271,13 @@ export default function DashboardPage() {
                             : "bg-white/10 text-[#aaa9ad]"
                         }`}
                       >
-                        {mounted ? "MOUNTED" : "LOCKED"}
+                        {mounted
+                          ? isId
+                            ? "TERPASANG"
+                            : "MOUNTED"
+                          : isId
+                          ? "TERKUNCI"
+                          : "LOCKED"}
                       </span>
                     </div>
                   );
@@ -278,14 +302,14 @@ export default function DashboardPage() {
             <div className="dovv-card-media p-6 flex flex-col justify-between space-y-5">
               <div>
                 <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-                  <span>03 / NREL PVWATTS V8 & HYDROLOGY LEDGER</span>
-                  <span>{geo.policy.currency} TARIFF</span>
+                  <span>{isId ? "03 / NREL PVWATTS V8 & BUKU BESAR HIDROLOGI" : "03 / NREL PVWATTS V8 & HYDROLOGY LEDGER"}</span>
+                  <span>{isId ? `TARIF ${geo.policy.currency}` : `${geo.policy.currency} TARIFF`}</span>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#252830]">
                     <span className="font-mono text-[10px] text-[#aaa9ad]">
-                      ANNUAL SOLAR SAVINGS
+                      {isId ? "PENGHEMATAN SURYA TAHUNAN" : "ANNUAL SOLAR SAVINGS"}
                     </span>
                     <p className="mt-1 font-mono text-2xl font-bold text-[#c6f432]">
                       {formatCurrency(
@@ -295,13 +319,13 @@ export default function DashboardPage() {
                       )}
                     </p>
                     <p className="mt-1 font-mono text-[11px] text-[#c9c7c0]">
-                      {housingCalc.solar.co2eKgYear} kg CO2e avoided/yr
+                      {housingCalc.solar.co2eKgYear} {isId ? "kg CO2e dihindari/thn" : "kg CO2e avoided/yr"}
                     </p>
                   </div>
 
                   <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#252830]">
                     <span className="font-mono text-[10px] text-[#aaa9ad]">
-                      COOL ROOF RETROFIT DROP
+                      {isId ? "PENURUNAN RETROFIT ATAP SEJUK" : "COOL ROOF RETROFIT DROP"}
                     </span>
                     <p className="mt-1 font-mono text-2xl font-bold text-cyan-300">
                       -{housingCalc.thermal.coolingTargetDegC}°C
@@ -317,8 +341,8 @@ export default function DashboardPage() {
               {/* Session SAM 3.1 Scan Ledger (Genuine Empty State when 0 scans) */}
               <div className="border-t border-white/10 pt-4">
                 <div className="flex items-center justify-between font-mono text-xs text-[#aaa9ad]">
-                  <span>04 / SESSION SAM 3.1 SCAN LOG</span>
-                  <span>{scanHistory.length} scans recorded</span>
+                  <span>{isId ? "04 / LOG PINDAI SAM 3.1 SESI" : "04 / SESSION SAM 3.1 SCAN LOG"}</span>
+                  <span>{scanHistory.length} {isId ? "pindaian tercatat" : "scans recorded"}</span>
                 </div>
 
                 {scanHistory.length === 0 ? (
@@ -344,7 +368,7 @@ export default function DashboardPage() {
                       >
                         <span className="text-white">
                           {isId ? rec.titleId : rec.titleEn} ({rec.objectCount}{" "}
-                          polygons)
+                          {isId ? "poligon" : "polygons"})
                         </span>
                         <span className="text-[#c6f432]">
                           +{formatCurrency(rec.valueTotal, rec.currency, locale)}

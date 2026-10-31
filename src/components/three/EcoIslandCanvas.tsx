@@ -13,6 +13,7 @@ import {
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { IslandBiome } from "@/lib/science/koppen";
+import { useVerdaraStore } from "@/store/useVerdaraStore";
 
 export interface EcoIslandProps {
   biome: IslandBiome;
@@ -2668,7 +2669,8 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
       : props.isNight
       ? palette.skyNight
       : palette.skyDay;
-  const isId = props.locale === "id";
+  const storeLocale = useVerdaraStore((s) => s.locale);
+  const isId = (props.locale ?? storeLocale) === "id";
   const activePresetMeta = CAMERA_PRESET_CONFIG[camPreset];
 
   const handleStepZoom = (factor: number) => {
@@ -2890,13 +2892,15 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
                   : "bg-white/5 text-[#aaa9ad]"
               }`}
             >
-              {autoOrbit ? "Orbit: ON" : "Orbit: OFF"}
+              {autoOrbit
+                ? (isId ? "Orbit: AKTIF" : "Orbit: ON")
+                : (isId ? "Orbit: MATI" : "Orbit: OFF")}
             </button>
             <button
               type="button"
               onClick={() => handleStepZoom(0.8)}
-              aria-label="Zoom In 3D"
-              title="Zoom In"
+              aria-label={isId ? "Perbesar 3D" : "Zoom In 3D"}
+              title={isId ? "Perbesar 3D" : "Zoom In"}
               className="flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs font-bold text-white transition hover:bg-[#c6f432] hover:text-[#080808]"
             >
               +
@@ -2904,8 +2908,8 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
             <button
               type="button"
               onClick={() => handleStepZoom(1.25)}
-              aria-label="Zoom Out 3D"
-              title="Zoom Out"
+              aria-label={isId ? "Perkecil 3D" : "Zoom Out 3D"}
+              title={isId ? "Perkecil 3D" : "Zoom Out"}
               className="flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs font-bold text-white transition hover:bg-[#c6f432] hover:text-[#080808]"
             >
               -

@@ -184,7 +184,7 @@ export default function AcademyPage() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="space-y-3 xl:col-span-4">
             <p className={`font-mono text-xs font-bold tracking-wider ${textMuted}`}>
-              {"// 02 SELECT FIELD PROTOCOL TRACK"}
+              {isId ? "// 02 PILIH JALUR PROTOKOL LAPANGAN" : "// 02 SELECT FIELD PROTOCOL TRACK"}
             </p>
             {ACADEMY_LESSONS.map((lesson, idx) => {
               const active = lesson.id === activeLesson.id;
@@ -206,13 +206,19 @@ export default function AcademyPage() {
                 >
                   <div className="flex items-center justify-between font-mono text-xs">
                     <span className="font-bold">
-                      TRACK 0{idx + 1} / +{lesson.xpReward} XP
+                      {isId ? "JALUR" : "TRACK"} 0{idx + 1} / +{lesson.xpReward} XP
                     </span>
                     <span className="font-bold">
                       {verified
-                        ? "VERIFIED"
+                        ? isId
+                          ? "TERVERIFIKASI"
+                          : "VERIFIED"
                         : quizDone
-                        ? "QUIZ PASSED"
+                        ? isId
+                          ? "KUIS LULUS"
+                          : "QUIZ PASSED"
+                        : isId
+                        ? "KUIS DIBUTUHKAN"
                         : "QUIZ REQUIRED"}
                     </span>
                   </div>
@@ -225,8 +231,8 @@ export default function AcademyPage() {
                   </p>
 
                   <div className="mt-3 flex items-center justify-between border-t border-current/15 pt-2 font-mono text-[11px] opacity-85">
-                    <span>Unlocks: {lesson.unlocksItemCode}</span>
-                    <span>{lesson.proofRequirements.length} SAM 3.1 Concepts</span>
+                    <span>{isId ? "Membuka:" : "Unlocks:"} {lesson.unlocksItemCode}</span>
+                    <span>{lesson.proofRequirements.length} {isId ? "Konsep SAM 3.1" : "SAM 3.1 Concepts"}</span>
                   </div>
                 </button>
               );
@@ -237,10 +243,10 @@ export default function AcademyPage() {
             <section className={`rounded-2xl border p-5 ${surfaceCard}`}>
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                 <span className="font-bold">
-                  {"// STEP 01 : KOPPEN"} {geo.koppen.code} FIELD PROTOCOL ({geo.city})
+                  {isId ? "// LANGKAH 01 : PROTOKOL LAPANGAN KOPPEN" : "// STEP 01 : KOPPEN"} {geo.koppen.code} ({geo.city})
                 </span>
                 <span className={textMuted}>
-                  Reward: +{activeLesson.xpReward} XP / Unlocks{" "}
+                  {isId ? "Hadiah:" : "Reward:"} +{activeLesson.xpReward} XP / {isId ? "Membuka" : "Unlocks"}{" "}
                   {isId
                     ? activeLesson.unlocksItemLabelId
                     : activeLesson.unlocksItemLabelEn}
@@ -284,9 +290,15 @@ export default function AcademyPage() {
             <section className={`rounded-2xl border p-5 ${surfaceCard}`}>
               <div className="flex items-center justify-between font-mono text-xs">
                 <span className="font-bold">
-                  {"// STEP 02 : TECHNICAL PREREQUISITE QUIZ (PASS >= 2/3)"}
+                  {isId
+                    ? "// LANGKAH 02 : KUIS PRASYARAT TEKNIS (LULUS >= 2/3)"
+                    : "// STEP 02 : TECHNICAL PREREQUISITE QUIZ (PASS >= 2/3)"}
                 </span>
-                {isQuizPassed && <span className="font-bold">STATUS: PASSED</span>}
+                {isQuizPassed && (
+                  <span className="font-bold">
+                    {isId ? "STATUS: LULUS" : "STATUS: PASSED"}
+                  </span>
+                )}
               </div>
 
               <div className="mt-4 space-y-3.5">
@@ -342,18 +354,22 @@ export default function AcademyPage() {
             <section className={`rounded-2xl border p-5 ${surfaceCard}`}>
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                 <span className="font-bold">
-                  {"// STEP 03 : META SAM 3.1 PROOF-OF-ACTION & 64-BIT DHASH VERIFIER"}
+                  {isId
+                    ? "// LANGKAH 03 : VERIFIKATOR BUKTI AKSI META SAM 3.1 & 64-BIT DHASH"
+                    : "// STEP 03 : META SAM 3.1 PROOF-OF-ACTION & 64-BIT DHASH VERIFIER"}
                 </span>
                 {!isQuizPassed && (
                   <span className="rounded-lg border border-rose-500/40 px-2.5 py-1 text-rose-400">
-                    Complete Step 02 Quiz First
+                    {isId ? "Selesaikan Kuis Langkah 02 Terlebih Dahulu" : "Complete Step 02 Quiz First"}
                   </span>
                 )}
               </div>
 
               <div className={`mt-3 rounded-xl border p-3.5 ${elevatedCard}`}>
                 <p className={`font-mono text-xs font-semibold ${textMuted}`}>
-                  Required Physical Concepts Prompted to Meta SAM 3.1 (score &gt;= 0.50, total &gt;= 70/100):
+                  {isId
+                    ? "Konsep Fisik Wajib untuk Meta SAM 3.1 (skor >= 0.50, total >= 70/100):"
+                    : "Required Physical Concepts Prompted to Meta SAM 3.1 (score >= 0.50, total >= 70/100):"}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {activeLesson.proofRequirements.map((req, idx) => (
@@ -361,7 +377,15 @@ export default function AcademyPage() {
                       key={idx}
                       className={`rounded-lg border px-2.5 py-1 font-mono text-xs ${surfaceCard}`}
                     >
-                      {req.required ? "REQUIRED:" : "OPTIONAL:"} &quot;{req.concept}&quot; (min {req.minCount}x, weight {req.weight})
+                      {req.required
+                        ? isId
+                          ? "WAJIB:"
+                          : "REQUIRED:"
+                        : isId
+                        ? "OPSIONAL:"
+                        : "OPTIONAL:"}{" "}
+                      &quot;{req.concept}&quot; (min {req.minCount}x,{" "}
+                      {isId ? "bobot" : "weight"} {req.weight})
                     </span>
                   ))}
                 </div>
@@ -379,7 +403,9 @@ export default function AcademyPage() {
                   }`}
                 >
                   {verifyingProof
-                    ? "Scanning with SAM 3.1..."
+                    ? isId
+                      ? "Memindai dengan SAM 3.1..."
+                      : "Scanning with SAM 3.1..."
                     : isId
                     ? "Uji Bukti Lapangan Valid (SAM 3.1)"
                     : "Verify Valid Field Proof (SAM 3.1)"}
@@ -426,7 +452,9 @@ export default function AcademyPage() {
                   {!proofResult.ok ? (
                     <div className="font-mono text-xs">
                       <p className="font-bold">
-                        HTTP 409 CONFLICT : PERCEPTUAL DHASH DUPLICATE REJECTED
+                        {isId
+                          ? "HTTP 409 KONFLIK : DUPLIKAT PERCEPTUAL DHASH DITOLAK"
+                          : "HTTP 409 CONFLICT : PERCEPTUAL DHASH DUPLICATE REJECTED"}
                       </p>
                       <p className="mt-1">{proofResult.errorMsg}</p>
                     </div>
@@ -434,10 +462,12 @@ export default function AcademyPage() {
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                         <span className="font-bold">
-                          SAM 3.1 PROOF VERIFIED / SCORE: {proofResult.score}/100
+                          {isId
+                            ? `BUKTI SAM 3.1 TERVERIFIKASI / SKOR: ${proofResult.score}/100`
+                            : `SAM 3.1 PROOF VERIFIED / SCORE: ${proofResult.score}/100`}
                         </span>
                         <span className={textMuted}>
-                          64-bit dHash: {proofResult.dhash} (Unique)
+                          64-bit dHash: {proofResult.dhash} ({isId ? "Unik" : "Unique"})
                         </span>
                       </div>
 
@@ -448,10 +478,18 @@ export default function AcademyPage() {
                             className={`rounded-lg border p-2.5 font-mono text-xs ${surfaceCard}`}
                           >
                             <p className="font-bold">
-                              {item.passed ? "PASS:" : "MISS:"} {item.concept}
+                              {item.passed
+                                ? isId
+                                  ? "LULUS:"
+                                  : "PASS:"
+                                : isId
+                                ? "KURANG:"
+                                : "MISS:"}{" "}
+                              {item.concept}
                             </p>
                             <p className={`mt-1 text-[11px] ${textMuted}`}>
-                              Instances: {item.detectedCount}/{item.minCount} / Conf:{" "}
+                              {isId ? "Jumlah:" : "Instances:"} {item.detectedCount}/{item.minCount} /{" "}
+                              {isId ? "Keyakinan:" : "Conf:"}{" "}
                               {(item.avgConfidence * 100).toFixed(0)}%
                             </p>
                           </div>
@@ -460,7 +498,8 @@ export default function AcademyPage() {
 
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-current/15 pt-3">
                         <span className="font-mono text-xs font-bold">
-                          +{proofResult.xpAwarded} Eco-XP Awarded / Unlocked:{" "}
+                          +{proofResult.xpAwarded}{" "}
+                          {isId ? "Eco-XP Diberikan / Terbuka:" : "Eco-XP Awarded / Unlocked:"}{" "}
                           {isId
                             ? activeLesson.unlocksItemLabelId
                             : activeLesson.unlocksItemLabelEn}

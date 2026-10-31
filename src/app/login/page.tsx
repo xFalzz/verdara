@@ -254,7 +254,7 @@ export default function LoginPage() {
                   VERDARA
                 </span>
                 <span className="block font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.14em] opacity-60">
-                  Identity &amp; OAuth Portal
+                  {isId ? "Portal Identitas & OAuth" : "Identity & OAuth Portal"}
                 </span>
               </div>
             </Link>
@@ -274,7 +274,7 @@ export default function LoginPage() {
               href="/docs"
               className="inline-flex min-h-[36px] items-center rounded-full border border-current/15 px-3 text-xs font-medium transition hover:bg-current/5"
             >
-              Docs
+              {isId ? "Dokumentasi" : "Docs"}
             </Link>
             <Link
               href="/faq"
@@ -312,7 +312,7 @@ export default function LoginPage() {
                 onClick={() => setTheme(isLight ? "dark" : "light")}
                 className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
               >
-                {isLight ? "☀ Day" : "☾ Night"}
+                {isLight ? (isId ? "☀ Siang" : "☀ Day") : (isId ? "☾ Malam" : "☾ Night")}
               </button>
             </div>
           </div>
@@ -345,7 +345,13 @@ export default function LoginPage() {
                   onClick={() => setIsNightStage(!isNightStage)}
                   className="min-h-[32px] cursor-pointer rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1 font-mono text-[10px] sm:text-[11px] font-semibold text-white shadow-lg backdrop-blur-xl transition hover:border-[#c6f432]"
                 >
-                  {isNightStage ? "☀ Daylight" : "☾ Night Glow"}
+                  {isNightStage
+                    ? isId
+                      ? "☀ Siang"
+                      : "☀ Daylight"
+                    : isId
+                    ? "☾ Malam"
+                    : "☾ Night Glow"}
                 </button>
               </div>
 

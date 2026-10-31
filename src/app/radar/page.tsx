@@ -180,9 +180,11 @@ export default function RadarPage() {
             >
               <div className="mb-2.5 flex items-center justify-between px-1 font-mono text-xs">
                 <span>
-                  // MAPLIBRE GL 3D TERRAIN · PITCH 55° · CLICK ANY BUILDING
+                  // {isId
+                    ? "MAPLIBRE GL 3D TERRAIN · KEMIRINGAN 55° · KLIK GEDUNG MANA PUN"
+                    : "MAPLIBRE GL 3D TERRAIN · PITCH 55° · CLICK ANY BUILDING"}
                 </span>
-                <span>{filteredHubs.length} OSM hubs</span>
+                <span>{filteredHubs.length} {isId ? "hub OSM" : "OSM hubs"}</span>
               </div>
 
               <div className="h-[420px] w-full overflow-hidden rounded-xl">
@@ -442,19 +444,20 @@ export default function RadarPage() {
                 }`}
               >
                 <div className="flex justify-between">
-                  <span>Solar Capacity (kWp):</span>
+                  <span>{isId ? "Kapasitas Surya (kWp):" : "Solar Capacity (kWp):"}</span>
                   <strong className="tabular-nums">
-                    {housingCalc.solar.kwp} kWp ({housingCalc.solar.panelCountEst} panels)
+                    {housingCalc.solar.kwp} kWp ({housingCalc.solar.panelCountEst}{" "}
+                    {isId ? "panel" : "panels"})
                   </strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>Annual Solar Output:</span>
+                  <span>{isId ? "Output Surya Tahunan:" : "Annual Solar Output:"}</span>
                   <strong className="tabular-nums">
-                    {housingCalc.solar.kwhYear.toLocaleString()} kWh/yr
+                    {housingCalc.solar.kwhYear.toLocaleString()} {isId ? "kWh/thn" : "kWh/yr"}
                   </strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>Annual Bill Savings:</span>
+                  <span>{isId ? "Penghematan Tagihan Tahunan:" : "Annual Bill Savings:"}</span>
                   <strong
                     className={`tabular-nums ${
                       isLight ? "text-[#14532D]" : "text-[#A3E635]"
@@ -465,29 +468,30 @@ export default function RadarPage() {
                       housingCalc.solar.currency,
                       locale
                     )}
-                    /yr
+                    /{isId ? "thn" : "yr"}
                   </strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>Grid CO2e Avoided:</span>
+                  <span>{isId ? "Emisi Jaringan Dihindari:" : "Grid CO2e Avoided:"}</span>
                   <strong className="tabular-nums">
-                    {housingCalc.solar.co2eKgYear} kg/yr
+                    {housingCalc.solar.co2eKgYear} {isId ? "kg/thn" : "kg/yr"}
                   </strong>
                 </div>
                 <div className="flex justify-between border-t pt-2 border-current/15">
-                  <span>Rainwater Capture:</span>
+                  <span>{isId ? "Tangkapan Air Hujan:" : "Rainwater Capture:"}</span>
                   <strong className="tabular-nums">
-                    {formatVolume(housingCalc.rainwater.litersYear, units)}/yr
+                    {formatVolume(housingCalc.rainwater.litersYear, units, locale)}/{isId ? "thn" : "yr"}
                   </strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>Cistern & Biopores:</span>
+                  <span>{isId ? "Tangki & Lubang Biopori:" : "Cistern & Biopores:"}</span>
                   <strong className="tabular-nums">
                     {formatVolume(
                       housingCalc.rainwater.recommendedCisternLiters,
-                      units
+                      units,
+                      locale
                     )}{" "}
-                    · {housingCalc.infiltration.bioporeUnits} shafts
+                    · {housingCalc.infiltration.bioporeUnits} {isId ? "lubang" : "shafts"}
                   </strong>
                 </div>
               </div>

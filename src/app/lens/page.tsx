@@ -439,10 +439,10 @@ export default function LensPage() {
                         : "font-bold text-[#A3E635]"
                     }
                   >
-                    // SAM 3.1 POLYGON VISOR
+                    // {isId ? "VISOR POLIGON SAM 3.1" : "SAM 3.1 POLYGON VISOR"}
                   </span>{" "}
                   <span>
-                    ({activeSample.objects.length} instances · IoU &lt; 0.85)
+                    ({activeSample.objects.length} {isId ? "objek" : "instances"} · IoU &lt; 0.85)
                   </span>
                 </div>
 
@@ -559,7 +559,7 @@ export default function LensPage() {
                   isLight ? "text-[#14532D]" : "text-[#A3E635]"
                 }`}
               >
-                // DETECTED INSTANCES (CLICK TO INSPECT)
+                // {isId ? "OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "DETECTED INSTANCES (CLICK TO INSPECT)"}
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {activeSample.objects.map((obj) => {
@@ -621,7 +621,7 @@ export default function LensPage() {
                       : "font-bold text-[#A3E635]"
                   }
                 >
-                  // JURISDICTION VALUATION ({geo.policy.code})
+                  // {isId ? "VALUASI YURISDIKSI" : "JURISDICTION VALUATION"} ({geo.policy.code})
                 </span>
                 <span>{geo.city}</span>
               </div>
@@ -697,7 +697,7 @@ export default function LensPage() {
                       isLight ? "text-[#14532D]" : "text-[#A3E635]"
                     }`}
                   >
-                    // SELECTED INSTANCE DOSSIER
+                    // {isId ? "DOSIR OBJEK TERPILIH" : "SELECTED INSTANCE DOSSIER"}
                   </p>
                   <h2 className="mt-0.5 font-serif text-xl font-bold capitalize">
                     {selectedObj.concept} ({selectedObj.materialCode})

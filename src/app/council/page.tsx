@@ -163,7 +163,11 @@ export default function CouncilPage() {
                 }`}
               >
                 {aiShield.useOpenWeightModel
-                  ? "Meta Open-Weight: ON (muse-spark-open)"
+                  ? isId
+                    ? "Meta Open-Weight: AKTIF (muse-spark-open)"
+                    : "Meta Open-Weight: ON (muse-spark-open)"
+                  : isId
+                  ? "Beralih ke Model Meta Open-Weight"
                   : "Switch to Meta Open-Weight Mode"}
               </button>
 
@@ -194,27 +198,31 @@ export default function CouncilPage() {
           <div className={`mt-4 rounded-xl border p-4 ${elevatedCard}`}>
             <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
               <span className="font-bold">
-                LOCKED SITE_BRIEF INPUT (SINGLE SOURCE OF TRUTH FOR AGENTS)
+                {isId
+                  ? "INPUT SITE_BRIEF TERKUNCI (SUMBER KEBENARAN TUNGGAL AGEN)"
+                  : "LOCKED SITE_BRIEF INPUT (SINGLE SOURCE OF TRUTH FOR AGENTS)"}
               </span>
               <span className={textMuted}>
-                Post-Response Number Validator: ACTIVE (±3% Tolerance)
+                {isId
+                  ? "Validator Angka Pasca-Respons: AKTIF (Toleransi ±3%)"
+                  : "Post-Response Number Validator: ACTIVE (±3% Tolerance)"}
               </span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2.5 font-mono text-xs sm:grid-cols-3 lg:grid-cols-6">
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>FOOTPRINT</span>
+                <span className={`block text-[11px] ${textMuted}`}>{isId ? "LUAS TAPAK" : "FOOTPRINT"}</span>
                 <strong className="mt-0.5 block tabular-nums">
                   {formatArea(housingCalc.footprintM2, units, locale)}
                 </strong>
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>SOLAR PV</span>
+                <span className={`block text-[11px] ${textMuted}`}>{isId ? "PANEL SURYA" : "SOLAR PV"}</span>
                 <strong className="mt-0.5 block tabular-nums">
                   {housingCalc.solar.kwp} kWp ({Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh)
                 </strong>
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>SAVINGS / YR</span>
+                <span className={`block text-[11px] ${textMuted}`}>{isId ? "PENGHEMATAN / THN" : "SAVINGS / YR"}</span>
                 <strong className="mt-0.5 block tabular-nums">
                   {formatCurrency(
                     housingCalc.solar.savingsYear,
@@ -224,19 +232,19 @@ export default function CouncilPage() {
                 </strong>
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>RAIN HARVEST</span>
+                <span className={`block text-[11px] ${textMuted}`}>{isId ? "PANEN HUJAN" : "RAIN HARVEST"}</span>
                 <strong className="mt-0.5 block tabular-nums">
-                  {formatVolume(housingCalc.rainwater.litersYear, units, locale)}/yr
+                  {formatVolume(housingCalc.rainwater.litersYear, units, locale)}/{isId ? "thn" : "yr"}
                 </strong>
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>BIOPORES / TCI</span>
+                <span className={`block text-[11px] ${textMuted}`}>{isId ? "BIOPORI / TCI" : "BIOPORES / TCI"}</span>
                 <strong className="mt-0.5 block tabular-nums">
-                  {housingCalc.infiltration.bioporeUnits} units / TCI {housingCalc.thermal.tciScore}
+                  {housingCalc.infiltration.bioporeUnits} {isId ? "unit" : "units"} / TCI {housingCalc.thermal.tciScore}
                 </strong>
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>NEAREST HUB</span>
+                <span className={`block text-[11px] ${textMuted}`}>{isId ? "HUB TERDEKAT" : "NEAREST HUB"}</span>
                 <strong className="mt-0.5 block truncate tabular-nums">
                   {geo.hubs[0]?.distanceKm ?? 1.5} km ({geo.hubs[0]?.name.split(" ")[0]})
                 </strong>
@@ -397,10 +405,10 @@ export default function CouncilPage() {
                           >
                             <div className="flex items-center gap-2 font-mono text-[11px]">
                               <span className="font-bold">
-                                IMPACT: {rec.impact.toUpperCase()}
+                                {isId ? "DAMPAK:" : "IMPACT:"} {rec.impact.toUpperCase()}
                               </span>
                               <span className={textMuted}>
-                                EFFORT: {rec.effort.toUpperCase()}
+                                {isId ? "UPAYA:" : "EFFORT:"} {rec.effort.toUpperCase()}
                               </span>
                             </div>
                             <p className={`mt-1.5 ${textSecondary}`}>{rec.text}</p>
@@ -415,10 +423,12 @@ export default function CouncilPage() {
                       }`}
                     >
                       <span className="font-bold">
-                        {msg.verifiedNumbers.length} numbers verified vs SITE_BRIEF
+                        {msg.verifiedNumbers.length}{" "}
+                        {isId ? "angka terverifikasi vs SITE_BRIEF" : "numbers verified vs SITE_BRIEF"}
                       </span>
                       <span className={textMuted}>
-                        {msg.unverifiedNumbers.length} unverified
+                        {msg.unverifiedNumbers.length}{" "}
+                        {isId ? "belum diverifikasi" : "unverified"}
                       </span>
                     </div>
                   </article>
@@ -430,7 +440,9 @@ export default function CouncilPage() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className={`font-mono text-xs font-bold tracking-wider ${textMuted}`}>
-                    {"// 02 SYNTHESIZED ACTION BLUEPRINT (ZOD SCHEMA VALIDATED)"}
+                    {isId
+                      ? "// 02 CETAK BIRU TINDAKAN TERSINTESIS (VALIDASI SKEMA ZOD)"
+                      : "// 02 SYNTHESIZED ACTION BLUEPRINT (ZOD SCHEMA VALIDATED)"}
                   </p>
                   <h2 className="mt-1 font-serif text-xl font-bold sm:text-2xl">
                     {sessionResult.blueprint.title}
@@ -464,10 +476,10 @@ export default function CouncilPage() {
                     <div>
                       <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                         <span className="font-bold">
-                          ACTION 0{idx + 1} / OWNER: {action.ownerAgent.toUpperCase()}
+                          {isId ? "AKSI" : "ACTION"} 0{idx + 1} / {isId ? "PEMILIK:" : "OWNER:"} {action.ownerAgent.toUpperCase()}
                         </span>
                         <span className={textMuted}>
-                          EFFORT: {action.effort.toUpperCase()} / COST: {action.costBand.toUpperCase()}
+                          {isId ? "UPAYA:" : "EFFORT:"} {action.effort.toUpperCase()} / {isId ? "BIAYA:" : "COST:"} {action.costBand.toUpperCase()}
                         </span>
                       </div>
 
@@ -497,7 +509,7 @@ export default function CouncilPage() {
                         onClick={() => router.push("/academy")}
                         className="min-h-[36px] cursor-pointer rounded-lg border border-current px-2.5 py-1 font-bold"
                       >
-                        Protocol: {action.courseTrack}
+                        {isId ? "Protokol:" : "Protocol:"} {action.courseTrack}
                       </button>
                     </div>
                   </div>
