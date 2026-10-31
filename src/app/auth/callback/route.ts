@@ -33,6 +33,8 @@ export async function GET(request: Request) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (supabaseUrl && supabaseAnonKey) {
+      const response = NextResponse.redirect(`${origin}${next}`);
+
       const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
         cookies: {
           getAll() {
@@ -40,9 +42,10 @@ export async function GET(request: Request) {
           },
           setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
             try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+                response.cookies.set(name, value, options);
+              });
             } catch {
               // Ignore cookie mutations from read-only contexts
             }
@@ -54,8 +57,8 @@ export async function GET(request: Request) {
         await supabase.auth.exchangeCodeForSession(code);
 
       if (!exchangeError && data?.session) {
-        // Successful exchange, redirect to target workspace
-        return NextResponse.redirect(`${origin}${next}`);
+        // Successful exchange, return response with cookies attached
+        return response;
       }
 
       if (exchangeError) {

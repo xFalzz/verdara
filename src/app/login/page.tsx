@@ -136,7 +136,10 @@ export default function LoginPage() {
               provider === "google"
                 ? { access_type: "offline", prompt: "select_account" }
                 : undefined,
-            scopes: provider === "facebook" ? "public_profile,email" : undefined,
+            scopes:
+              provider === "google"
+                ? "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid"
+                : "public_profile,email",
           },
         });
 
