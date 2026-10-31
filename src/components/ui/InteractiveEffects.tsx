@@ -177,8 +177,8 @@ export function ZeggoRollText({ text }: { text: string }) {
 }
 
 /**
- * 2. DOVVSTUDIO.COM CURSOR-PROXIMITY VARIABLE FONT WEIGHT WAVE WORDMARK
- * Responsive across all screen sizes (320px mobile to 4K desktop).
+ * 2. CURSOR-PROXIMITY VARIABLE FONT INTERACTIVE WORDMARK
+ * High-performance, zero-lag character width/weight modulation on mousemove.
  */
 export function DovvInteractiveWordmark({
   lines,
@@ -199,50 +199,81 @@ export function DovvInteractiveWordmark({
     let rafId = 0;
     let mouseX = -9999;
     let mouseY = -9999;
+    let isPending = false;
     let isPointerActive = false;
+
+    // Cache character bounding centers to avoid layout thrashing
+    let cachedCenters: { x: number; y: number }[] = [];
+    let lastCachedTime = 0;
+
+    const updateTypography = () => {
+      isPending = false;
+      if (!isPointerActive) return;
+
+      const now = performance.now();
+      if (cachedCenters.length === 0 || now - lastCachedTime > 800) {
+        cachedCenters = charRefs.current.map((el) => {
+          if (!el) return { x: -9999, y: -9999 };
+          const rect = el.getBoundingClientRect();
+          return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          };
+        });
+        lastCachedTime = now;
+      }
+
+      const radius = 300;
+      for (let i = 0; i < charRefs.current.length; i++) {
+        const el = charRefs.current[i];
+        const center = cachedCenters[i];
+        if (!el || !center) continue;
+
+        const dist = Math.hypot(mouseX - center.x, mouseY - center.y);
+        if (dist < radius) {
+          const t = 1 - dist / radius;
+          const wght = Math.round(900 - t * 560);
+          const wdth = Math.round(62 + t * 26);
+          el.style.fontVariationSettings = `"wdth" ${wdth}, "wght" ${wght}`;
+        } else {
+          el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
+        }
+      }
+    };
 
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerType === "mouse" || e.pointerType === "touch") {
         mouseX = e.clientX;
         mouseY = e.clientY;
         isPointerActive = true;
+        if (!isPending) {
+          isPending = true;
+          rafId = requestAnimationFrame(updateTypography);
+        }
       }
     };
 
     const onPointerLeave = () => {
       isPointerActive = false;
-    };
-
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("blur", onPointerLeave);
-
-    const radius = 340;
-    const animate = () => {
-      if (isPointerActive) {
-        for (const el of charRefs.current) {
-          if (!el) continue;
-          const rect = el.getBoundingClientRect();
-          const cx = rect.left + rect.width / 2;
-          const cy = rect.top + rect.height / 2;
-          const dist = Math.hypot(mouseX - cx, mouseY - cy);
-          if (dist < radius) {
-            const t = 1 - dist / radius;
-            const wght = Math.round(900 - t * 580);
-            const wdth = Math.round(62 + t * 28);
-            el.style.fontVariationSettings = `"wdth" ${wdth}, "wght" ${wght}`;
-          } else {
-            el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
-          }
+      for (const el of charRefs.current) {
+        if (el) {
+          el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
         }
       }
-      rafId = requestAnimationFrame(animate);
     };
 
-    rafId = requestAnimationFrame(animate);
+    const node = containerRef.current;
+    if (node) {
+      node.addEventListener("pointermove", onPointerMove, { passive: true });
+      node.addEventListener("pointerleave", onPointerLeave, { passive: true });
+    }
+
     return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("blur", onPointerLeave);
+      if (rafId) cancelAnimationFrame(rafId);
+      if (node) {
+        node.removeEventListener("pointermove", onPointerMove);
+        node.removeEventListener("pointerleave", onPointerLeave);
+      }
     };
   }, []);
 
@@ -280,8 +311,8 @@ export function DovvInteractiveWordmark({
 }
 
 /**
- * 3. VERDARA SPATIAL HUD TELEMETRY CHIP (DRAGGABLE ARCHITECTURAL BADGE)
- * High-performance, hardware-accelerated spatial pin with zero idle CPU overhead.
+ * 3. VERDARA MINIMALIST DRAGGABLE PILL BADGE
+ * Clean, modern architectural badge with zero dots, pure styling, and zero idle CPU overhead.
  */
 export interface DovvHoloStickerProps {
   label: string;
@@ -295,8 +326,6 @@ export interface DovvHoloStickerProps {
 export function DovvHoloSticker({
   label,
   sublabel,
-  categoryTag,
-  variant = "lime",
   rotationDeg = 0,
   className = "",
 }: DovvHoloStickerProps) {
@@ -304,35 +333,6 @@ export function DovvHoloSticker({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0, origX: 0, origY: 0 });
-
-  const variantStyles = {
-    orange: {
-      beacon: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.7)]",
-      tagText: "text-amber-600 dark:text-amber-400",
-      accentBorder: "hover:border-amber-500/50 dark:hover:border-amber-400/40",
-      accentGlow: "group-hover:shadow-[0_12px_28px_-6px_rgba(245,158,11,0.25)]",
-    },
-    lime: {
-      beacon: "bg-[#c6f432] shadow-[0_0_8px_rgba(198,244,50,0.8)]",
-      tagText: "text-[#15803d] dark:text-[#c6f432]",
-      accentBorder: "hover:border-[#c6f432]/60 dark:hover:border-[#c6f432]/50",
-      accentGlow: "group-hover:shadow-[0_12px_28px_-6px_rgba(198,244,50,0.25)]",
-    },
-    gold: {
-      beacon: "bg-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]",
-      tagText: "text-cyan-600 dark:text-cyan-300",
-      accentBorder: "hover:border-cyan-400/50 dark:hover:border-cyan-400/40",
-      accentGlow: "group-hover:shadow-[0_12px_28px_-6px_rgba(56,189,248,0.25)]",
-    },
-  }[variant];
-
-  const resolvedTag =
-    categoryTag ??
-    (variant === "orange"
-      ? "AI SPATIAL CORE"
-      : variant === "lime"
-      ? "SOLAR TELEMETRY"
-      : "ERA5 CLIMATE MESH");
 
   return (
     <div
@@ -342,7 +342,7 @@ export function DovvHoloSticker({
         try {
           e.currentTarget.setPointerCapture(e.pointerId);
         } catch {
-          // pointer capture unsupported or blocked
+          // Pointer capture fallback
         }
         setIsDragging(true);
         dragStartRef.current = {
@@ -375,55 +375,21 @@ export function DovvHoloSticker({
         transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${rotationDeg}deg)`,
         willChange: "transform",
       }}
-      className={`group select-none cursor-grab active:cursor-grabbing transition-[box-shadow,border-color,transform] duration-200 ${
-        isDragging ? "scale-[1.04] shadow-2xl z-50 !cursor-grabbing" : ""
+      className={`group select-none cursor-grab active:cursor-grabbing transition-[box-shadow,transform] duration-150 ${
+        isDragging ? "scale-[1.03] shadow-xl z-50 !cursor-grabbing" : ""
       } ${className}`}
     >
       <div
-        className={`relative flex items-center gap-3 rounded-2xl border px-4 py-2.5 backdrop-blur-xl transition-all duration-300 ${variantStyles.accentBorder} ${variantStyles.accentGlow} bg-white/95 text-neutral-900 border-black/10 shadow-[0_10px_28px_-6px_rgba(0,0,0,0.12)] dark:bg-[#0c0d12]/92 dark:text-white dark:border-white/15 dark:shadow-[0_14px_35px_-8px_rgba(0,0,0,0.7)]`}
+        className="flex flex-col rounded-2xl border border-black/10 bg-white/95 px-4 py-2 text-left shadow-sm backdrop-blur-md transition-all duration-200 hover:border-black/25 hover:shadow-md dark:border-white/12 dark:bg-[#0c0d12]/92 dark:text-white dark:shadow-md dark:hover:border-white/25"
       >
-        {/* Subtle Grip Handle (6 Dots) */}
-        <div
-          aria-hidden="true"
-          className="flex flex-col gap-1 py-0.5 opacity-40 group-hover:opacity-85 transition-opacity"
-        >
-          <div className="flex gap-1">
-            <span className="h-1 w-1 rounded-full bg-current" />
-            <span className="h-1 w-1 rounded-full bg-current" />
-          </div>
-          <div className="flex gap-1">
-            <span className="h-1 w-1 rounded-full bg-current" />
-            <span className="h-1 w-1 rounded-full bg-current" />
-          </div>
-          <div className="flex gap-1">
-            <span className="h-1 w-1 rounded-full bg-current" />
-            <span className="h-1 w-1 rounded-full bg-current" />
-          </div>
-        </div>
-
-        {/* Content Column */}
-        <div className="flex flex-col text-left">
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${variantStyles.beacon}`}
-            />
-            <span
-              className={`font-mono text-[9px] font-bold tracking-wider uppercase ${variantStyles.tagText}`}
-            >
-              {resolvedTag}
-            </span>
-          </div>
-
-          <span className="mt-0.5 font-sans text-xs sm:text-[13px] font-bold tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
-            {label}
+        <span className="font-sans text-xs sm:text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+          {label}
+        </span>
+        {sublabel && (
+          <span className="mt-0.5 font-mono text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+            {sublabel}
           </span>
-
-          {sublabel && (
-            <span className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
-              {sublabel}
-            </span>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
