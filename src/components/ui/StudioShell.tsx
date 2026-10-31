@@ -217,7 +217,6 @@ export default function StudioShell({
     { href: "/lens", labelEn: "SAM 3.1 Lens", labelId: "Lensa SAM" },
     { href: "/radar", labelEn: "3D Radar", labelId: "Radar 3D" },
     { href: "/council", labelEn: "AI Council", labelId: "Dewan AI" },
-    { href: "/academy", labelEn: "Field Proofs", labelId: "Bukti Aksi" },
     { href: "/academy", labelEn: "Academy", labelId: "Akademi" },
     { href: "/faq", labelEn: "FAQ", labelId: "Tanya Jawab" },
     { href: "/settings", labelEn: "Shield", labelId: "Perisai" },

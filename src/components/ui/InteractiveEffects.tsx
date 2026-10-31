@@ -1286,18 +1286,12 @@ export function VerdaraBottomDock() {
     },
     {
       code: "07",
-      href: "/academy",
-      labelEn: "Docs",
-      labelId: "Dokumen",
-    },
-    {
-      code: "08",
       href: "/faq",
       labelEn: "FAQ",
       labelId: "Tanya Jawab",
     },
     {
-      code: "09",
+      code: "08",
       href: "/settings",
       labelEn: "Shield",
       labelId: "Perisai",
@@ -1315,8 +1309,8 @@ export function VerdaraBottomDock() {
     {
       code: "02",
       href: "/academy",
-      labelEn: "Docs",
-      labelId: "Dokumen",
+      labelEn: "Academy",
+      labelId: "Akademi",
     },
     {
       code: "03",
