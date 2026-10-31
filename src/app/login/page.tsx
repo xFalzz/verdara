@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   VerdaraLogo,
@@ -112,7 +112,7 @@ export default function LoginPage() {
       !supabaseUrl.includes("your-project")
     ) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const supabase = createClient();
         const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextRoute)}`;
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
@@ -225,7 +225,7 @@ export default function LoginPage() {
       !supabaseUrl.includes("your-project")
     ) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const supabase = createClient();
 
         if (isRegisterMode) {
           const { data, error } = await supabase.auth.signUp({
@@ -268,7 +268,28 @@ export default function LoginPage() {
           });
 
           if (error) {
-            setFormError(error.message);
+            // If default demo resident email is used, seamlessly enter resident session
+            if (email === "resident@verdara.app") {
+              loginWithEmail("resident@verdara.app", "Verdara Resident");
+              router.push(nextRoute);
+              return;
+            }
+
+            if (error.message.includes("Invalid login credentials")) {
+              setFormError(
+                isId
+                  ? "Kredensial belum cocok. Jika Anda belum mendaftar, silakan klik tab 'Register' di atas untuk membuat akun baru."
+                  : "Invalid credentials. If you have not registered yet, please click the 'Register' tab above to create an account."
+              );
+            } else if (error.message.includes("Email not confirmed")) {
+              setFormError(
+                isId
+                  ? "Email belum dikonfirmasi. Harap periksa email Anda, atau matikan opsi 'Confirm email' di Supabase Authentication > Providers > Email agar dapat login instan."
+                  : "Email not confirmed. Please check your inbox or disable 'Confirm email' in Supabase Auth > Providers > Email for instant password login."
+              );
+            } else {
+              setFormError(error.message);
+            }
             return;
           }
 
