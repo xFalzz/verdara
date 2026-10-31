@@ -1,37 +1,69 @@
 -- ==============================================================================
--- VERDARA SPATIAL ECO-TOWN: ENTERPRISE DATABASE SCHEMA (v3.3)
--- Automated User Profiles, Row Level Security (RLS), and Environmental Benchmarks
+-- VERDARA SPATIAL ECO-TOWN: ENTERPRISE DATABASE SCHEMA (v3.3.1)
+-- Self-Healing Migration: Works seamlessly on fresh or existing databases
 -- ==============================================================================
 
 -- 1. EXTENSIONS
 create extension if not exists "uuid-ossp";
 
--- 2. PROFILES TABLE (Linked to Supabase Auth auth.users)
+-- 2. ENSURE PROFILES BASE TABLE EXISTS
 create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text not null,
-  display_name text,
-  avatar_url text,
-  city text default 'Menlo Park',
-  country_code text default 'US',
-  role text default 'resident',
-  theme_preference text default 'dark',
-  units_preference text default 'metric',
-  level integer default 1,
-  xp integer default 0,
-  solar_kwp numeric(8,2) default 19.80,
-  annual_savings_usd numeric(10,2) default 9651.00,
-  co2_saved_kg numeric(10,2) default 14200.00,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  id uuid primary key references auth.users(id) on delete cascade
 );
 
--- Index for high-speed email and city lookups
+-- 3. ENSURE ALL PROFILE COLUMNS EXIST (Self-healing for existing tables)
+alter table public.profiles add column if not exists email text;
+alter table public.profiles add column if not exists display_name text default 'Verdara Resident';
+alter table public.profiles add column if not exists avatar_url text;
+alter table public.profiles add column if not exists city text default 'Menlo Park';
+alter table public.profiles add column if not exists country_code text default 'US';
+alter table public.profiles add column if not exists role text default 'resident';
+alter table public.profiles add column if not exists theme_preference text default 'dark';
+alter table public.profiles add column if not exists units_preference text default 'metric';
+alter table public.profiles add column if not exists level integer default 1;
+alter table public.profiles add column if not exists xp integer default 0;
+alter table public.profiles add column if not exists solar_kwp numeric(8,2) default 19.80;
+alter table public.profiles add column if not exists annual_savings_usd numeric(10,2) default 9651.00;
+alter table public.profiles add column if not exists co2_saved_kg numeric(10,2) default 14200.00;
+alter table public.profiles add column if not exists created_at timestamptz default now();
+alter table public.profiles add column if not exists updated_at timestamptz default now();
+
+-- Drop deprecated demo columns if they existed in legacy schemas
+alter table public.profiles drop column if exists is_judge_demo;
+
+-- 4. BACKFILL AND SYNC EXISTING USERS FROM AUTH.USERS
+-- Backfill email for any existing rows in profiles where email is empty or null
+update public.profiles p
+set email = coalesce(u.email, 'resident@verdara.app')
+from auth.users u
+where p.id = u.id and (p.email is null or p.email = '');
+
+-- Auto-register any existing auth users who don't have a profile row yet
+insert into public.profiles (id, email, display_name, avatar_url)
+select
+  u.id,
+  coalesce(u.email, 'resident@verdara.app'),
+  coalesce(
+    u.raw_user_meta_data->>'full_name',
+    u.raw_user_meta_data->>'name',
+    split_part(coalesce(u.email, 'resident@verdara.app'), '@', 1)
+  ),
+  coalesce(
+    u.raw_user_meta_data->>'avatar_url',
+    u.raw_user_meta_data->>'picture',
+    ''
+  )
+from auth.users u
+where not exists (select 1 from public.profiles p where p.id = u.id)
+on conflict (id) do update set
+  email = coalesce(excluded.email, public.profiles.email);
+
+-- 5. INDEXES FOR PERFORMANCE
 create index if not exists idx_profiles_email on public.profiles(lower(email));
 create index if not exists idx_profiles_city on public.profiles(city);
 
--- 3. AUTOMATIC PROFILE CREATION TRIGGER ON SIGNUP
--- Automatically fires when a user signs up via Google, Facebook, or Email
+-- 6. AUTOMATIC PROFILE CREATION TRIGGER ON SIGNUP
+-- Automatically executes when any user signs up via Google, Facebook, or Email
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -45,11 +77,11 @@ begin
   )
   values (
     new.id,
-    new.email,
+    coalesce(new.email, 'resident@verdara.app'),
     coalesce(
       new.raw_user_meta_data->>'full_name',
       new.raw_user_meta_data->>'name',
-      split_part(new.email, '@', 1)
+      split_part(coalesce(new.email, 'resident@verdara.app'), '@', 1)
     ),
     coalesce(
       new.raw_user_meta_data->>'avatar_url',
@@ -60,7 +92,7 @@ begin
     now()
   )
   on conflict (id) do update set
-    email = excluded.email,
+    email = coalesce(excluded.email, public.profiles.email),
     display_name = coalesce(excluded.display_name, public.profiles.display_name),
     avatar_url = coalesce(nullif(excluded.avatar_url, ''), public.profiles.avatar_url),
     updated_at = now();
@@ -68,13 +100,13 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- Recreate trigger safely
+-- Safely re-attach trigger to auth.users
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 4. ROW LEVEL SECURITY (RLS) POLICIES
+-- 7. ROW LEVEL SECURITY (RLS) POLICIES
 alter table public.profiles enable row level security;
 
 -- Policy: Users can view their own profile
@@ -96,7 +128,7 @@ create policy "Users can insert own profile"
   on public.profiles for insert
   with check (auth.uid() = id);
 
--- 5. SPATIAL SCAN AUDIT TABLE
+-- 8. SPATIAL SCAN AUDIT TABLE
 create table if not exists public.scan_audit (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.profiles(id) on delete set null,
@@ -123,7 +155,7 @@ create policy "Users can insert own scans"
   on public.scan_audit for insert
   with check (auth.uid() = user_id);
 
--- 6. COMMUNITY ENERGY BENCHMARKS TABLE
+-- 9. COMMUNITY ENERGY BENCHMARKS TABLE
 create table if not exists public.energy_benchmarks (
   slug text primary key,
   city text not null,
