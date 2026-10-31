@@ -1300,6 +1300,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
+          enableZoom={false}
           minDistance={3.8}
           maxDistance={12.5}
           minPolarAngle={Math.PI / 6.5}

@@ -47,6 +47,7 @@ export default function Radar3DMap({
       pitch: 55,
       bearing: -18,
       maxPitch: 65,
+      scrollZoom: false,
     });
 
     map.addControl(
