@@ -1,6 +1,6 @@
 /**
  * Pre-Computed Golden Demo Cache ($0.00 API Cost for Sample Scans, Retrofits, & Academy Tracks)
- * Ensures instantaneous (< 150ms) response for Hackathon Judges and protects the $150 Meta credit pool.
+ * Ensures instantaneous (< 150ms) response for residents and protects the $150 Meta credit pool.
  */
 
 import type { MaterialCode, SizeClassHint } from "../science/valuation";

@@ -105,7 +105,7 @@ function findHorizontalDragContainer(
 /**
  * Universal Smooth Scroll Engine for Verdara:
  * 1. Drives smooth inertial scrolling across the entire document on every route
- *    (/, /login, /dashboard, /lens, /radar, /council, /academy, /settings, /docs, /faq).
+ *    (/, /login, /dashboard, /lens, /radar, /council, /academy, /settings, /faq).
  * 2. Smoothly interpolates nested scrollable containers (dropdown lists, modals,
  *    tables, and horizontal rails) at 60 FPS using an internal lerp map, handing
  *    off seamlessly to the main page scroll when reaching top/bottom edges.

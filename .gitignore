@@ -32,3 +32,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Internal Architecture, Proprietary Specs & Database Schemas
+/docs/
+/supabase/
+/.internal/
+/.secrets*
+

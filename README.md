@@ -107,19 +107,18 @@ The Verdara computing pipeline guarantees zero numerical hallucination through a
 
 ## 2. Complete Application Route & Workspace Guide
 
-Verdara provides 10 dedicated routes organized into public exploration interfaces and authenticated engineering workspaces protected by `src/components/ui/AuthGate.tsx`:
+Verdara provides 9 dedicated routes organized into public exploration interfaces and authenticated engineering workspaces protected by `src/components/ui/AuthGate.tsx`:
 
 | Route | Workspace / Interface | Access Level | Architectural & Functional Highlights |
 | :--- | :--- | :--- | :--- |
 | `/` | **Living Spatial Eco-Town** | Public | Dynamic transparent sticky header, interactive DOVV condensed wordmark with cursor-proximity variable font wave, live 3D Eco-District preview (`Run`, `Break`, `Heal`), Draggable 10-Country Climate Deck, 12-Month ERA5 weather matrix, and live GitHub stars repository badge. |
-| `/login` | **Authentication & Sandbox Gate** | Public | Enforces resident session security. Features a **1-Click Level 5 Judge Demo Sandbox** that instantly unlocks all 6 3D architectural structures and 4,200 Eco-XP, alongside email sign-in with automatic `?next=` return redirection. |
+| `/login` | **Authentication & Sandbox Gate** | Public | Enforces resident session security. Enforces resident session security with Supabase OAuth (Google and Facebook) and verified email magic links with automatic `?next=` return redirection. |
 | `/dashboard` | **Living 3D Eco-Town Studio** | Auth Required | Full-viewport procedural 3D Eco-District studio. Features an interactive **Roof Area Slider (`40 m²` to `600 m²`)**, real-time solar panel and cistern recalculation, progressive Level 1 to 5 architectural milestones, and smooth camera presets (`Overview`, `Solar Hub`, `Hydro Canal`, `EV Street`). |
 | `/lens` | **Omni-Spatial Camera Lens** | Auth Required | Interactive **Meta SAM 3.1 Polygon Visor**, X-Ray wireframe overlay, and **Meta Muse Image Before/After Eco-Retrofit Curtain**. Analyzes rooftop solar potential, rainwater downspouts, and recyclable commodities (PET, HDPE, Aluminum, Copper, E-Waste PCB) with downloadable 1200x630 PNG Impact Cards. |
 | `/radar` | **3D Urban Roof & Hydrological Radar** | Auth Required | High-resolution 3D building extrusion (`pitch: 55 deg`) paired with a SAM 3D Terrain & Drainage Slope Mesh. Computes neighborhood solar irradiance, stormwater runoff catchment, and nearby circular waste-bank recovery points. |
 | `/council` | **3-Specialist AI Council** | Auth Required | Multi-agent deliberation studio where **Dr. Flora** (Botanist), **Ir. Arka** (Civil Engineer), and **Sirkula** (Economist) analyze the immutable `SITE_BRIEF`. All emitted figures are audited by the deterministic `validateNumbersAgainstSiteBrief` firewall. |
 | `/academy` | **Field-Proof Verification Academy** | Auth Required | Hands-on civic sustainability academy. Replaces multiple-choice quizzes with **Camera Proof-of-Action Verification**. Leverages Meta SAM 3.1 object segmentation and **64-bit perceptual `dHash` anti-spoofing** to verify real-world citizen actions. |
 | `/settings` | **7-Layer Shield & Preferences** | Auth Required | Administrative control panel displaying live telemetry for the **7-Layer API Credit Shield**, SHA-256 golden specimen cache, `muse-spark-open` model toggle, unit system (`Metric` / `Imperial`), and language preference (`EN` / `ID`). |
-| `/docs` | **Technical Documentation** | Public | 6-module interactive engineering reference covering system architecture, Meta AI pipeline, mathematical physics derivations, 3D procedural rendering, Database v3.2 schema, and OWASP ASVS security guardrails. |
 | `/faq` | **Platform Knowledge Base** | Public | 12 comprehensive bilingual engineering Q&A entries with instant keyword search, category filtering, technical callouts, and direct links to active workspaces. |
 
 ---
@@ -360,7 +359,7 @@ Implemented in `src/lib/science/world-cities.ts` and `src/lib/science/climate.ts
 
 ### 7.1 Database Architecture (`prisma/schema.prisma` & `src/lib/db/store.ts`)
 Verdara employs a dual-persistence strategy combining Prisma ORM with an Edge-ready JSON Spatial Ledger:
-* `UserSession`: Tracks resident identifiers, display names, emails, roles (`resident`, `architect`, `judge`), Eco-XP, and unlocked 3D district level (`1..5`).
+* `UserSession`: Tracks resident identifiers, display names, emails, roles (`resident`, `architect`, `admin`), Eco-XP, and unlocked 3D district level (`1..5`).
 * `SpatialScanAudit`: Records timestamp, ISO jurisdiction, specimen identifier, 64-bit perceptual `dHash`, extracted SAM 3.1 polygon counts, solar kWp, rainwater volume, and audit status.
 * `SecurityAuditLog`: Immutable log of edge rate-limit triggers, CSRF origin checks, and anti-replay rejections.
 

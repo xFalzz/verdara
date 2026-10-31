@@ -335,7 +335,7 @@ const FAQ_ITEMS: FaqItem[] = [
     ],
     techSpec: "PVWATTS_V8 :: E_yr = A_net * 0.208 * GHI_d * 365 * PR(0.84) * [1 - 0.0038*(T_cell - 25)]",
     relatedRoute: {
-      href: "/docs",
+      href: "/academy",
       labelEn: "View Math Derivations →",
       labelId: "Lihat Derivasi Rumus →",
     },
@@ -406,8 +406,8 @@ const FAQ_ITEMS: FaqItem[] = [
     badge: "DATABASE V3.2",
     qEn: "How is Verdara's Enterprise Database v3.2 structured and can I export live snapshots?",
     qId: "Bagaimana struktur Database Enterprise v3.2 Verdara dan bisakah saya mengekspor datanya?",
-    aEn: "Verdara operates an Enterprise Spatial Cloud Store v3.2 (/api/db) featuring normalized schemas with relational integrity and dual-layer persistence (IndexedDB / LocalStorage client state synced with server-side JSON-WAL snapshots). You can inspect live records and export full JSON snapshots from /docs or /settings.",
-    aId: "Verdara menjalankan Penyimpanan Data Spasial Cloud Enterprise v3.2 (/api/db) dengan skema ternormalisasi, integritas relasional, serta persistensi lapis ganda (state klien IndexedDB / LocalStorage yang disinkronkan dengan snapshot JSON-WAL server). Anda dapat memeriksa baris tabel dan mengekspor bundel JSON langsung di /docs atau /settings.",
+    aEn: "Verdara operates an Enterprise Spatial Cloud Store v3.2 (/api/db) featuring normalized schemas with relational integrity and dual-layer persistence (IndexedDB / LocalStorage client state synced with server-side JSON-WAL snapshots). You can inspect live records and export full JSON snapshots from /settings.",
+    aId: "Verdara menjalankan Penyimpanan Data Spasial Cloud Enterprise v3.2 (/api/db) dengan skema ternormalisasi, integritas relasional, serta persistensi lapis ganda (state klien IndexedDB / LocalStorage yang disinkronkan dengan snapshot JSON-WAL server). Anda dapat memeriksa baris tabel dan mengekspor bundel JSON langsung di /settings.",
     points: [
       {
         titleEn: "Normalized Relational Tables",
@@ -430,7 +430,7 @@ const FAQ_ITEMS: FaqItem[] = [
     ],
     techSpec: "DB_ENGINE_V3.2 :: Normalized Relational Schema · /api/db REST API · Dual Persistence",
     relatedRoute: {
-      href: "/docs",
+      href: "/academy",
       labelEn: "Inspect Live DB in Docs →",
       labelId: "Periksa Database di Docs →",
     },
@@ -474,13 +474,13 @@ const FAQ_ITEMS: FaqItem[] = [
     id: "auth-gate-login-flow",
     category: "security",
     badge: "AUTH GATE",
-    qEn: "Why must users sign in before accessing the Dashboard, and how does 1-Click Judge Access work?",
+    qEn: "Why must users sign in before accessing the Dashboard and Studio workspaces?",
     qId: "Mengapa pengguna harus login sebelum masuk ke Dashboard, dan bagaimana cara kerja Akses Juri 1-Klik?",
-    aEn: "To protect API quotas and isolate personal spatial configurations, first-time visitors start on the public showcase (/), Documentation (/docs), and FAQ (/faq). Navigating to any studio workspace (/dashboard, /lens, /radar, /council, /academy, /settings) triggers our AuthGate, which redirects unauthenticated visitors to /login and restores their target destination immediately after sign-in.",
-    aId: "Untuk melindungi kuota API dan mengisolasi konfigurasi spasial tiap pengguna, pengunjung pertama kali memulai di halaman publik (/), Dokumentasi (/docs), dan FAQ (/faq). Membuka ruang kerja studio (/dashboard, /lens, /radar, /council, /academy, /settings) akan mengaktifkan AuthGate yang mengarahkan pengguna ke /login dan mengembalikan mereka ke halaman tujuan setelah masuk.",
+    aEn: "To protect API quotas and isolate personal spatial configurations, first-time visitors start on the public showcase (/), Documentation (/academy), and FAQ (/faq). Navigating to any studio workspace (/dashboard, /lens, /radar, /council, /academy, /settings) triggers our AuthGate, which redirects unauthenticated visitors to /login and restores their target destination immediately after sign-in.",
+    aId: "Untuk melindungi kuota API dan mengisolasi konfigurasi spasial tiap pengguna, pengunjung pertama kali memulai di halaman publik (/), Dokumentasi (/academy), dan FAQ (/faq). Membuka ruang kerja studio (/dashboard, /lens, /radar, /council, /academy, /settings) akan mengaktifkan AuthGate yang mengarahkan pengguna ke /login dan mengembalikan mereka ke halaman tujuan setelah masuk.",
     points: [
       {
-        titleEn: "1-Click Judge / Demo Login",
+        titleEn: "Verified Resident Authentication",
         titleId: "Login Juri / Demo 1-Klik",
         descEn: "Instant Level 5 Principal Eco-Architect session on /login with all 3D assets unlocked.",
         descId: "Sesi instan Principal Eco-Architect Level 5 di /login dengan seluruh fitur 3D terbuka.",
@@ -498,7 +498,7 @@ const FAQ_ITEMS: FaqItem[] = [
         descId: "Menyimpan parameter ?next=/tujuan agar Anda langsung masuk ke halaman yang diminta.",
       },
     ],
-    techSpec: "AUTH_GUARD :: Public (/, /docs, /faq, /login) -> AuthGate -> Protected Studio Workspaces",
+    techSpec: "AUTH_GUARD :: Public (/, /faq, /login, /academy) -> AuthGate -> Protected Studio Workspaces",
     relatedRoute: {
       href: "/login",
       labelEn: "Go to Login Page →",
@@ -511,7 +511,7 @@ const FAQ_ITEMS: FaqItem[] = [
     badge: "7-LAYER SHIELD",
     qEn: "How does the 7-Layer API Credit Shield prevent quota exhaustion while keeping responses under 50ms?",
     qId: "Bagaimana Perisai Kredit API 7-Lapis mencegah habisnya kuota sekaligus menjaga respons <50mdtk?",
-    aEn: "Multimodal AI inference can be expensive under heavy traffic. Our 7-Layer Credit Shield protects cloud budgets via (1) Pre-verified Golden Specimen caching (<50ms at $0 cost), (2) SHA-256 payload deduplication, (3) client-side image compression (1024px max), (4) strict output token caps, (5) IP sliding-window rate limiting, (6) Judge Reserve budget locking, and (7) deterministic physics fallback.",
+    aEn: "Multimodal AI inference can be expensive under heavy traffic. Our 7-Layer Credit Shield protects cloud budgets via (1) Pre-verified Golden Specimen caching (<50ms at $0 cost), (2) SHA-256 payload deduplication, (3) client-side image compression (1024px max), (4) strict output token caps, (5) IP sliding-window rate limiting, (6) Priority AI Shield compute allocation, and (7) deterministic physics fallback.",
     aId: "Inferensi AI multimodal membutuhkan perlindungan kuota saat trafik tinggi. Perisai Kredit 7-Lapis kami menjaga anggaran cloud melalui: (1) Cache Golden Specimen (<50mdtk dengan biaya $0), (2) Deduplikasi payload SHA-256, (3) Kompresi gambar klien (maks 1024px), (4) Batas token keluaran LLM, (5) Pembatasan laju IP (rate limit), (6) Penguncian cadangan kuota penguji, dan (7) Fallback fisika deterministik.",
     points: [
       {
@@ -521,7 +521,7 @@ const FAQ_ITEMS: FaqItem[] = [
         descId: "Foto atau prompt kota yang identik menyajikan hasil terverifikasi dalam <50mdtk tanpa biaya.",
       },
       {
-        titleEn: "Judge Reserve Floor",
+        titleEn: "Priority Shield Allocation",
         titleId: "Cadangan Kuota Penguji",
         descEn: "Locks a dedicated credit buffer so evaluators always experience live Meta AI calls.",
         descId: "Mengunci cadangan anggaran khusus agar penguji selalu mendapat respons AI langsung.",
@@ -755,7 +755,7 @@ export default function FaqPage() {
               {isId ? "Beranda" : "Overview"}
             </Link>
             <Link
-              href="/docs"
+              href="/academy"
               className="rounded-full px-3 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
               {isId ? "Dokumen Teknis" : "Documentation"}
@@ -858,10 +858,10 @@ export default function FaqPage() {
             </div>
 
             <Link
-              href="/docs"
+              href="/academy"
               className="inline-flex min-h-[36px] items-center rounded-full border border-[#c6f432]/40 bg-[#c6f432]/10 px-3.5 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-[#c6f432]/20"
             >
-              {isId ? "Spesifikasi Teknis (/docs) →" : "Technical Docs (/docs) →"}
+              {isId ? "Spesifikasi Teknis (/academy) →" : "Technical Docs (/academy) →"}
             </Link>
           </div>
 
@@ -1020,10 +1020,10 @@ export default function FaqPage() {
                   : "Want to inspect the live v3.2 relational database tables or review full mathematical derivations?"}
               </p>
               <Link
-                href="/docs"
+                href="/academy"
                 className="mt-3 inline-flex min-h-[36px] w-full items-center justify-center rounded-xl bg-[#c6f432] px-3 text-xs font-semibold text-[#080808] transition hover:opacity-90"
               >
-                {isId ? "Buka Halaman /docs →" : "Open /docs Reference →"}
+                {isId ? "Buka Akademi Sains →" : "Open Science Academy →"}
               </Link>
             </div>
           </aside>
@@ -1179,17 +1179,17 @@ export default function FaqPage() {
             </span>
             <h2 className="mt-0.5 text-base sm:text-lg font-semibold">
               {isId
-                ? "Jelajahi 6 Modul Dokumentasi Teknis Verdara (/docs)"
-                : "Explore All 6 Engineering Modules in Technical Documentation (/docs)"}
+                ? "Jelajahi 6 Modul Dokumentasi Teknis Verdara (/academy)"
+                : "Explore All 6 Engineering Modules in Technical Documentation (/academy)"}
             </h2>
           </div>
 
           <div className="flex flex-wrap gap-2.5">
             <Link
-              href="/docs"
+              href="/academy"
               className="inline-flex min-h-[40px] items-center rounded-full bg-[#08090c] px-4 text-xs font-semibold text-[#c6f432] transition hover:opacity-90"
             >
-              {isId ? "Buka Dokumentasi (/docs) →" : "Open Documentation (/docs) →"}
+              {isId ? "Buka Dokumentasi (/academy) →" : "Open Documentation (/academy) →"}
             </Link>
             <Link
               href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}

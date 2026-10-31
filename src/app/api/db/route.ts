@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { verdaraDb } from "@/lib/db/database";
 import { checkRateLimit, sanitizeInputText, isValidEmailFormat } from "@/lib/security/guard";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
   const ip = request.headers.get("x-forwarded-for") ?? "local-client";
   const rl = checkRateLimit(`db-get:${ip}`, 30, 1);

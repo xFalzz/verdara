@@ -1219,7 +1219,7 @@ export function WorldCityExplorer({
  * 7. VERDARA ARCHITECTURAL COMMAND DOCK (<VerdaraBottomDock />)
  * Clean, well-structured floating bottom navigation dock with:
  * - Numbered structural index badges (01..09)
- * - Direct links to Docs (/docs) and FAQ (/faq)
+ * - Direct links to Academy (/academy) and FAQ (/faq)
  * - Automatic Auth Gate routing: if unauthenticated and clicking a protected studio route,
  *   routes cleanly to `/login?next=<route>`
  * - Collapsible minimize toggle so it never blocks page reading
@@ -1286,7 +1286,7 @@ export function VerdaraBottomDock() {
     },
     {
       code: "07",
-      href: "/docs",
+      href: "/academy",
       labelEn: "Docs",
       labelId: "Dokumen",
     },
@@ -1314,7 +1314,7 @@ export function VerdaraBottomDock() {
     },
     {
       code: "02",
-      href: "/docs",
+      href: "/academy",
       labelEn: "Docs",
       labelId: "Dokumen",
     },

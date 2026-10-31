@@ -3,6 +3,7 @@ import { verdaraDb } from "@/lib/db/database";
 import { checkRateLimit, sanitizeInputText, isValidEmailFormat } from "@/lib/security/guard";
 import { createClientServer } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {

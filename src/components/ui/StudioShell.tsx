@@ -123,7 +123,14 @@ export default function StudioShell({
         }
 
         setAuthChecked(true);
-        router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
+        const searchParams = new URLSearchParams(window.location.search);
+        const oauthError = searchParams.get("error");
+        const oauthErrorDesc = searchParams.get("error_description");
+        const targetUrl = new URL(`${window.location.origin}/login`);
+        targetUrl.searchParams.set("next", pathname || "/dashboard");
+        if (oauthError) targetUrl.searchParams.set("error", oauthError);
+        if (oauthErrorDesc) targetUrl.searchParams.set("error_description", oauthErrorDesc);
+        router.replace(targetUrl.pathname + targetUrl.search);
       });
 
       const {
@@ -211,7 +218,7 @@ export default function StudioShell({
     { href: "/radar", labelEn: "3D Radar", labelId: "Radar 3D" },
     { href: "/council", labelEn: "AI Council", labelId: "Dewan AI" },
     { href: "/academy", labelEn: "Field Proofs", labelId: "Bukti Aksi" },
-    { href: "/docs", labelEn: "Docs", labelId: "Dokumen" },
+    { href: "/academy", labelEn: "Academy", labelId: "Akademi" },
     { href: "/faq", labelEn: "FAQ", labelId: "Tanya Jawab" },
     { href: "/settings", labelEn: "Shield", labelId: "Perisai" },
   ];
@@ -598,7 +605,7 @@ export default function StudioShell({
                   </p>
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     <Link
-                      href="/docs"
+                      href="/academy"
                       onClick={() => setNotchOpen(false)}
                       className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-white hover:bg-white/20"
                     >

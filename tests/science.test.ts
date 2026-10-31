@@ -8,7 +8,7 @@ import { computeDHashHammingDistance, checkAiCreditShield } from '../src/lib/met
 import { GLOBAL_CITY_PRESETS } from '../src/lib/science/presets';
 
 describe('Verdara Deterministic Science & Valuation Engine', () => {
-  it('classifies Menlo Park (Csb), Yogyakarta (Am), and Dubai (BWh) Köppen–Geiger biomes accurately', () => {
+  it('classifies Menlo Park (Csb), Yogyakarta (Am), and Dubai (BWh) Köppen-Geiger biomes accurately', () => {
     const menlo = GLOBAL_CITY_PRESETS.menlo_park;
     const menloKoppen = classifyKoppen(menlo.monthlyTempC, menlo.monthlyPrecipMm, menlo.lat);
     expect(menloKoppen.code).toBe('Csb');

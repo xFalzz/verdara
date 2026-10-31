@@ -21,7 +21,7 @@ export default function robots(): MetadataRoute.Robots {
           "Bytespider",
           "cohere-ai",
         ],
-        allow: ["/", "/docs", "/faq", "/lens", "/radar", "/council", "/academy"],
+        allow: ["/", "/faq", "/lens", "/radar", "/council", "/academy"],
         disallow: ["/api/"],
       },
     ],

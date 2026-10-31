@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 /**
  * Supabase OAuth PKCE Callback Route Handler
  * Receives the code from external providers (Google, Facebook)

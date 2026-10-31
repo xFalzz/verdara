@@ -548,7 +548,7 @@ export default function LandingPage() {
               { href: "#chapter-town", label: isId ? "Distrik 3D" : "3D District" },
               { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
               { href: "#chapter-tools", label: isId ? "Fitur AI" : "AI Tools" },
-              { href: "/docs", label: isId ? "Dokumen" : "Docs", isRoute: true },
+              { href: "/academy", label: isId ? "Akademi" : "Academy", isRoute: true },
               { href: "/faq", label: "FAQ", isRoute: true },
             ].map((item) =>
               item.isRoute ? (
@@ -643,7 +643,7 @@ export default function LandingPage() {
               {isLight ? "☀" : "☾"}
             </button>
 
-            {/* Judge Brief Button (Desktop/Tablet) */}
+            {/* Town Brief Button (Desktop/Tablet) */}
             <button
               type="button"
               onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
@@ -805,7 +805,7 @@ export default function LandingPage() {
                   { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
                   { href: "#chapter-workflow", label: isId ? "Cara Kerja" : "How It Works" },
                   { href: "#chapter-tools", label: isId ? "Fitur AI" : "AI Tools" },
-                  { href: "/docs", label: isId ? "Dokumen" : "Docs", isRoute: true },
+                  { href: "/academy", label: isId ? "Akademi" : "Academy", isRoute: true },
                   { href: "/faq", label: "FAQ", isRoute: true },
                 ].map((nav) =>
                   nav.isRoute ? (
@@ -860,7 +860,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Bottom Row: Quick Launch & Judge Deck */}
+            {/* Bottom Row: Quick Launch & Feature Deck */}
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-12">
               <div className="flex flex-col justify-between space-y-2.5 sm:col-span-5">
                 <div>
@@ -889,15 +889,15 @@ export default function LandingPage() {
                       : "Sign In to Studio →"}
                   </Link>
                   <Link
-                    href="/docs"
+                    href="/academy"
                     className="flex min-h-[42px] items-center justify-center rounded-full border border-current/15 px-3.5 text-xs font-medium transition hover:bg-current/10"
                   >
-                    Docs
+                    {isId ? "Akademi" : "Academy"}
                   </Link>
                 </div>
               </div>
 
-              {/* Judge Brief Mini Carousel */}
+              {/* Town Brief Mini Carousel */}
               <div className="overflow-hidden rounded-2xl border border-current/10 bg-current/[0.03] p-3.5 sm:col-span-7">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#1e9e5a] dark:text-[#c6f432]">
@@ -2402,9 +2402,9 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              <div className="gsap-judge-grid mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="gsap-feature-grid mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div
-                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                  className={`gsap-feature-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
                     isSectionLight
                       ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
                       : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
@@ -2436,7 +2436,7 @@ export default function LandingPage() {
                 </div>
 
                 <div
-                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                  className={`gsap-feature-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
                     isSectionLight
                       ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
                       : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
@@ -2468,7 +2468,7 @@ export default function LandingPage() {
                 </div>
 
                 <div
-                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                  className={`gsap-feature-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
                     isSectionLight
                       ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
                       : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
@@ -2508,7 +2508,7 @@ export default function LandingPage() {
                 </div>
 
                 <div
-                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                  className={`gsap-feature-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
                     isSectionLight
                       ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
                       : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
@@ -2571,14 +2571,14 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    href="/docs"
+                    href="/academy"
                     className={`inline-flex min-h-[40px] items-center rounded-full border px-4 font-mono text-xs transition ${
                       isSectionLight
                         ? "border-black/15 bg-black/5 text-[#0a0a0c] hover:bg-black/10"
                         : "border-white/20 bg-white/5 text-white hover:bg-white/15"
                     }`}
                   >
-                    {isId ? "Buka Dokumen Teknis (/docs) →" : "Technical Docs (/docs) →"}
+                    {isId ? "Buka Akademi Sains (/academy) →" : "Science Academy (/academy) →"}
                   </Link>
                   <Link
                     href="/faq"
@@ -3062,7 +3062,7 @@ export default function LandingPage() {
                 { href: "/lens", label: "02 SAM 3.1 Lens", tag: "Vision" },
                 { href: "/radar", label: "03 Roof Radar", tag: "Maps" },
                 { href: "/council", label: "04 AI Council", tag: "Agents" },
-                { href: "/docs", label: "05 Tech Docs", tag: "Specs" },
+                { href: "/academy", label: "05 Eco Academy", tag: "Academy" },
                 { href: "/faq", label: "06 FAQ & Guide", tag: "Guide" },
               ].map((link) => (
                 <li key={link.href}>
@@ -3233,9 +3233,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-4 text-xs font-mono opacity-80">
-            <Link href="/docs" className="hover:text-foreground transition-colors">
-              Docs
-            </Link>
+            <Link href="/academy" className="hover:text-foreground transition-colors">{isId ? "Akademi" : "Academy"}</Link>
             <span>·</span>
             <Link href="/faq" className="hover:text-foreground transition-colors">
               FAQ

@@ -1,21 +1,110 @@
-MIT License
+VERDARA PROPRIETARY COMMERCIAL AND SOURCE-AVAILABLE LICENSE
+Version 1.0 (2026)
 
-Copyright (c) 2026 Nawfal Irfan
+Copyright (c) 2026 Nawfal Irfan (xFalzz) / Verdara Technologies.
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+PREAMBLE
+================================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+This software, titled "Verdara: Living Spatial Eco-Town and Ecological Twin
+Platform", including all associated source code, algorithms, 3D procedural
+generators, shader logic, user interfaces, mathematical formulas, data models,
+and related documentation (collectively, the "Software"), is the proprietary
+intellectual property of Nawfal Irfan (the "Author" or "Licensor").
+
+By accessing, viewing, cloning, downloading, copying, or using the Software,
+you ("Licensee") agree to be strictly bound by the terms and conditions of this
+License. If you do not agree to all terms of this License, you must immediately
+cease all access to and destroy all copies of the Software in your possession.
+
+================================================================================
+1. GRANT OF LIMITED NON-COMMERCIAL LICENSE
+================================================================================
+
+Subject to strict compliance with Section 2 ("Restrictions"), the Licensor
+hereby grants to the Licensee a personal, worldwide, revocable, non-exclusive,
+non-transferable, and non-sublicensable license to:
+
+  (a) View, inspect, and evaluate the source code for educational, academic,
+      and technical evaluation purposes;
+  (b) Compile and run the Software locally for personal experimentation,
+      hackathon review, and non-monetized architectural verification;
+  (c) Submit non-binding suggestions, pull requests, and bug reports directly
+      to the official upstream repository maintained by the Licensor.
+
+================================================================================
+2. STRICT PROHIBITIONS AND COMMERCIAL RESTRICTIONS
+================================================================================
+
+The Licensee SHALL NOT, under any circumstances, directly or indirectly:
+
+  (a) Commercial Exploitation: Sell, resell, rent, lease, sublicense, distribute,
+      host, market, or commercially exploit the Software, or any portion thereof,
+      as a software-as-a-service (SaaS), platform-as-a-service (PaaS), hosted
+      service, paid API, or bundled commercial offering;
+  (b) White-Labeling and Rebranding: Remove, alter, obscure, or conceal any
+      copyright notices, author attributions (including "Nawfal Irfan" and
+      "xFalzz"), trademarks, logos, badges, or proprietary markings present
+      in the source code, user interface, or documentation;
+  (c) Derivative Relicensing: Distribute, fork, publish, or release derivative
+      works, modifications, or translations of the Software under permissive
+      open-source licenses (including but not limited to MIT, Apache 2.0, BSD,
+      GPL, or AGPL) or any license that purports to grant rights inconsistent
+      with this License;
+  (d) Model Training and Extraction: Ingest, scrape, or process the Software,
+      its procedural 3D town rendering engine, mathematical solar/hydro formulas,
+      or multi-agent orchestration architecture to train, fine-tune, distill,
+      or validate any competing machine learning model, artificial intelligence
+      system, or autonomous spatial generator without prior written consent;
+  (e) Reverse Engineering of Security Controls: Circumvent, disable, modify,
+      or defeat the 7-Layer AI Credit Shield, user authentication guards, rate
+      limiters, cryptographic proof verification, or database access rules.
+
+================================================================================
+3. INTELLECTUAL PROPERTY OWNERSHIP
+================================================================================
+
+Title, ownership, and all intellectual property rights in and to the Software,
+including patents, copyrights, trade secrets, trademarks, mathematical models,
+and proprietary procedural asset generation algorithms, remain solely and
+exclusively with the Licensor (Nawfal Irfan).
+
+Nothing in this License transfers, assigns, or vests any title, ownership, or
+proprietary rights in the Software to the Licensee or any third party. All
+rights not expressly granted herein are reserved exclusively by the Licensor.
+
+================================================================================
+4. COMMERCIAL AND CUSTOM LICENSING
+================================================================================
+
+Any commercial deployment, enterprise deployment, municipal adaptation, private
+hosting, or integration into a commercial platform requires a separate, explicit
+commercial license negotiated directly with the Licensor.
+
+For commercial licensing inquiries, partnerships, or enterprise deployment:
+Contact: Nawfal Irfan (xFalzz)
+Repository: https://github.com/xFalzz/verdara
+Email: resident@verdara.app
+
+================================================================================
+5. TERMINATION
+================================================================================
+
+This License is effective until terminated. Any violation of the restrictions
+set forth in Section 2 automatically terminates this License immediately without
+notice from the Licensor. Upon termination, the Licensee must immediately
+destroy all copies of the Software in any medium.
+
+================================================================================
+6. DISCLAIMER OF WARRANTIES
+================================================================================
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. IN NO EVENT
+SHALL THE AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
