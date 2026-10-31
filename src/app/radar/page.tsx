@@ -8,6 +8,7 @@ import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   formatArea,
   formatCurrency,
+  formatNumber,
   formatVolume,
 } from "@/lib/science/units";
 import type { CircularHub } from "@/lib/science/presets";
@@ -449,10 +450,10 @@ export default function RadarPage() {
                     {isId ? "panel" : "panels"})
                   </strong>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between" suppressHydrationWarning>
                   <span>{isId ? "Output Surya Tahunan:" : "Annual Solar Output:"}</span>
-                  <strong className="tabular-nums">
-                    {housingCalc.solar.kwhYear.toLocaleString()} {isId ? "kWh/thn" : "kWh/yr"}
+                  <strong className="tabular-nums" suppressHydrationWarning>
+                    {formatNumber(housingCalc.solar.kwhYear, { maximumFractionDigits: 1 }, locale)} {isId ? "kWh/thn" : "kWh/yr"}
                   </strong>
                 </div>
                 <div className="flex justify-between">

@@ -81,6 +81,25 @@ export function formatTemp(c: number, units: UnitSystem): string {
 }
 
 /**
+ * Deterministic number formatter across SSR and client to eliminate hydration mismatches.
+ */
+export function formatNumber(
+  value: number,
+  options?: Intl.NumberFormatOptions,
+  locale: AppLocale = "en"
+): string {
+  const safe = Number.isFinite(value) ? value : 0;
+  try {
+    return new Intl.NumberFormat(
+      locale === "id" ? "id-ID" : "en-US",
+      options
+    ).format(safe);
+  } catch {
+    return String(safe);
+  }
+}
+
+/**
  * Deterministic XP to Level Formula (PRD FR-GAME-02):
  * threshold(n) = 50 * n * (n - 1), max level = 10
  */

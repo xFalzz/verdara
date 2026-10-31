@@ -9,7 +9,7 @@ import {
   CompactWorldCityPicker,
   VerdaraBottomDock,
 } from "@/components/ui/InteractiveEffects";
-import { formatCurrency, formatVolume, formatArea } from "@/lib/science/units";
+import { formatCurrency, formatVolume, formatArea, formatNumber } from "@/lib/science/units";
 
 type DocTab =
   | "architecture"
@@ -333,9 +333,9 @@ export default function DocsPage() {
               Roof {formatArea(housingCalc.footprintM2, units, locale)}
             </span>
             <span className="opacity-40">|</span>
-            <span className="font-semibold text-[#14733f] dark:text-[#c6f432]">
+            <span className="font-semibold text-[#14733f] dark:text-[#c6f432]" suppressHydrationWarning>
               Solar {housingCalc.solar.kwp} kWp (
-              {Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh/yr)
+              {formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh/yr)
             </span>
             <span className="opacity-40">|</span>
             <span className="font-semibold text-[#0e7490] dark:text-cyan-300">
@@ -513,9 +513,9 @@ export default function DocsPage() {
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-[#aaa9ad]">Solar Array Output:</dt>
-                      <dd className="font-bold text-[#c6f432]">
+                      <dd className="font-bold text-[#c6f432]" suppressHydrationWarning>
                         {housingCalc.solar.kwp} kWp (
-                        {Math.round(housingCalc.solar.kwhYear).toLocaleString()}{" "}
+                        {formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)}{" "}
                         kWh/yr)
                       </dd>
                     </div>
@@ -838,10 +838,10 @@ E_kwh_yr   = P_kwp * GHI_day * 365 * PR_sys (0.80) * f_temp
 Savings_yr = E_kwh_yr * Tariff_local
 CO2e_kg_yr = E_kwh_yr * Grid_EF_local`}
                 </pre>
-                <p className="mt-3 text-xs leading-relaxed opacity-85">
+                <p className="mt-3 text-xs leading-relaxed opacity-85" suppressHydrationWarning>
                   {isId
-                    ? `Contoh langsung di ${geo.city}: Atap ${housingCalc.footprintM2} m² menghasilkan ${housingCalc.solar.kwp} kWp (${housingCalc.solar.panelCountEst} panel), memproduksi ${Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh/tahun dan menghindari ${housingCalc.solar.co2eKgYear.toLocaleString()} kg CO2e/tahun.`
-                    : `Live computation for ${geo.city}: A ${housingCalc.footprintM2} m² roof yields ${housingCalc.solar.kwp} kWp (${housingCalc.solar.panelCountEst} panels), generating ${Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh/yr and avoiding ${housingCalc.solar.co2eKgYear.toLocaleString()} kg CO2e/yr.`}
+                    ? `Contoh langsung di ${geo.city}: Atap ${housingCalc.footprintM2} m² menghasilkan ${housingCalc.solar.kwp} kWp (${housingCalc.solar.panelCountEst} panel), memproduksi ${formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh/tahun dan menghindari ${formatNumber(housingCalc.solar.co2eKgYear, { maximumFractionDigits: 1 }, locale)} kg CO2e/tahun.`
+                    : `Live computation for ${geo.city}: A ${housingCalc.footprintM2} m² roof yields ${housingCalc.solar.kwp} kWp (${housingCalc.solar.panelCountEst} panels), generating ${formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh/yr and avoiding ${formatNumber(housingCalc.solar.co2eKgYear, { maximumFractionDigits: 1 }, locale)} kg CO2e/yr.`}
                 </p>
               </div>
 
@@ -868,10 +868,10 @@ V_month_i   = A_roof_m2 * P_month_mm[i] * 0.765
 Cistern_L   = clamp(round((V_rain_L_yr * 0.085) / 500) * 500, 1000, 15000)
 Household_% = min(100, (V_rain_L_yr / (4_persons * 135_L_day * 365)) * 100)`}
                 </pre>
-                <p className="mt-3 text-xs leading-relaxed opacity-85">
+                <p className="mt-3 text-xs leading-relaxed opacity-85" suppressHydrationWarning>
                   {isId
-                    ? `Contoh langsung di ${geo.city} (${geo.koppen.pAnnMm} mm/thn): Menampung ${Math.round(housingCalc.rainwater.litersYear).toLocaleString()} L/tahun dengan rekomendasi tangki penyimpanan ${housingCalc.rainwater.recommendedCisternLiters} L.`
-                    : `Live computation for ${geo.city} (${geo.koppen.pAnnMm} mm/yr): Captures ${Math.round(housingCalc.rainwater.litersYear).toLocaleString()} L/yr with an optimal recommended cistern size of ${housingCalc.rainwater.recommendedCisternLiters} L.`}
+                    ? `Contoh langsung di ${geo.city} (${geo.koppen.pAnnMm} mm/thn): Menampung ${formatNumber(Math.round(housingCalc.rainwater.litersYear), undefined, locale)} L/tahun dengan rekomendasi tangki penyimpanan ${formatNumber(housingCalc.rainwater.recommendedCisternLiters, undefined, locale)} L.`
+                    : `Live computation for ${geo.city} (${geo.koppen.pAnnMm} mm/yr): Captures ${formatNumber(Math.round(housingCalc.rainwater.litersYear), undefined, locale)} L/yr with an optimal recommended cistern size of ${formatNumber(housingCalc.rainwater.recommendedCisternLiters, undefined, locale)} L.`}
                 </p>
               </div>
 

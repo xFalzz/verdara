@@ -7,6 +7,7 @@ import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   formatArea,
   formatCurrency,
+  formatNumber,
   formatVolume,
 } from "@/lib/science/units";
 import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
@@ -44,9 +45,11 @@ export default function DashboardPage() {
       code: "solar_array",
       titleEn: "Monocrystalline Rooftop Solar Array",
       titleId: "Array Surya Atap Monokristalin",
-      metric: `${housingCalc.solar.kwp} kWp · ${Math.round(
-        housingCalc.solar.kwhYear
-      ).toLocaleString()} ${isId ? "kWh/thn" : "kWh/yr"}`,
+      metric: `${housingCalc.solar.kwp} kWp · ${formatNumber(
+        Math.round(housingCalc.solar.kwhYear),
+        undefined,
+        locale
+      )} ${isId ? "kWh/thn" : "kWh/yr"}`,
       sub: `${formatCurrency(
         housingCalc.solar.savingsYear,
         housingCalc.solar.currency,
@@ -63,9 +66,11 @@ export default function DashboardPage() {
         units,
         locale
       )}/${isId ? "thn" : "yr"}`,
-      sub: `${housingCalc.rainwater.recommendedCisternLiters.toLocaleString()} L ${
-        isId ? "tangki penyangga" : "buffer tank"
-      }`,
+      sub: `${formatNumber(
+        housingCalc.rainwater.recommendedCisternLiters,
+        undefined,
+        locale
+      )} L ${isId ? "tangki penyangga" : "buffer tank"}`,
       gradeColor: "#2a9dbd",
     },
     {
@@ -76,8 +81,16 @@ export default function DashboardPage() {
         ? `${housingCalc.infiltration.bioporeUnits} Lubang Biopori`
         : `${housingCalc.infiltration.bioporeUnits} Biopore Shafts`,
       sub: isId
-        ? `Infiltrasi ${housingCalc.infiltration.infiltrationRateLitersHr.toLocaleString()} L/jam`
-        : `Infiltrates ${housingCalc.infiltration.infiltrationRateLitersHr.toLocaleString()} L/hr`,
+        ? `Infiltrasi ${formatNumber(
+            housingCalc.infiltration.infiltrationRateLitersHr,
+            undefined,
+            locale
+          )} L/jam`
+        : `Infiltrates ${formatNumber(
+            housingCalc.infiltration.infiltrationRateLitersHr,
+            undefined,
+            locale
+          )} L/hr`,
       gradeColor: "#1e9e5a",
     },
     {

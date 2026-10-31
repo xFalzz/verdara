@@ -9,7 +9,7 @@ import {
   type CouncilSynthesisResult,
   type SiteBrief,
 } from "@/lib/meta/client";
-import { formatArea, formatCurrency, formatVolume } from "@/lib/science/units";
+import { formatArea, formatCurrency, formatNumber, formatVolume } from "@/lib/science/units";
 
 export default function CouncilPage() {
   const router = useRouter();
@@ -217,8 +217,8 @@ export default function CouncilPage() {
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
                 <span className={`block text-[11px] ${textMuted}`}>{isId ? "PANEL SURYA" : "SOLAR PV"}</span>
-                <strong className="mt-0.5 block tabular-nums">
-                  {housingCalc.solar.kwp} kWp ({Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh)
+                <strong className="mt-0.5 block tabular-nums" suppressHydrationWarning>
+                  {housingCalc.solar.kwp} kWp ({formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh)
                 </strong>
               </div>
               <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>

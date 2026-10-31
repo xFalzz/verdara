@@ -15,6 +15,7 @@ import { calculateHousingFootprint } from "@/lib/science/calculator";
 import {
   formatArea,
   formatCurrency,
+  formatNumber,
   formatTemp,
   formatVolume,
 } from "@/lib/science/units";
@@ -1410,10 +1411,10 @@ export default function LandingPage() {
 
                       {/* Live Engineering Sub-Metrics Strip per Country */}
                       <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-[#aaa9ad]">
-                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
+                        <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1" suppressHydrationWarning>
                           CO₂e Avoided:{" "}
-                          <strong className="text-[#c6f432]">
-                            {calc.solar.co2eKgYear.toLocaleString()} kg/yr
+                          <strong className="text-[#c6f432]" suppressHydrationWarning>
+                            {formatNumber(calc.solar.co2eKgYear, { maximumFractionDigits: 1 }, locale)} kg/yr
                           </strong>
                         </span>
                         <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
@@ -1477,8 +1478,8 @@ export default function LandingPage() {
                         <p className="mt-1 font-mono text-2xl sm:text-3xl font-bold text-[#c6f432]">
                           {calc.solar.kwp} kWp
                         </p>
-                        <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
-                          {Math.round(calc.solar.kwhYear).toLocaleString()}{" "}
+                        <p className="mt-1 font-mono text-xs text-[#c9c7c0]" suppressHydrationWarning>
+                          {formatNumber(Math.round(calc.solar.kwhYear), undefined, locale)}{" "}
                           kWh/yr ·{" "}
                           {formatCurrency(
                             calc.solar.savingsYear,
@@ -1879,8 +1880,8 @@ export default function LandingPage() {
                   <span className="font-mono text-[10px] text-[#aaa9ad]">
                     {isId ? "LISTRIK SURYA PER TAHUN" : "YEARLY SOLAR POWER"}
                   </span>
-                  <p className="mt-1 font-mono text-2xl font-semibold text-[#c6f432]">
-                    {Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh
+                  <p className="mt-1 font-mono text-2xl font-semibold text-[#c6f432]" suppressHydrationWarning>
+                    {formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh
                   </p>
                   <p className="mt-1 font-mono text-xs text-[#c9c7c0]">
                     {isId ? "Hemat " : "Saves "}
@@ -2370,8 +2371,8 @@ export default function LandingPage() {
                       <span className="text-[10px] text-[#aaa9ad]">
                         ANNUAL SOLAR YIELD
                       </span>
-                      <p className="mt-1 text-lg font-bold text-[#c6f432]">
-                        {Math.round(housingCalc.solar.kwhYear).toLocaleString()} kWh
+                      <p className="mt-1 text-lg font-bold text-[#c6f432]" suppressHydrationWarning>
+                        {formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh
                       </p>
                       <span className="text-[10px] text-[#10b981]">
                         {housingCalc.solar.panelCountEst} Bifacial Modules
@@ -2396,8 +2397,8 @@ export default function LandingPage() {
                       <span className="text-[10px] text-[#aaa9ad]">
                         CO₂e AVOIDED / YR
                       </span>
-                      <p className="mt-1 text-lg font-bold text-white">
-                        {housingCalc.solar.co2eKgYear.toLocaleString()} kg
+                      <p className="mt-1 text-lg font-bold text-white" suppressHydrationWarning>
+                        {formatNumber(housingCalc.solar.co2eKgYear, { maximumFractionDigits: 1 }, locale)} kg
                       </p>
                       <span className="text-[10px] text-amber-300">
                         +{housingCalc.infiltration.bioporeUnits} Biopore Wells
