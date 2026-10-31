@@ -286,6 +286,10 @@ export function recordAiUsage(entry: Omit<UsageEntry, "ts">) {
     ...entry,
     ts: Date.now(),
   });
+  // Cap ledger size to prevent unbounded memory usage under load
+  if (usageLedger.length > 5000) {
+    usageLedger.splice(0, usageLedger.length - 3000);
+  }
 }
 
 /**

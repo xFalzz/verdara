@@ -2,7 +2,7 @@
   "name": "verdara",
   "version": "1.0.0",
   "private": true,
-  "description": "Verdara — Spatial Intelligence for Sustainable Living & Resilient Homes (Meta Global AI Developer Hackathon)",
+  "description": "Verdara: Spatial Intelligence for Sustainable Living & Resilient Homes (Meta Global AI Developer Hackathon)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

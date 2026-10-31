@@ -1,5 +1,6 @@
 import { WORLD_CITY_CATALOG, resolveWorldCityGeoContext } from "../science/presets";
 import { calculateHousingFootprint } from "../science/calculator";
+import { maskEmail } from "../security/guard";
 
 export interface DbUserRecord {
   id: string;
@@ -273,7 +274,10 @@ class VerdaraDatabaseEngine {
         verifiedScans: this.scans.length,
         securityEvents: this.securityEvents.length,
       },
-      users: Array.from(this.users.values()),
+      users: Array.from(this.users.values()).map((u) => ({
+        ...u,
+        email: maskEmail(u.email),
+      })),
       recentScans: this.scans.slice(0, 10),
       securityAudit: this.securityEvents.slice(0, 10),
       benchmarks,

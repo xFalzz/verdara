@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { GOLDEN_LENS_SAMPLES } from "@/lib/meta/golden-cache";
 import { evaluateMaterialInstance } from "@/lib/science/valuation";
 import { checkAiCreditShield, recordAiUsage } from "@/lib/meta/shield";
+import {
+  checkRateLimit,
+  verifySafeOrigin,
+  sanitizeInputText,
+  sanitizeObject,
+} from "@/lib/security/guard";
 
 export const runtime = "nodejs";
 
@@ -9,8 +15,26 @@ export async function POST(req: NextRequest) {
   const startMs = Date.now();
   const ipHash = req.headers.get("x-forwarded-for") || "127.0.0.1";
 
+  // Rate limit
+  const rl = checkRateLimit(`sam-scan:${ipHash}`, 30, 0.8);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { ok: false, error: { code: "rate_limited", message: "Too many scan requests. Please wait." } },
+      { status: 429 }
+    );
+  }
+
+  // Safe Origin check
+  if (!verifySafeOrigin(req)) {
+    return NextResponse.json(
+      { ok: false, error: { code: "unauthorized_origin", message: "Cross-site request blocked." } },
+      { status: 403 }
+    );
+  }
+
   try {
-    const body = (await req.json()) as {
+    const rawBody = await req.json();
+    const body = sanitizeObject(rawBody) as {
       sampleId?: string;
       specimenId?: string;
       imageBase64?: string;
@@ -20,10 +44,18 @@ export async function POST(req: NextRequest) {
       mode?: "seg_waste" | "seg_roof" | "seg_plant" | "retrofit";
     };
 
-    const targetId = body.sampleId || body.specimenId;
-    const countryCode = body.countryCode || "US-CA";
+    // Prevent oversized image payload attacks (max ~5MB base64)
+    if (body.imageBase64 && body.imageBase64.length > 7_000_000) {
+      return NextResponse.json(
+        { ok: false, error: { code: "payload_too_large", message: "Image payload exceeds 5MB limit." } },
+        { status: 413 }
+      );
+    }
+
+    const targetId = sanitizeInputText(body.sampleId || body.specimenId || "", 60);
+    const countryCode = sanitizeInputText(body.countryCode || "US-CA", 10);
     const isJudge = body.isJudge ?? true;
-    const userId = body.userId || "judge-demo";
+    const userId = sanitizeInputText(body.userId || "judge-demo", 60);
 
     const sample =
       GOLDEN_LENS_SAMPLES.find(

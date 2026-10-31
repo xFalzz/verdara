@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   resolvePresetGeoContext,
   resolveWorldCityGeoContext,
@@ -124,7 +125,9 @@ const initialCalc = calculateHousingFootprint({
   builtCoverRatio: initialGeo.builtCoverRatio,
 });
 
-export const useVerdaraStore = create<VerdaraState>((set, get) => ({
+export const useVerdaraStore = create<VerdaraState>()(
+  persist(
+    (set, get) => ({
   isAuthenticated: false,
   isJudgeDemo: false,
   authProvider: "email",
@@ -348,7 +351,12 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
 
   setLocale: (locale) => set({ locale }),
   setUnits: (units) => set({ units }),
-  setTheme: (theme) => set({ theme }),
+  setTheme: (theme) => {
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+    set({ theme });
+  },
 
   teleportToCity: (presetId) => {
     const newGeo = resolvePresetGeoContext(presetId, 10);
@@ -523,4 +531,34 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
       },
     });
   },
-}));
+    }),
+    {
+      name: "verdara_spatial_store_v3",
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        isJudgeDemo: state.isJudgeDemo,
+        authProvider: state.authProvider,
+        displayName: state.displayName,
+        email: state.email,
+        locale: state.locale,
+        units: state.units,
+        theme: state.theme,
+        activePresetId: state.activePresetId,
+        customFootprintM2: state.customFootprintM2,
+        usableRoofRatio: state.usableRoofRatio,
+        runoffCoefficient: state.runoffCoefficient,
+        xp: state.xp,
+        level: state.level,
+        progressPct: state.progressPct,
+        streakDays: state.streakDays,
+        totalCo2eAvoidedKg: state.totalCo2eAvoidedKg,
+        totalObjectsScanned: state.totalObjectsScanned,
+        unlockedItems: state.unlockedItems,
+        passedQuizLessonIds: state.passedQuizLessonIds,
+        verifiedProofLessonIds: state.verifiedProofLessonIds,
+        submittedDHashes: state.submittedDHashes,
+        scanHistory: state.scanHistory,
+      }),
+    }
+  )
+);

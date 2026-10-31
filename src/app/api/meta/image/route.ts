@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GOLDEN_LENS_SAMPLES } from "@/lib/meta/golden-cache";
 import { checkAiCreditShield, recordAiUsage } from "@/lib/meta/shield";
+import {
+  checkRateLimit,
+  verifySafeOrigin,
+  sanitizeInputText,
+  sanitizeObject,
+} from "@/lib/security/guard";
 
 export const runtime = "nodejs";
 
@@ -8,8 +14,26 @@ export async function POST(req: NextRequest) {
   const startMs = Date.now();
   const ipHash = req.headers.get("x-forwarded-for") || "127.0.0.1";
 
+  // Rate limit
+  const rl = checkRateLimit(`meta-image:${ipHash}`, 15, 0.3);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { ok: false, error: { code: "rate_limited", message: "Too many image requests. Please wait." } },
+      { status: 429 }
+    );
+  }
+
+  // Safe Origin check
+  if (!verifySafeOrigin(req)) {
+    return NextResponse.json(
+      { ok: false, error: { code: "unauthorized_origin", message: "Cross-site request blocked." } },
+      { status: 403 }
+    );
+  }
+
   try {
-    const body = (await req.json()) as {
+    const rawBody = await req.json();
+    const body = sanitizeObject(rawBody) as {
       specimenId?: string;
       sampleId?: string;
       koppenCode?: string;
@@ -18,14 +42,16 @@ export async function POST(req: NextRequest) {
       userId?: string;
     };
 
-    const targetId = body.specimenId || body.sampleId || "patio_retrofit";
+    const targetId = sanitizeInputText(body.specimenId || body.sampleId || "patio_retrofit", 60);
     const sample =
       GOLDEN_LENS_SAMPLES.find((s) => s.id === targetId) ??
       GOLDEN_LENS_SAMPLES.find((s) => s.mode === "retrofit") ??
       GOLDEN_LENS_SAMPLES[0]!;
 
     const isJudge = body.isJudge ?? true;
-    const userId = body.userId || "judge-demo";
+    const userId = sanitizeInputText(body.userId || "judge-demo", 60);
+    const koppenCode = sanitizeInputText(body.koppenCode || "Csb", 10);
+    const sanitizedPrompt = body.prompt ? sanitizeInputText(body.prompt, 300) : undefined;
 
     const shield = checkAiCreditShield({
       userId,
@@ -62,8 +88,8 @@ export async function POST(req: NextRequest) {
       },
       imageUrl: "/specimens/patio_retrofit_after.webp",
       promptUsed:
-        body.prompt ||
-        `Photorealistic architectural eco-retrofit with monocrystalline solar panels, vertical biophilic wall, and modular rainwater cistern for Köppen ${body.koppenCode || "Csb"} climate.`,
+        sanitizedPrompt ||
+        `Photorealistic architectural eco-retrofit with monocrystalline solar panels, vertical biophilic wall, and modular rainwater cistern for Köppen ${koppenCode} climate.`,
       telemetry: {
         provider: "meta-model-api",
         model: process.env.META_MODEL_IMAGE || "muse-image",
@@ -79,10 +105,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: {
           code: "image_error",
-          message:
-            err instanceof Error
-              ? err.message
-              : "Muse Image retrofit synthesis failed",
+          message: err instanceof Error ? err.message : "Image generation failed",
         },
       },
       { status: 500 }
