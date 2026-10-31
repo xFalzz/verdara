@@ -935,8 +935,8 @@ export function CompactWorldCityPicker({
             {housingCalc.solar.kwp} kWp
           </span>
           <span className="hidden h-3.5 w-[1px] bg-current opacity-20 sm:inline-block" />
-          <span className="text-[11px] sm:text-xs opacity-75">
-            ▾
+          <span className="text-[11px] sm:text-xs opacity-75 font-mono">
+            v
           </span>
         </button>
       ) : (
@@ -947,7 +947,7 @@ export function CompactWorldCityPicker({
           className="inline-flex min-h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-white/20"
         >
           <span>{isId ? "195+ Negara" : "195+ Countries"}</span>
-          <span aria-hidden="true">{open ? "▴" : "▾"}</span>
+          <span aria-hidden="true">{open ? "^" : "v"}</span>
         </button>
       )}
 
@@ -973,7 +973,7 @@ export function CompactWorldCityPicker({
               className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-current/10 font-mono text-xs opacity-75 hover:opacity-100"
               aria-label="Close city picker"
             >
-              ×
+              x
             </button>
           </div>
 
@@ -1029,8 +1029,8 @@ export function CompactWorldCityPicker({
             </div>
           )}
 
-          {/* Mini Region Filter Pills */}
-          <div className="mt-2.5 flex flex-wrap gap-1">
+          {/* Mini Region Filter Pills (Drag-Slidable Horizontally) */}
+          <div className="country-pill-rail mt-2.5 flex flex-nowrap items-center gap-1 overflow-x-auto pb-1">
             {(
               [
                 { id: "all", labelEn: "All", labelId: "Semua" },
@@ -1047,7 +1047,7 @@ export function CompactWorldCityPicker({
                   key={tab.id}
                   type="button"
                   onClick={() => setRegionFilter(tab.id)}
-                  className={`cursor-pointer rounded-lg px-2 py-1 font-mono text-[10px] font-medium transition ${
+                  className={`shrink-0 whitespace-nowrap cursor-pointer rounded-lg px-2.5 py-1 font-mono text-[10px] font-medium transition ${
                     active
                       ? "bg-[#080808] font-bold text-[#c6f432]"
                       : isLight
@@ -1185,7 +1185,7 @@ export function WorldCityExplorer({
       }`}
     >
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="country-pill-rail flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {(
             [
               { id: "all", labelEn: "All (28)", labelId: "Semua (28)" },
@@ -1202,7 +1202,7 @@ export function WorldCityExplorer({
                 key={tab.id}
                 type="button"
                 onClick={() => setRegionFilter(tab.id)}
-                className={`min-h-[32px] cursor-pointer rounded-full px-3 py-1 font-mono text-[11px] font-medium transition ${
+                className={`min-h-[32px] shrink-0 whitespace-nowrap cursor-pointer rounded-full px-3 py-1 font-mono text-[11px] font-medium transition ${
                   active
                     ? "bg-[#080808] font-semibold text-[#c6f432]"
                     : isLight
@@ -1332,7 +1332,22 @@ export function VerdaraBottomDock() {
   const router = useRouter();
   const { locale, isAuthenticated } = useVerdaraStore();
   const [minimized, setMinimized] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
   const isId = locale === "id";
+
+  useEffect(() => {
+    if (minimized || !navRef.current) return;
+    const activeEl = navRef.current.querySelector<HTMLElement>(
+      '[data-dock-active="true"]'
+    );
+    if (activeEl) {
+      activeEl.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+  }, [pathname, minimized]);
 
   const dockItems: {
     code: string;
@@ -1415,7 +1430,7 @@ export function VerdaraBottomDock() {
           className="flex min-h-[40px] cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-[#08090c]/92 px-4 py-1.5 font-mono text-xs font-semibold text-white shadow-xl backdrop-blur-xl transition hover:border-[#c6f432]/60"
         >
           <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-          <span>{isId ? "Buka Menu Navigasi ▴" : "Expand Command Dock ▴"}</span>
+          <span>{isId ? "Buka Menu Navigasi ^" : "Expand Command Dock ^"}</span>
         </button>
       </div>
     );
@@ -1423,8 +1438,10 @@ export function VerdaraBottomDock() {
 
   return (
     <nav
-      aria-label={isId ? "Navigasi Utama" : "Primary Navigation"}
-      className="dovv-bottom-dock max-w-[96vw] overflow-x-auto"
+      ref={navRef}
+      data-lenis-prevent
+      aria-label={isId ? "Navigasi Utama (Geser Kiri/Kanan)" : "Primary Navigation (Drag to Slide)"}
+      className="dovv-bottom-dock country-pill-rail max-w-[96vw] overflow-x-auto"
     >
       {dockItems.map((item) => {
         const active = pathname === item.href;
@@ -1437,6 +1454,8 @@ export function VerdaraBottomDock() {
           <Link
             key={item.href}
             href={targetHref}
+            draggable={false}
+            data-dock-active={active ? "true" : undefined}
             onClick={(e) => {
               if (locked) {
                 e.preventDefault();
@@ -1479,9 +1498,9 @@ export function VerdaraBottomDock() {
         onClick={() => setMinimized(true)}
         title={isId ? "Sembunyikan dock" : "Minimize dock"}
         aria-label={isId ? "Sembunyikan dock" : "Minimize dock"}
-        className="flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-full text-white/65 transition hover:bg-white/10 hover:text-white"
+        className="flex h-[34px] w-[34px] shrink-0 cursor-pointer items-center justify-center rounded-full text-white/65 transition hover:bg-white/10 hover:text-white font-mono text-xs"
       >
-        ▾
+        v
       </button>
     </nav>
   );

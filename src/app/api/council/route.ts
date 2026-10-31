@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as {
       siteBrief: SiteBrief;
+      prompt?: string;
       userId?: string;
       isJudge?: boolean;
       useOpenWeightModel?: boolean;
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
       ipHash,
       isJudge: body.isJudge ?? true,
       useOpenWeightModel: body.useOpenWeightModel ?? true,
+      userQuery: body.prompt,
     });
 
     return NextResponse.json({

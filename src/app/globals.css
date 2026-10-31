@@ -319,14 +319,25 @@
   background: #111317;
 }
 
-/* Refined Architectural Command Dock (.dovv-bottom-dock) */
+/* Refined Architectural Command Dock (.dovv-bottom-dock) - Full Drag-Slide Support */
 .dovv-bottom-dock {
   position: fixed;
   bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
-  background: rgba(8, 9, 12, 0.9);
+  max-width: calc(100vw - 24px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  background: rgba(8, 9, 12, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: 9999px;
@@ -337,15 +348,18 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14),
     0 14px 36px -10px rgba(0, 0, 0, 0.65);
 }
+.dovv-bottom-dock::-webkit-scrollbar {
+  display: none;
+}
+.dovv-bottom-dock:active,
+.dovv-bottom-dock.is-dragging-rail {
+  cursor: grabbing;
+}
 
 @media (max-width: 640px) {
   .dovv-bottom-dock {
     bottom: 10px;
-    max-width: calc(100vw - 20px);
-    scrollbar-width: none;
-  }
-  .dovv-bottom-dock::-webkit-scrollbar {
-    display: none;
+    max-width: calc(100vw - 16px);
   }
 }
 
@@ -377,11 +391,25 @@ html.lenis body {
   display: flex;
   will-change: transform;
 }
-.country-pill-rail {
+.country-pill-rail,
+.drag-slide-rail {
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
 }
-.country-pill-rail::-webkit-scrollbar {
+.country-pill-rail::-webkit-scrollbar,
+.drag-slide-rail::-webkit-scrollbar {
   display: none;
+}
+.country-pill-rail:active,
+.country-pill-rail.is-dragging-rail,
+.drag-slide-rail:active,
+.drag-slide-rail.is-dragging-rail {
+  cursor: grabbing;
 }
 
 /* Velocity-driven skew targets */

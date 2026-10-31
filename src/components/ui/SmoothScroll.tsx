@@ -43,16 +43,60 @@ function findScrollableAncestor(
     const canScrollX =
       (overflowX === "auto" || overflowX === "scroll") &&
       node.scrollWidth > node.clientWidth + 2;
-    if (canScrollX && Math.abs(deltaX) > Math.abs(deltaY)) {
-      const atLeft = node.scrollLeft <= 0 && deltaX < 0;
+    const isHorizontalRail =
+      node.classList.contains("dovv-bottom-dock") ||
+      node.classList.contains("country-pill-rail") ||
+      node.classList.contains("drag-slide-rail");
+    if (
+      canScrollX &&
+      (Math.abs(deltaX) > Math.abs(deltaY) || (!canScrollY && isHorizontalRail))
+    ) {
+      const effectiveDelta = Math.abs(deltaX) > 0.5 ? deltaX : deltaY;
+      const atLeft = node.scrollLeft <= 0 && effectiveDelta < 0;
       const atRight =
         node.scrollLeft + node.clientWidth >= node.scrollWidth - 1 &&
-        deltaX > 0;
+        effectiveDelta > 0;
       if (!atLeft && !atRight) {
         return { el: node, axis: "x" };
       }
     }
 
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/**
+ * Finds the nearest horizontal scrollable rail/dock/table container for drag-to-slide.
+ */
+function findHorizontalDragContainer(
+  start: HTMLElement | null
+): HTMLElement | null {
+  let node: HTMLElement | null = start;
+  while (node && node !== document.body && node !== document.documentElement) {
+    if (
+      node.tagName === "CANVAS" ||
+      node.tagName === "INPUT" ||
+      node.tagName === "TEXTAREA" ||
+      node.tagName === "SELECT"
+    ) {
+      return null;
+    }
+    const style = window.getComputedStyle(node);
+    const overflowX = style.overflowX;
+    const hasExplicitRailClass =
+      node.classList.contains("dovv-bottom-dock") ||
+      node.classList.contains("country-pill-rail") ||
+      node.classList.contains("drag-slide-rail");
+    const canScrollX =
+      (hasExplicitRailClass ||
+        overflowX === "auto" ||
+        overflowX === "scroll") &&
+      node.scrollWidth > node.clientWidth + 2;
+
+    if (canScrollX) {
+      return node;
+    }
     node = node.parentElement;
   }
   return null;
@@ -210,6 +254,143 @@ export default function SmoothScroll() {
       resizeObserver.disconnect();
       lenis.destroy();
       delete window.__verdaraLenis;
+    };
+  }, []);
+
+  // Universal Horizontal Drag-to-Slide & Inertial Momentum Engine for all Docks, Pill Rails & Wide Containers
+  useEffect(() => {
+    let activeRail: HTMLElement | null = null;
+    let isDown = false;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startScrollLeft = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let velocityX = 0;
+    let momentumRafId = 0;
+    let suppressNextClickUntil = 0;
+
+    const stopMomentum = () => {
+      if (momentumRafId) {
+        window.cancelAnimationFrame(momentumRafId);
+        momentumRafId = 0;
+      }
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      // Only handle primary button for mouse, or any touch/pen contact
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      const rail = findHorizontalDragContainer(target);
+      if (!rail) return;
+
+      stopMomentum();
+      activeRail = rail;
+      isDown = true;
+      isDragging = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      lastX = e.clientX;
+      lastTime = performance.now();
+      velocityX = 0;
+      startScrollLeft = rail.scrollLeft;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDown || !activeRail) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (!isDragging) {
+        // If user is clearly scrolling vertically on touch, release horizontal lock
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.25) {
+          isDown = false;
+          activeRail = null;
+          return;
+        }
+        if (Math.abs(dx) > 5) {
+          isDragging = true;
+          activeRail.classList.add("is-dragging-rail");
+        }
+      }
+
+      if (isDragging) {
+        const now = performance.now();
+        const dt = Math.max(1, now - lastTime);
+        const stepDx = e.clientX - lastX;
+        velocityX = (stepDx / dt) * 16;
+        lastX = e.clientX;
+        lastTime = now;
+
+        activeRail.scrollLeft = startScrollLeft - dx;
+      }
+    };
+
+    const finishDrag = () => {
+      if (!isDown) return;
+      const rail = activeRail;
+      const wasDragging = isDragging;
+      isDown = false;
+      isDragging = false;
+      activeRail = null;
+
+      if (rail) {
+        rail.classList.remove("is-dragging-rail");
+      }
+
+      if (wasDragging && rail) {
+        suppressNextClickUntil = performance.now() + 180;
+        let vx = velocityX;
+        const stepMomentum = () => {
+          if (!rail.isConnected || Math.abs(vx) < 0.45) {
+            momentumRafId = 0;
+            return;
+          }
+          rail.scrollLeft -= vx;
+          vx *= 0.91;
+          momentumRafId = window.requestAnimationFrame(stepMomentum);
+        };
+        if (Math.abs(vx) > 0.8) {
+          momentumRafId = window.requestAnimationFrame(stepMomentum);
+        }
+      }
+    };
+
+    const onDragStartCapture = (e: DragEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && findHorizontalDragContainer(target)) {
+        e.preventDefault();
+      }
+    };
+
+    const onClickCapture = (e: MouseEvent) => {
+      if (performance.now() < suppressNextClickUntil) {
+        e.preventDefault();
+        e.stopPropagation();
+        suppressNextClickUntil = 0;
+      }
+    };
+
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerup", finishDrag, { passive: true });
+    window.addEventListener("pointercancel", finishDrag, { passive: true });
+    window.addEventListener("dragstart", onDragStartCapture, { capture: true });
+    window.addEventListener("click", onClickCapture, { capture: true });
+
+    return () => {
+      stopMomentum();
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", finishDrag);
+      window.removeEventListener("dragstart", onDragStartCapture, {
+        capture: true,
+      });
+      window.removeEventListener("click", onClickCapture, { capture: true });
     };
   }, []);
 

@@ -326,7 +326,7 @@ export default function StudioShell({
                 />
               </span>
               <span className="font-mono text-sm leading-none">
-                {notchOpen ? "×" : "☰"}
+                {notchOpen ? "x" : "☰"}
               </span>
             </button>
 
@@ -346,6 +346,33 @@ export default function StudioShell({
               {isId ? "Keluar" : "Logout"}
             </button>
           </div>
+        </div>
+
+        {/* Responsive Horizontal Drag-Slide Workspace Strip (< 1280px) */}
+        <div className="mx-auto max-w-[1440px] border-t border-current/8 px-3 py-1.5 sm:px-8 xl:hidden">
+          <nav
+            data-lenis-prevent
+            aria-label={isId ? "Menu Geser Ruang Kerja" : "Draggable Workspace Menu"}
+            className="country-pill-rail flex flex-nowrap items-center gap-1.5 overflow-x-auto"
+          >
+            {topLinks.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  draggable={false}
+                  className={`min-h-[32px] shrink-0 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
+                    active
+                      ? "bg-[#08090c] font-semibold text-[#c6f432] shadow-sm"
+                      : "bg-current/[0.04] opacity-80 hover:bg-current/10 hover:opacity-100"
+                  }`}
+                >
+                  {isId ? item.labelId : item.labelEn}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </header>
 

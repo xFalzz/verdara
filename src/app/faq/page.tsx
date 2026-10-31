@@ -687,12 +687,34 @@ export default function FaqPage() {
 
   const shortName = (displayName || "Eco-Architect").split(" ")[0];
 
+  const faqSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: FAQ_ITEMS.map((item) => ({
+        "@type": "Question",
+        name: isId ? item.qId : item.qEn,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: isId ? item.aId : item.aEn,
+        },
+      })),
+    }),
+    [isId]
+  );
+
   return (
     <div
       className={`min-h-screen pb-28 transition-colors duration-200 ${
         isLight ? "bg-[#f5f5f3] text-[#111111]" : "bg-[#0b0c0e] text-[#f2f1ec]"
       }`}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema),
+        }}
+      />
       {/* CLEAN SINGLE-ROW TOP HEADER */}
       <header className="sticky top-0 z-40 border-b border-current/10 bg-inherit/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
@@ -777,7 +799,7 @@ export default function FaqPage() {
                   className="zeggo-btn flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#1e9e5a] px-4 text-xs font-semibold text-white"
                 >
                   <ZeggoRollText
-                    text={`Studio (${shortName}) ↗`}
+                    text={`Studio (${shortName}) ->`}
                   />
                 </Link>
                 <button

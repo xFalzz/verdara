@@ -166,6 +166,7 @@ export async function executeVerdaraCouncil(
     ipHash: string;
     isJudge: boolean;
     useOpenWeightModel?: boolean;
+    userQuery?: string;
   }
 ): Promise<CouncilSynthesisResult> {
   const startMs = Date.now();
@@ -183,6 +184,30 @@ export async function executeVerdaraCouncil(
   const isId = brief.outputLanguage === "id";
   const fmtNum = (n: number) =>
     new Intl.NumberFormat(isId ? "id-ID" : "en-US").format(Math.round(n));
+
+  const queryFocus = opts.userQuery?.trim().toLowerCase() || "";
+  const hasSolarQuery =
+    queryFocus.includes("solar") ||
+    queryFocus.includes("surya") ||
+    queryFocus.includes("panel") ||
+    queryFocus.includes("listrik") ||
+    queryFocus.includes("roi") ||
+    queryFocus.includes("hemat");
+  const hasRainQuery =
+    queryFocus.includes("rain") ||
+    queryFocus.includes("hujan") ||
+    queryFocus.includes("air") ||
+    queryFocus.includes("biopori") ||
+    queryFocus.includes("banjir") ||
+    queryFocus.includes("cistern");
+  const hasPlantQuery =
+    queryFocus.includes("plant") ||
+    queryFocus.includes("tanaman") ||
+    queryFocus.includes("pohon") ||
+    queryFocus.includes("kompos") ||
+    queryFocus.includes("panas") ||
+    queryFocus.includes("tci") ||
+    queryFocus.includes("suhu");
 
   // If live META_API_KEY is configured and allowed by the Credit Shield, attempt live call first
   let liveCustomNote: string | null = null;
@@ -250,17 +275,24 @@ export async function executeVerdaraCouncil(
     latencyMs: Math.max(140, Date.now() - startMs),
   });
 
+  const queryPreambleId = opts.userQuery
+    ? `Menanggapi fokus konsultasi Anda: "${opts.userQuery}". `
+    : "";
+  const queryPreambleEn = opts.userQuery
+    ? `Directly addressing your consultation question: "${opts.userQuery}". `
+    : "";
+
   const floraText = isId
-    ? `Berdasarkan profil iklim Köppen ${brief.koppenCode} (${brief.koppenName}) di ${brief.city} pada ${brief.season}, kenyamanan termal bangunan berada pada skor TCI ${brief.tciScore}/100. Dengan luas atap ${brief.footprintM2} m², penanaman kanopi peneduh lokal di sisi barat serta konversi kompos aerobik akan menurunkan suhu mikro permukaan dan menyerap limpasan air.`
-    : `Based on the ${brief.koppenCode} (${brief.koppenName}) climate profile in ${brief.city} during ${brief.season}, the building's Thermal Comfort Index sits at ${brief.tciScore}/100. Across the ${brief.footprintM2} m² footprint, establishing native west-facade shade canopy and aerobic composting directly buffers microclimate heat and soil moisture.`;
+    ? `${queryPreambleId}Berdasarkan profil iklim Köppen ${brief.koppenCode} (${brief.koppenName}) di ${brief.city} pada ${brief.season}, kenyamanan termal bangunan berada pada skor TCI ${brief.tciScore}/100. Dengan luas atap ${brief.footprintM2} m², penanaman kanopi peneduh lokal di sisi barat serta konversi kompos aerobik akan menurunkan suhu mikro permukaan dan menyerap limpasan air.${hasPlantQuery ? " Vegetasi peneduh berdaun lebat direkomendasikan untuk menahan radiasi sinar matahari langsung." : ""}`
+    : `${queryPreambleEn}Based on the ${brief.koppenCode} (${brief.koppenName}) climate profile in ${brief.city} during ${brief.season}, the building's Thermal Comfort Index sits at ${brief.tciScore}/100. Across the ${brief.footprintM2} m² footprint, establishing native west-facade shade canopy and aerobic composting directly buffers microclimate heat and soil moisture.${hasPlantQuery ? " Dense-canopy native foliage is recommended to mitigate direct solar radiation." : ""}`;
 
   const arkaText = isId
-    ? `Audit fisika atap ${brief.footprintM2} m² menunjukkan kapasitas surya ${brief.solarKwp} kWp (rasio atap layak 60%) yang memproduksi ${fmtNum(brief.solarKwhYear)} kWh/tahun dan menghindari emisi ${fmtNum(brief.co2eKgYear)} kg CO₂e/tahun. Dari curah hujan lokal, atap ini mampu memanen ${fmtNum(brief.rainLitersYear)} Liter/tahun yang wajib diimbangi dengan ${brief.bioporeUnits} unit lubang resapan biopori.`
-    : `Structural audit of the ${brief.footprintM2} m² roof footprint yields a ${brief.solarKwp} kWp solar array (at 60% usable ratio) generating ${fmtNum(brief.solarKwhYear)} kWh/year and avoiding ${fmtNum(brief.co2eKgYear)} kg CO₂e/year. Hydrological capture reaches ${fmtNum(brief.rainLitersYear)} Liters/year, paired with ${brief.bioporeUnits} biopore infiltration shafts.`;
+    ? `${queryPreambleId}Audit fisika atap ${brief.footprintM2} m² menunjukkan kapasitas surya ${brief.solarKwp} kWp (rasio atap layak 60%) yang memproduksi ${fmtNum(brief.solarKwhYear)} kWh/tahun dan menghindari emisi ${fmtNum(brief.co2eKgYear)} kg CO₂e/tahun. Dari curah hujan lokal, atap ini mampu memanen ${fmtNum(brief.rainLitersYear)} Liter/tahun yang wajib diimbangi dengan ${brief.bioporeUnits} unit lubang resapan biopori.${hasSolarQuery ? " Sudut kemiringan modul surya dioptimalkan sesuai garis lintang lokal." : ""}`
+    : `${queryPreambleEn}Structural audit of the ${brief.footprintM2} m² roof footprint yields a ${brief.solarKwp} kWp solar array (at 60% usable ratio) generating ${fmtNum(brief.solarKwhYear)} kWh/year and avoiding ${fmtNum(brief.co2eKgYear)} kg CO₂e/year. Hydrological capture reaches ${fmtNum(brief.rainLitersYear)} Liters/year, paired with ${brief.bioporeUnits} biopore infiltration shafts.${hasSolarQuery ? " Module tilt is dynamically calibrated to the local latitude angle." : ""}`;
 
   const sirkulaText = isId
-    ? `Dengan tarif listrik lokal ${brief.currency} ${brief.electricityTariff}/kWh, instalasi surya ${brief.solarKwp} kWp menghemat ${brief.currency} ${fmtNum(brief.solarSavingsYear)}/tahun. Untuk arus material sirkular rumah tangga, titik pengumpulan terdekat adalah ${brief.nearestHubName} yang berjarak ${brief.nearestHubDistanceKm} km dari lokasi bangunan.`
-    : `At the local utility tariff of ${brief.currency} ${brief.electricityTariff}/kWh, the ${brief.solarKwp} kWp solar array delivers ${brief.currency} ${fmtNum(brief.solarSavingsYear)}/year in bill savings. For circular material recovery, the nearest verified drop-off hub is ${brief.nearestHubName} located ${brief.nearestHubDistanceKm} km away.`;
+    ? `${queryPreambleId}Dengan tarif listrik lokal ${brief.currency} ${brief.electricityTariff}/kWh, instalasi surya ${brief.solarKwp} kWp menghemat ${brief.currency} ${fmtNum(brief.solarSavingsYear)}/tahun. Untuk arus material sirkular rumah tangga, titik pengumpulan terdekat adalah ${brief.nearestHubName} yang berjarak ${brief.nearestHubDistanceKm} km dari lokasi bangunan.`
+    : `${queryPreambleEn}At the local utility tariff of ${brief.currency} ${brief.electricityTariff}/kWh, the ${brief.solarKwp} kWp solar array delivers ${brief.currency} ${fmtNum(brief.solarSavingsYear)}/year in bill savings. For circular material recovery, the nearest verified drop-off hub is ${brief.nearestHubName} located ${brief.nearestHubDistanceKm} km away.`;
 
   const floraVal = validateNumbersAgainstSiteBrief(floraText, brief);
   const arkaVal = validateNumbersAgainstSiteBrief(arkaText, brief);

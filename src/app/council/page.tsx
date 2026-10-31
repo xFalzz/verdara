@@ -29,6 +29,7 @@ export default function CouncilPage() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeRoundStep, setActiveRoundStep] = useState<number>(3);
+  const [userPrompt, setUserPrompt] = useState<string>("");
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -68,61 +69,64 @@ export default function CouncilPage() {
     };
   }, [geo, housingCalc, isId, locale]);
 
-  const handleRunCouncil = useCallback(async () => {
-    setIsRunning(true);
-    setErrorMessage(null);
-    setActiveRoundStep(1);
-    const brief = buildCurrentSiteBrief();
+  const handleRunCouncil = useCallback(
+    async (overridePrompt?: string) => {
+      setIsRunning(true);
+      setErrorMessage(null);
+      setActiveRoundStep(1);
+      const brief = buildCurrentSiteBrief();
+      const promptToUse = (overridePrompt ?? userPrompt).trim();
 
-    setTimeout(() => setActiveRoundStep(2), 200);
-    setTimeout(() => setActiveRoundStep(3), 400);
+      setTimeout(() => setActiveRoundStep(2), 200);
+      setTimeout(() => setActiveRoundStep(3), 400);
 
-    try {
-      const res = await fetch("/api/council", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          siteBrief: brief,
-          isJudge: true,
-          useOpenWeightModel: aiShield.useOpenWeightModel,
-        }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { result: CouncilSynthesisResult };
-        setSessionResult(data.result);
-      } else {
-        const fallback = await executeVerdaraCouncil(brief, {
-          userId: "local-judge",
-          ipHash: "127.0.0.1",
-          isJudge: true,
-          useOpenWeightModel: aiShield.useOpenWeightModel,
-        });
-        setSessionResult(fallback);
-      }
-    } catch {
       try {
-        const fallback = await executeVerdaraCouncil(brief, {
-          userId: "local-judge",
-          ipHash: "127.0.0.1",
-          isJudge: true,
-          useOpenWeightModel: aiShield.useOpenWeightModel,
+        const res = await fetch("/api/council", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            siteBrief: brief,
+            prompt: promptToUse || undefined,
+            isJudge: true,
+            useOpenWeightModel: aiShield.useOpenWeightModel,
+          }),
         });
-        setSessionResult(fallback);
+        if (res.ok) {
+          const data = (await res.json()) as { result: CouncilSynthesisResult };
+          setSessionResult(data.result);
+        } else {
+          const fallback = await executeVerdaraCouncil(brief, {
+            userId: "local-judge",
+            ipHash: "127.0.0.1",
+            isJudge: true,
+            useOpenWeightModel: aiShield.useOpenWeightModel,
+            userQuery: promptToUse || undefined,
+          });
+          setSessionResult(fallback);
+        }
       } catch {
-        setErrorMessage(
-          isId
-            ? "Gagal menyintesis sidang dewan. Silakan coba lagi."
-            : "Unable to synthesize council deliberation. Please retry."
-        );
+        try {
+          const fallback = await executeVerdaraCouncil(brief, {
+            userId: "local-judge",
+            ipHash: "127.0.0.1",
+            isJudge: true,
+            useOpenWeightModel: aiShield.useOpenWeightModel,
+            userQuery: promptToUse || undefined,
+          });
+          setSessionResult(fallback);
+        } catch {
+          setErrorMessage(
+            isId
+              ? "Gagal menyintesis sidang dewan. Silakan coba lagi."
+              : "Unable to synthesize council deliberation. Please retry."
+          );
+        }
+      } finally {
+        setTimeout(() => setIsRunning(false), 450);
       }
-    } finally {
-      setTimeout(() => setIsRunning(false), 450);
-    }
-  }, [
-    aiShield.useOpenWeightModel,
-    buildCurrentSiteBrief,
-    isId,
-  ]);
+    },
+    [aiShield.useOpenWeightModel, buildCurrentSiteBrief, isId, userPrompt]
+  );
 
   useEffect(() => {
     handleRunCouncil();
@@ -237,6 +241,95 @@ export default function CouncilPage() {
                   {geo.hubs[0]?.distanceKm ?? 1.5} km ({geo.hubs[0]?.name.split(" ")[0]})
                 </strong>
               </div>
+            </div>
+          </div>
+
+          {/* Interactive Consultation Query Bar for Meta AI Specialists */}
+          <div className={`mt-4 rounded-xl border p-4 ${elevatedCard}`}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                awardXp(25);
+                handleRunCouncil();
+              }}
+              className="flex flex-col gap-2.5 sm:flex-row sm:items-center"
+            >
+              <input
+                type="text"
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                placeholder={
+                  isId
+                    ? "Tanyakan apa pun ke 3 Pakar AI (mis. Biaya panel surya, sumur biopori, kompos)..."
+                    : "Ask the 3 Meta AI Specialists (e.g. Solar payback, biopore design, food waste)..."
+                }
+                className={`min-h-[44px] flex-1 rounded-xl border px-4 text-xs outline-none transition focus:border-[#1e9e5a] ${
+                  isLight
+                    ? "border-black/15 bg-[#f8f8f6] text-[#111]"
+                    : "border-white/15 bg-[#08090c] text-white"
+                }`}
+              />
+              <button
+                type="submit"
+                disabled={isRunning}
+                className={`min-h-[44px] shrink-0 cursor-pointer rounded-xl px-5 font-mono text-xs font-bold transition disabled:opacity-50 ${
+                  isLight
+                    ? "bg-[#14532D] text-white hover:bg-[#166534]"
+                    : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
+                }`}
+              >
+                {isRunning
+                  ? isId
+                    ? "Memproses AI..."
+                    : "Processing..."
+                  : isId
+                  ? "Konsultasikan (+25 XP) →"
+                  : "Ask Council (+25 XP) →"}
+              </button>
+            </form>
+
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+              <span className={textMuted}>
+                {isId ? "Topik Cepat:" : "Quick Focus:"}
+              </span>
+              {[
+                {
+                  id: "Berapa lama estimasi balik modal panel surya?",
+                  en: "What is the estimated solar payback period?",
+                },
+                {
+                  id: "Bagaimana cara membuat lubang biopori di halaman?",
+                  en: "How to core-drill biopores for rainwater absorption?",
+                },
+                {
+                  id: "Tanaman apa yang cocok untuk menurunkan panas atap?",
+                  en: "Which native plants best reduce roof heat?",
+                },
+                {
+                  id: "Berapa nilai ekonomi pemilahan sampah ke bank sampah?",
+                  en: "What is the cash value of sorting waste at local hubs?",
+                },
+              ].map((chip) => {
+                const text = isId ? chip.id : chip.en;
+                return (
+                  <button
+                    key={chip.en}
+                    type="button"
+                    onClick={() => {
+                      setUserPrompt(text);
+                      awardXp(25);
+                      handleRunCouncil(text);
+                    }}
+                    className={`cursor-pointer rounded-lg border px-2.5 py-1 text-left transition ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-white"
+                        : "border-[#1D3328] bg-[#070D0A] text-[#A3BEB0] hover:text-white hover:border-[#88AC9B]"
+                    }`}
+                  >
+                    {text}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </header>

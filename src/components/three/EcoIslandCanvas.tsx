@@ -2721,7 +2721,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
     >
       <Canvas
         shadows="soft"
-        dpr={[1, 1.75]}
+        dpr={[1, 1.5]}
         gl={{
           antialias: true,
           powerPreference: "high-performance",
@@ -2754,7 +2754,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
               ? "#93C5FD"
               : "#FFF8EB"
           }
-          shadow-mapSize={[2048, 2048]}
+          shadow-mapSize={[1024, 1024]}
           shadow-camera-near={1}
           shadow-camera-far={28}
           shadow-camera-left={-6.2}
@@ -2815,7 +2815,11 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
 
       {/* Built-in Top-Left Mode Switcher when parent page does not supply simMode (e.g. /dashboard & /login) */}
       {props.simMode === undefined && !props.hideHudOverlays && !props.compact && (
-        <div className="country-pill-rail pointer-events-auto absolute top-3 left-3 right-3 z-10 flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-white/12 bg-[#08090c]/88 p-1 shadow-lg backdrop-blur-xl sm:top-4 sm:right-auto sm:left-4">
+        <div
+          data-lenis-prevent
+          onPointerDown={(e) => e.stopPropagation()}
+          className="country-pill-rail pointer-events-auto absolute top-3 left-3 right-3 z-10 flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-white/12 bg-[#08090c]/88 p-1 shadow-lg backdrop-blur-xl sm:top-4 sm:right-auto sm:left-4"
+        >
           {(
             [
               { id: "run", labelEn: "01 Normal Day", labelId: "01 Hari Normal", dot: "bg-[#10b981]" },
@@ -2829,7 +2833,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
                 key={tab.id}
                 type="button"
                 onClick={() => setInternalSimMode(tab.id)}
-                className={`flex min-h-[32px] shrink-0 flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-2.5 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium whitespace-nowrap transition ${
+                className={`flex min-h-[32px] shrink-0 justify-center cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium whitespace-nowrap transition ${
                   active
                     ? "bg-white font-semibold text-[#08090c] shadow-sm"
                     : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
@@ -2846,8 +2850,12 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
       {/* Minimalist, Clean HUD Overlays inside 3D Stage */}
       {!props.hideHudOverlays && !props.compact && (
         <div className="pointer-events-none absolute right-3 bottom-3 left-3 z-10 flex items-end justify-end sm:right-4 sm:bottom-4 sm:left-auto">
-          {/* Interactive 3D Camera Focus Bar (All 5 Angles including Rear 360°) */}
-          <div className="country-pill-rail pointer-events-auto flex w-full sm:w-auto max-w-full flex-nowrap items-center justify-between sm:justify-end gap-1 overflow-x-auto rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-xl">
+          {/* Interactive 3D Camera Focus Bar (All 5 Angles including Rear 360° - Drag-Slidable Horizontally) */}
+          <div
+            data-lenis-prevent
+            onPointerDown={(e) => e.stopPropagation()}
+            className="country-pill-rail pointer-events-auto flex w-full sm:w-auto max-w-full flex-nowrap items-center justify-start sm:justify-end gap-1 overflow-x-auto rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-xl"
+          >
             {(
               [
                 { id: "overview", labelEn: "Overview", labelId: "Utama" },
