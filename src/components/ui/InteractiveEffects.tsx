@@ -312,7 +312,7 @@ export function DovvInteractiveWordmark({
 
 /**
  * 3. VERDARA MINIMALIST DRAGGABLE PILL BADGE
- * Clean, modern architectural badge with zero dots, pure styling, and zero idle CPU overhead.
+ * Clean, modern architectural badge with beautiful radiant colors, zero dots, and zero idle CPU overhead.
  */
 export interface DovvHoloStickerProps {
   label: string;
@@ -326,6 +326,7 @@ export interface DovvHoloStickerProps {
 export function DovvHoloSticker({
   label,
   sublabel,
+  variant = "lime",
   rotationDeg = 0,
   className = "",
 }: DovvHoloStickerProps) {
@@ -333,6 +334,24 @@ export function DovvHoloSticker({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0, origX: 0, origY: 0 });
+
+  const variantStyles = {
+    orange: {
+      card: "border-orange-500/40 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent shadow-[0_8px_24px_-4px_rgba(249,115,22,0.25)] dark:border-orange-400/50 dark:from-orange-500/25 dark:via-amber-500/15 dark:shadow-[0_10px_30px_-6px_rgba(249,115,22,0.35)] hover:border-orange-400/80",
+      label: "text-neutral-900 dark:text-neutral-100",
+      sublabel: "text-orange-700 dark:text-orange-300 font-semibold",
+    },
+    lime: {
+      card: "border-[#c6f432]/60 bg-gradient-to-br from-[#c6f432]/20 via-[#10b981]/12 to-transparent shadow-[0_8px_24px_-4px_rgba(198,244,50,0.28)] dark:border-[#c6f432]/60 dark:from-[#c6f432]/25 dark:via-emerald-500/15 dark:shadow-[0_10px_30px_-6px_rgba(198,244,50,0.4)] hover:border-[#c6f432]",
+      label: "text-neutral-900 dark:text-neutral-100",
+      sublabel: "text-emerald-700 dark:text-[#c6f432] font-semibold",
+    },
+    gold: {
+      card: "border-sky-400/50 bg-gradient-to-br from-sky-400/18 via-indigo-500/12 to-transparent shadow-[0_8px_24px_-4px_rgba(14,165,233,0.25)] dark:border-sky-400/50 dark:from-sky-500/25 dark:via-cyan-500/15 dark:shadow-[0_10px_30px_-6px_rgba(14,165,233,0.35)] hover:border-sky-400/80",
+      label: "text-neutral-900 dark:text-neutral-100",
+      sublabel: "text-sky-700 dark:text-cyan-300 font-semibold",
+    },
+  }[variant];
 
   return (
     <div
@@ -376,17 +395,17 @@ export function DovvHoloSticker({
         willChange: "transform",
       }}
       className={`group select-none cursor-grab active:cursor-grabbing transition-[box-shadow,transform] duration-150 ${
-        isDragging ? "scale-[1.03] shadow-xl z-50 !cursor-grabbing" : ""
+        isDragging ? "scale-[1.04] shadow-2xl z-50 !cursor-grabbing" : ""
       } ${className}`}
     >
       <div
-        className="flex flex-col rounded-2xl border border-black/10 bg-white/95 px-4 py-2 text-left shadow-sm backdrop-blur-md transition-all duration-200 hover:border-black/25 hover:shadow-md dark:border-white/12 dark:bg-[#0c0d12]/92 dark:text-white dark:shadow-md dark:hover:border-white/25"
+        className={`flex flex-col rounded-2xl border px-4 py-2.5 text-left backdrop-blur-xl transition-all duration-200 bg-white/92 dark:bg-[#0c0d12]/92 ${variantStyles.card}`}
       >
-        <span className="font-sans text-xs sm:text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+        <span className={`font-sans text-xs sm:text-[13px] font-bold tracking-tight whitespace-nowrap ${variantStyles.label}`}>
           {label}
         </span>
         {sublabel && (
-          <span className="mt-0.5 font-mono text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+          <span className={`mt-0.5 font-mono text-[10px] sm:text-[11px] whitespace-nowrap ${variantStyles.sublabel}`}>
             {sublabel}
           </span>
         )}

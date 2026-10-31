@@ -1010,26 +1010,29 @@ export default function LandingPage() {
               : "Verdara: Turn your home and neighborhood into a 3D living eco-town. Measure rooftop solar, rainwater harvest, and recycling value in any city on Earth with Meta SAM 3.1 and Muse Spark."}
           </h1>
 
-          {/* Draggable Minimal Badge 1: Top-Left */}
+          {/* Draggable Badge 1: Top-Left (Sunset Amber) */}
           <DovvHoloSticker
             label="Meta SAM 3.1"
             sublabel={isId ? "Segmentasi Spasial AI" : "Spatial AI Segmentation"}
+            variant="orange"
             rotationDeg={-2}
             className="absolute -top-7 left-2 z-20 hidden md:block lg:left-6"
           />
 
-          {/* Draggable Minimal Badge 2: Top-Right */}
+          {/* Draggable Badge 2: Top-Right (Verdara Electric Lime) */}
           <DovvHoloSticker
             label={`${housingCalc.solar.kwp} kWp Solar`}
             sublabel={`${geo.city} (${geo.countryCode})`}
+            variant="lime"
             rotationDeg={2}
             className="absolute -top-6 right-2 z-20 hidden md:block lg:right-8"
           />
 
-          {/* Draggable Minimal Badge 3: Bottom-Right */}
+          {/* Draggable Badge 3: Bottom-Right (Electric Sky) */}
           <DovvHoloSticker
             label={isId ? "195+ Negara" : "195+ Countries"}
             sublabel={isId ? "Fisika Kalibrasi ERA5" : "ERA5 Physics Calibrated"}
+            variant="gold"
             rotationDeg={-1}
             className="absolute -bottom-6 right-6 z-20 hidden lg:block"
           />
@@ -1046,13 +1049,13 @@ export default function LandingPage() {
 
           {/* Mobile-Visible Badge Highlights Strip */}
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2 md:hidden">
-            <span className="rounded-full border border-black/10 bg-white/80 dark:border-white/10 dark:bg-white/5 px-3 py-1 font-mono text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+            <span className="rounded-full border border-orange-400/40 bg-orange-500/10 dark:bg-orange-500/20 px-3 py-1 font-mono text-[11px] font-semibold text-orange-700 dark:text-orange-300">
               Meta SAM 3.1
             </span>
-            <span className="rounded-full border border-black/10 bg-white/80 dark:border-white/10 dark:bg-white/5 px-3 py-1 font-mono text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+            <span className="rounded-full border border-[#c6f432]/50 bg-[#c6f432]/15 dark:bg-[#c6f432]/20 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-700 dark:text-[#c6f432]">
               {housingCalc.solar.kwp} kWp Solar
             </span>
-            <span className="rounded-full border border-black/10 bg-white/80 dark:border-white/10 dark:bg-white/5 px-3 py-1 font-mono text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+            <span className="rounded-full border border-sky-400/40 bg-sky-500/10 dark:bg-sky-500/20 px-3 py-1 font-mono text-[11px] font-semibold text-sky-700 dark:text-sky-300">
               {isId ? "195+ Negara" : "195+ Countries"}
             </span>
           </div>
@@ -2990,111 +2993,257 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Clean, Minimalist Footer Navigation & Info */}
+        {/* 4-Column Architectural Grid (Clean, Streamlined & Not Crowded) */}
         <div
-          className={`mx-auto max-w-[1440px] border-t px-6 sm:px-8 py-10 transition-colors ${
-            isLight ? "border-black/10" : "border-white/10"
+          className={`mx-auto grid max-w-[1440px] grid-cols-1 border-t md:grid-cols-2 xl:grid-cols-4 ${
+            isLight ? "border-black/15" : "border-white/15"
           }`}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Left: Brand Identity & Concise Description */}
-            <div className="flex items-center gap-3 text-center md:text-left">
-              <VerdaraLogo size={36} />
-              <div>
-                <p className="font-semibold text-sm tracking-tight text-foreground">
-                  Verdara Town
-                </p>
-                <p className="text-xs text-muted-foreground font-mono">
-                  Autonomous Ecological Spatial Twin Platform
-                </p>
+          {/* Cell 1: Civic Brand & Studio Launch */}
+          <div
+            className={`flex flex-col justify-between gap-4 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
+              isLight ? "border-black/15" : "border-white/15"
+            }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <VerdaraLogo size={38} />
+                <div>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.12em] opacity-60">
+                    01 / Civic Studio
+                  </span>
+                  <p className="text-base font-semibold tracking-tight">
+                    Verdara Spatial Eco-Town
+                  </p>
+                </div>
               </div>
+              <p className="text-xs sm:text-sm leading-relaxed opacity-75">
+                {isId
+                  ? "Platform kembar spasial 3D mandiri dengan kalkulasi ilmiah fisika, mikrokisi fotovoltaik, dan dewan AI multi-spesialis."
+                  : "Autonomous living 3D eco-district simulation with real-world physics, solar microgrid, and multi-specialist AI council."}
+              </p>
             </div>
 
-            {/* Center: Clean Minimalist Navigation Links */}
-            <nav
-              aria-label="Footer Navigation"
-              className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground"
+            <Link
+              href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
+              className={`zeggo-btn mt-2 inline-flex min-h-[42px] cursor-pointer items-center gap-2 self-start rounded-full px-4 text-xs font-semibold transition ${
+                isLight
+                  ? "bg-[#080808] text-white hover:bg-[#1e9e5a]"
+                  : "bg-[#c6f432] text-[#080808] hover:bg-[#d5f759]"
+              }`}
             >
-              <Link
-                href="/dashboard"
-                className="transition-colors hover:text-foreground"
-              >
-                3D Living Town
-              </Link>
-              <Link
-                href="/lens"
-                className="transition-colors hover:text-foreground"
-              >
-                SAM 3.1 Lens
-              </Link>
-              <Link
-                href="/radar"
-                className="transition-colors hover:text-foreground"
-              >
-                Roof Radar
-              </Link>
-              <Link
-                href="/council"
-                className="transition-colors hover:text-foreground"
-              >
-                AI Council
-              </Link>
-              <Link
-                href="/docs"
-                className="transition-colors hover:text-foreground"
-              >
-                Docs
-              </Link>
-              <Link
-                href="/faq"
-                className="transition-colors hover:text-foreground"
-              >
-                FAQ
-              </Link>
-            </nav>
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isLight ? "bg-[#c6f432]" : "bg-[#080808]"
+                }`}
+              />
+              <ZeggoRollText
+                text={
+                  isAuthenticated
+                    ? "Open 3D Studio Town ->"
+                    : "Enter Living Town ->"
+                }
+              />
+            </Link>
+          </div>
 
-            {/* Right: Direct GitHub Link with Live Star Count */}
-            <div className="flex items-center">
+          {/* Cell 2: Spatial Workspaces & Navigation */}
+          <div
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
+              isLight ? "border-black/15" : "border-white/15"
+            }`}
+          >
+            <span className="font-mono text-[11px] uppercase tracking-[0.12em] opacity-60">
+              02 / Workspaces
+            </span>
+            <ul className="flex flex-col gap-2">
+              {[
+                { href: "/dashboard", label: "01 Living Town 3D", tag: "3D" },
+                { href: "/lens", label: "02 SAM 3.1 Lens", tag: "Vision" },
+                { href: "/radar", label: "03 Roof Radar", tag: "Maps" },
+                { href: "/council", label: "04 AI Council", tag: "Agents" },
+                { href: "/docs", label: "05 Tech Docs", tag: "Specs" },
+                { href: "/faq", label: "06 FAQ & Guide", tag: "Guide" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`group inline-flex items-center justify-between w-full text-sm font-medium transition-colors ${
+                      isLight
+                        ? "text-[#18181b] hover:text-[#15803d]"
+                        : "text-[#f4f3ee] hover:text-[#c6f432]"
+                    }`}
+                  >
+                    <span className="transition-transform group-hover:translate-x-1">
+                      {link.label}
+                    </span>
+                    <span
+                      className={`font-mono text-[10px] uppercase rounded px-1.5 py-0.5 border ${
+                        isLight
+                          ? "border-black/10 bg-black/5 text-neutral-600"
+                          : "border-white/10 bg-white/5 text-neutral-400"
+                      }`}
+                    >
+                      {link.tag}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Cell 3: Scientific Framework & AI */}
+          <div
+            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 md:border-b-0 xl:border-r ${
+              isLight ? "border-black/15" : "border-white/15"
+            }`}
+          >
+            <span className="font-mono text-[11px] uppercase tracking-[0.12em] opacity-60">
+              03 / Scientific Architecture
+            </span>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              {[
+                { name: "Meta SAM 3.1", desc: "Canopy & Roof Segmentation" },
+                { name: "Meta Muse Spark", desc: "3-Specialist Civic Council" },
+                { name: "NREL PVWatts v8", desc: "Solar Irradiance Modeling" },
+                { name: "DIN 1989-1", desc: "Cistern & Runoff Hydrology" },
+                { name: "Open-Meteo ERA5", desc: "Global Climatology Normals" },
+              ].map((spec) => (
+                <li key={spec.name} className="flex flex-col">
+                  <span className="font-medium text-foreground text-xs sm:text-[13px]">
+                    {spec.name}
+                  </span>
+                  <span className="text-[11px] opacity-65 font-mono">
+                    {spec.desc}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Cell 4: Active Jurisdiction & Live GitHub Repository Card */}
+          <div className="flex flex-col justify-between gap-4 p-6 sm:p-8">
+            <div className="space-y-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] opacity-60">
+                04 / Jurisdiction &amp; Open Source
+              </span>
+              <div>
+                <p
+                  className={`text-xl sm:text-2xl font-bold tracking-tight ${
+                    isLight ? "text-[#14733f]" : "text-[#c6f432]"
+                  }`}
+                >
+                  {geo.city} ({geo.countryCode})
+                </p>
+                <div className="mt-0.5 flex items-center gap-2 text-xs opacity-75 font-mono">
+                  <span className="h-2 w-2 rounded-full bg-[#16c847] animate-pulse" />
+                  <span>
+                    {geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}° · {geo.koppen.code}
+                  </span>
+                </div>
+              </div>
+
+              {/* GitHub Repository Live Card with Live Star Count */}
               <a
                 href="https://github.com/xFalzz/verdara"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Verdara GitHub Repository"
-                className={`group inline-flex items-center gap-2 rounded-full border px-4 py-2 font-mono text-xs transition-all duration-200 ${
+                className={`group mt-2 flex flex-col gap-2 rounded-2xl border p-3.5 transition-all duration-300 ${
                   isLight
-                    ? "border-black/10 bg-white hover:border-black/25 hover:shadow-sm text-neutral-900"
-                    : "border-white/10 bg-white/[0.04] hover:border-white/25 hover:bg-white/[0.08] text-neutral-200"
+                    ? "border-black/10 bg-white/80 hover:border-black/25 hover:shadow-md"
+                    : "border-white/10 bg-[#121418] hover:border-[#c6f432]/40 hover:shadow-[0_0_20px_rgba(198,244,50,0.12)]"
                 }`}
               >
-                <svg
-                  className="h-3.5 w-3.5 fill-current transition-transform group-hover:scale-110"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  />
-                </svg>
-                <span>github.com/xFalzz/verdara</span>
-                <span className="h-3 w-[1px] bg-current opacity-20" />
-                <span className="inline-flex items-center gap-1 text-amber-500 font-bold">
-                  <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span suppressHydrationWarning>
-                    {githubStars !== null ? githubStars : "0"}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="h-4 w-4 fill-current opacity-90 transition-transform group-hover:scale-110"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                      />
+                    </svg>
+                    <span className="font-mono text-xs font-semibold">
+                      xFalzz / verdara
+                    </span>
+                  </div>
+
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold ${
+                      isLight
+                        ? "bg-[#0a0a0c] text-white"
+                        : "bg-[#c6f432] text-[#0a0a0c]"
+                    }`}
+                  >
+                    <svg
+                      className="h-3 w-3 fill-current text-amber-400"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span suppressHydrationWarning>
+                      {githubStars !== null ? githubStars : "0"}
+                    </span>
                   </span>
-                </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 font-mono text-[11px]">
+                  <span className="text-muted-foreground text-[10px]">
+                    Open-Source Repo
+                  </span>
+                  <span
+                    className={`font-semibold transition-transform group-hover:translate-x-1 ${
+                      isLight ? "text-[#15803d]" : "text-[#c6f432]"
+                    }`}
+                  >
+                    Star on GitHub -&gt;
+                  </span>
+                </div>
               </a>
             </div>
+
+            <p className="font-mono text-[11px] opacity-60">
+              Verdara Spatial Studio · 195+ Countries
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Utility Bar: Copyright & Attribution */}
+        <div
+          className={`mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-4 border-t px-6 sm:px-8 py-5 text-xs transition-colors ${
+            isLight
+              ? "border-black/10 text-[#52525b]"
+              : "border-white/10 text-[#a1a1aa]"
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-2 text-center sm:text-left">
+            <span className="font-semibold text-foreground">Verdara Town</span>
+            <span>·</span>
+            <span>
+              {isId
+                ? "Platform Kembar Spasial Ekologis Mandiri"
+                : "Autonomous Ecological Spatial Twin Platform"}
+            </span>
+            <span>·</span>
+            <span className="font-mono">© {new Date().getFullYear()}</span>
           </div>
 
-          {/* Minimalist Bottom Copyright Line */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-muted-foreground/60">
-            <span>© {new Date().getFullYear()} Verdara Town. All rights reserved.</span>
-            <span>195+ Countries · Real-Time 3D Eco-Twin</span>
+          <div className="flex items-center gap-4 text-xs font-mono opacity-80">
+            <Link href="/docs" className="hover:text-foreground transition-colors">
+              Docs
+            </Link>
+            <span>·</span>
+            <Link href="/faq" className="hover:text-foreground transition-colors">
+              FAQ
+            </Link>
+            <span>·</span>
+            <Link href="/dashboard" className="hover:text-foreground transition-colors">
+              Studio
+            </Link>
           </div>
         </div>
       </footer>
