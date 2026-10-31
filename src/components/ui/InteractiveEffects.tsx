@@ -1330,7 +1330,7 @@ export function WorldCityExplorer({
 export function VerdaraBottomDock() {
   const pathname = usePathname();
   const router = useRouter();
-  const { locale, isAuthenticated } = useVerdaraStore();
+  const { locale, isAuthenticated, isJudgeDemo, displayName, level } = useVerdaraStore();
   const [minimized, setMinimized] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const isId = locale === "id";
@@ -1349,77 +1349,87 @@ export function VerdaraBottomDock() {
     }
   }, [pathname, minimized]);
 
-  const dockItems: {
-    code: string;
-    href: string;
-    labelEn: string;
-    labelId: string;
-    requiresAuth: boolean;
-  }[] = [
+  // Authenticated workspace suite for verified residents
+  const authenticatedItems = [
     {
       code: "01",
       href: "/",
-      labelEn: "Index",
-      labelId: "Indeks",
-      requiresAuth: false,
+      labelEn: "Home",
+      labelId: "Home",
     },
     {
       code: "02",
       href: "/dashboard",
       labelEn: "Living Town",
       labelId: "Kota 3D",
-      requiresAuth: true,
     },
     {
       code: "03",
       href: "/lens",
       labelEn: "SAM 3.1 Lens",
       labelId: "Lensa SAM",
-      requiresAuth: true,
     },
     {
       code: "04",
       href: "/radar",
       labelEn: "3D Radar",
       labelId: "Radar 3D",
-      requiresAuth: true,
     },
     {
       code: "05",
       href: "/council",
       labelEn: "AI Council",
       labelId: "Dewan AI",
-      requiresAuth: true,
     },
     {
       code: "06",
       href: "/academy",
       labelEn: "Field Proofs",
       labelId: "Bukti Aksi",
-      requiresAuth: true,
     },
     {
       code: "07",
       href: "/docs",
       labelEn: "Docs",
       labelId: "Dokumen",
-      requiresAuth: false,
     },
     {
       code: "08",
       href: "/faq",
       labelEn: "FAQ",
       labelId: "Tanya Jawab",
-      requiresAuth: false,
     },
     {
       code: "09",
       href: "/settings",
       labelEn: "Shield",
       labelId: "Perisai",
-      requiresAuth: true,
     },
   ];
+
+  // Public items for unauthenticated guests (only accessible pages, no locked noise)
+  const unauthenticatedItems = [
+    {
+      code: "01",
+      href: "/",
+      labelEn: "Home",
+      labelId: "Home",
+    },
+    {
+      code: "02",
+      href: "/docs",
+      labelEn: "Docs",
+      labelId: "Dokumen",
+    },
+    {
+      code: "03",
+      href: "/faq",
+      labelEn: "FAQ",
+      labelId: "Tanya Jawab",
+    },
+  ];
+
+  const dockItems = isAuthenticated ? authenticatedItems : unauthenticatedItems;
 
   if (minimized) {
     return (
@@ -1427,10 +1437,24 @@ export function VerdaraBottomDock() {
         <button
           type="button"
           onClick={() => setMinimized(false)}
-          className="flex min-h-[40px] cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-[#08090c]/92 px-4 py-1.5 font-mono text-xs font-semibold text-white shadow-xl backdrop-blur-xl transition hover:border-[#c6f432]/60"
+          className={`flex min-h-[40px] cursor-pointer items-center gap-2 rounded-full px-4 py-1.5 font-mono text-xs font-semibold shadow-xl backdrop-blur-xl transition ${
+            isAuthenticated
+              ? "border border-[#c6f432]/40 bg-[#08090c]/94 text-[#c6f432] hover:border-[#c6f432]"
+              : "border border-white/15 bg-[#08090c]/92 text-white hover:border-[#c6f432]/60"
+          }`}
         >
-          <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-          <span>{isId ? "Buka Menu Navigasi ^" : "Expand Command Dock ^"}</span>
+          <span
+            className={`h-2 w-2 rounded-full ${
+              isAuthenticated ? "bg-[#10b981] animate-pulse" : "bg-[#c6f432]"
+            }`}
+          />
+          <span>
+            {isAuthenticated
+              ? (isId
+                  ? `Buka Command Deck (Lv.${level}) ^`
+                  : `Expand Command Deck (Lv.${level}) ^`)
+              : (isId ? "Buka Menu Navigasi ^" : "Expand Menu ^")}
+          </span>
         </button>
       </div>
     );
@@ -1440,28 +1464,55 @@ export function VerdaraBottomDock() {
     <nav
       ref={navRef}
       data-lenis-prevent
-      aria-label={isId ? "Navigasi Utama (Geser Kiri/Kanan)" : "Primary Navigation (Drag to Slide)"}
-      className="dovv-bottom-dock country-pill-rail max-w-[96vw] overflow-x-auto"
+      aria-label={
+        isId
+          ? "Navigasi Utama (Geser Kiri/Kanan)"
+          : "Primary Navigation (Drag to Slide)"
+      }
+      className={`dovv-bottom-dock country-pill-rail max-w-[96vw] overflow-x-auto transition-all duration-300 ${
+        isAuthenticated
+          ? "border border-[#c6f432]/30 bg-[#07080b]/94 shadow-[inset_0_0_0_1px_rgba(198,244,50,0.18),0_14px_42px_-6px_rgba(0,0,0,0.85),0_0_24px_rgba(198,244,50,0.12)]"
+          : "border border-white/12 bg-[#08090c]/92 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1),0_12px_36px_-8px_rgba(0,0,0,0.7)]"
+      }`}
     >
+      {/* Authenticated Resident Status Pill (Dashboard HUD Vibe) */}
+      {isAuthenticated && (
+        <>
+          <Link
+            href="/dashboard"
+            draggable={false}
+            title={
+              isId
+                ? `Status Penduduk Aktif: Lv.${level} · Buka Kota 3D`
+                : `Active Resident Status: Lv.${level} · Open 3D Town`
+            }
+            className="group flex min-h-[34px] shrink-0 items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3 py-1 font-mono text-xs transition hover:border-[#c6f432]/50 hover:bg-[#c6f432]/10"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#10b981] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#10b981]" />
+            </span>
+            <span className="font-bold text-[#c6f432]">Lv.{level}</span>
+            <span className="hidden sm:inline max-w-[90px] truncate text-[#d4d4d8] group-hover:text-white">
+              {isJudgeDemo
+                ? "Judge Demo"
+                : displayName?.split(" ")[0] || "Resident"}
+            </span>
+          </Link>
+          <span className="mx-0.5 h-4 w-[1px] shrink-0 bg-white/15" />
+        </>
+      )}
+
+      {/* Dock Navigation Items */}
       {dockItems.map((item) => {
         const active = pathname === item.href;
-        const locked = item.requiresAuth && !isAuthenticated;
-        const targetHref = locked
-          ? `/login?next=${encodeURIComponent(item.href)}`
-          : item.href;
 
         return (
           <Link
             key={item.href}
-            href={targetHref}
+            href={item.href}
             draggable={false}
             data-dock-active={active ? "true" : undefined}
-            onClick={(e) => {
-              if (locked) {
-                e.preventDefault();
-                router.push(targetHref);
-              }
-            }}
             className={`zeggo-btn flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
               active
                 ? "bg-[#c6f432] font-semibold text-[#080808] shadow-sm"
@@ -1476,20 +1527,26 @@ export function VerdaraBottomDock() {
               {item.code}
             </span>
             <ZeggoRollText text={isId ? item.labelId : item.labelEn} />
-            {locked && (
-              <span
-                aria-hidden="true"
-                title={
-                  isId ? "Login diperlukan" : "Sign-in required"
-                }
-                className="ml-0.5 font-mono text-[9px] opacity-60"
-              >
-                🔒
-              </span>
-            )}
           </Link>
         );
       })}
+
+      {/* Unauthenticated Sign In CTA Button */}
+      {!isAuthenticated && (
+        <>
+          <span className="mx-0.5 h-4 w-[1px] shrink-0 bg-white/15" />
+          <Link
+            href="/login"
+            draggable={false}
+            className="zeggo-btn flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full bg-[#c6f432] px-3.5 py-1 text-xs font-bold text-[#080808] shadow-sm transition hover:bg-[#d8ff43] hover:scale-[1.02]"
+          >
+            <span className="font-mono text-[10px] font-extrabold opacity-75">
+              *
+            </span>
+            <span>{isId ? "Masuk →" : "Sign In →"}</span>
+          </Link>
+        </>
+      )}
 
       <span className="mx-0.5 h-4 w-[1px] shrink-0 bg-white/15" />
 
