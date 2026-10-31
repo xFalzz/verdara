@@ -367,12 +367,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <Link
-              href="/academy"
-              className="inline-flex min-h-[36px] items-center rounded-full border border-current/15 px-3 text-xs font-medium transition hover:bg-current/5"
-            >
-              {isId ? "Dokumentasi" : "Docs"}
-            </Link>
+            <Link href="/docs" className="inline-flex min-h-[36px] items-center rounded-full border border-current/15 px-3 text-xs font-medium transition hover:bg-current/5">{isId ? "Dokumentasi" : "Docs"}</Link>
             <Link
               href="/faq"
               className="inline-flex min-h-[36px] items-center rounded-full border border-current/15 px-3 text-xs font-medium transition hover:bg-current/5"

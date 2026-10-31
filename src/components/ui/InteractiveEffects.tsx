@@ -1308,9 +1308,9 @@ export function VerdaraBottomDock() {
     },
     {
       code: "02",
-      href: "/academy",
-      labelEn: "Academy",
-      labelId: "Akademi",
+      href: "/docs",
+      labelEn: "Docs",
+      labelId: "Dokumentasi",
     },
     {
       code: "03",

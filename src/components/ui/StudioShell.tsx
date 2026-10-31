@@ -615,7 +615,7 @@ export default function StudioShell({
                   </p>
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     <Link
-                      href="/academy"
+                      href="/docs"
                       onClick={() => setNotchOpen(false)}
                       className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-white hover:bg-white/20"
                     >

@@ -889,6 +889,12 @@ export default function LandingPage() {
                       : "Sign In to Studio →"}
                   </Link>
                   <Link
+                    href="/docs"
+                    className="flex min-h-[42px] items-center justify-center rounded-full border border-current/15 px-3.5 text-xs font-medium transition hover:bg-current/10"
+                  >
+                    {isId ? "Dokumentasi" : "Docs"}
+                  </Link>
+                  <Link
                     href="/academy"
                     className="flex min-h-[42px] items-center justify-center rounded-full border border-current/15 px-3.5 text-xs font-medium transition hover:bg-current/10"
                   >
@@ -2571,6 +2577,16 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
+                    href="/docs"
+                    className={`inline-flex min-h-[40px] items-center rounded-full border px-4 font-mono text-xs transition ${
+                      isSectionLight
+                        ? "border-black/15 bg-black/5 text-[#0a0a0c] hover:bg-black/10"
+                        : "border-white/20 bg-white/5 text-white hover:bg-white/15"
+                    }`}
+                  >
+                    {isId ? "Dokumentasi Lengkap (/docs) →" : "Full Architecture Specs (/docs) →"}
+                  </Link>
+                  <Link
                     href="/academy"
                     className={`inline-flex min-h-[40px] items-center rounded-full border px-4 font-mono text-xs transition ${
                       isSectionLight
@@ -2578,7 +2594,7 @@ export default function LandingPage() {
                         : "border-white/20 bg-white/5 text-white hover:bg-white/15"
                     }`}
                   >
-                    {isId ? "Buka Akademi Sains (/academy) →" : "Science Academy (/academy) →"}
+                    {isId ? "Akademi Sains (/academy) →" : "Science Academy (/academy) →"}
                   </Link>
                   <Link
                     href="/faq"
@@ -3233,6 +3249,10 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-4 text-xs font-mono opacity-80">
+            <Link href="/docs" className="hover:text-foreground transition-colors">{isId ? "Dokumentasi" : "Docs"}</Link>
+            <span>·</span>
+            <Link href="/docs" className="hover:text-foreground transition-colors">{isId ? "Dokumentasi" : "Docs"}</Link>
+            <span>·</span>
             <Link href="/academy" className="hover:text-foreground transition-colors">{isId ? "Akademi" : "Academy"}</Link>
             <span>·</span>
             <Link href="/faq" className="hover:text-foreground transition-colors">
