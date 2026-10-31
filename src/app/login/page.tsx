@@ -28,6 +28,8 @@ export default function LoginPage() {
     resetToStarterPlot,
     loginWithEmail,
     loginWithOAuth,
+    email: storedEmail,
+    logout,
   } = useVerdaraStore();
 
   const [email, setEmail] = useState("");
@@ -47,14 +49,7 @@ export default function LoginPage() {
   const [nextRoute, setNextRoute] = useState("/dashboard");
   const [isNightStage, setIsNightStage] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (typeof window !== "undefined") {
-        window.history.replaceState({}, "", window.location.pathname);
-      }
-      router.replace(nextRoute || "/dashboard");
-    }
-  }, [isAuthenticated, nextRoute, router]);
+
 
 
   const [stageCardCollapsed, setStageCardCollapsed] = useState(false);
@@ -75,11 +70,7 @@ export default function LoginPage() {
         setNextRoute(nextParam);
       }
 
-      if (isAuthenticated) {
-        window.history.replaceState({}, "", window.location.pathname);
-        router.replace(nextParam || "/dashboard");
-        return;
-      }
+
 
       const err = params.get("error");
       const errDesc = params.get("error_description");
@@ -119,37 +110,76 @@ export default function LoginPage() {
     setOauthError(null);
     setOauthLoading(provider);
 
-    const isGoogle = provider === "google";
-    const userEmail = isGoogle ? "nawfalirfan052@gmail.com" : "resident.facebook@verdara.app";
-    const userName = isGoogle ? "Nawfal Jr" : "Nawfal";
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    loginWithOAuth(provider, {
-      email: userEmail,
-      displayName: userName,
-      avatarUrl: "",
-    });
+    if (
+      supabaseUrl &&
+      supabaseAnonKey &&
+      !supabaseUrl.includes("placeholder") &&
+      !supabaseUrl.includes("your-project")
+    ) {
+      try {
+        const supabase = createClient();
+        const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          nextRoute || "/dashboard"
+        )}`;
 
-    if (typeof window !== "undefined") {
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo,
+            queryParams:
+              provider === "google"
+                ? { access_type: "offline", prompt: "select_account" }
+                : undefined,
+            scopes: provider === "facebook" ? "public_profile,email" : undefined,
+          },
+        });
 
-    try {
-      await fetch("/api/db", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: userEmail,
-          displayName: userName,
-          role: "resident",
-          city: geo.city,
-          countryCode: geo.countryCode,
-        }),
+        if (error) {
+          setFormError(error.message);
+          setOauthLoading(null);
+          return;
+        }
+
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
+      } catch (err: any) {
+        setFormError(
+          err?.message ||
+            (isId
+              ? "Gagal memulai autentikasi sosial."
+              : "Failed to initiate social login.")
+        );
+        setOauthLoading(null);
+        return;
+      }
+    } else {
+      // Offline fallback only when Supabase is unconfigured
+      const demoEmail =
+        provider === "google"
+          ? "resident.google@verdara.app"
+          : "resident.facebook@verdara.app";
+      const demoName =
+        provider === "google"
+          ? "Google Verified Resident"
+          : "Facebook Verified Resident";
+
+      loginWithOAuth(provider, {
+        email: demoEmail,
+        displayName: demoName,
+        avatarUrl: "",
       });
-    } catch {
-      // Local store hydrated
-    }
 
-    router.replace(nextRoute || "/dashboard");
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+
+      router.replace(nextRoute || "/dashboard");
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -533,6 +563,44 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                {/* ACTIVE SESSION CARD WITH SWITCH ACCOUNT OPTION */}
+                {isAuthenticated && !oauthError && (
+                  <div className="rounded-2xl border border-[#c6f432]/30 bg-[#c6f432]/10 p-3.5 font-mono text-xs text-[#c6f432] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold">
+                        {isId ? "Sesi Aktif Terdeteksi" : "Active Session"}
+                      </span>
+                      <span className="text-[10px] text-white/70">
+                        {storedEmail || "resident@verdara.app"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => router.push(nextRoute || "/dashboard")}
+                        className="flex-1 cursor-pointer rounded-lg bg-[#c6f432] px-3 py-1.5 font-bold text-black text-center transition hover:bg-[#b0dc28]"
+                      >
+                        {isId ? "Lanjut ke Studio →" : "Continue to Studio →"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const supabase = createClient();
+                            await supabase.auth.signOut();
+                          } catch {
+                            // Ignore
+                          }
+                          logout();
+                        }}
+                        className="cursor-pointer rounded-lg border border-white/20 px-3 py-1.5 text-white/80 hover:bg-white/10 transition"
+                      >
+                        {isId ? "Ganti Akun" : "Switch Account"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* OAUTH ERROR ALERT WITH RESOLUTION GUIDANCE */}
                 {oauthError && (
                   <div
@@ -561,22 +629,27 @@ export default function LoginPage() {
                       <p>3. {isId ? "Di Meta for Developers, klik 'Siapkan' pada Masuk Facebook" : "In Meta for Developers, click 'Set up' on Facebook Login"}</p>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="flex flex-wrap gap-2 pt-2">
                       <button
                         type="button"
                         onClick={() => {
-                          loginWithOAuth("google", {
-                            email: "nawfalirfan052@gmail.com",
-                            displayName: "Nawfal Jr",
-                            avatarUrl: "",
-                          });
-                          router.push(nextRoute);
+                          setOauthError(null);
+                          if (typeof window !== "undefined") {
+                            window.history.replaceState({}, "", window.location.pathname);
+                          }
                         }}
-                        className="flex min-h-[38px] w-full cursor-pointer items-center justify-center rounded-xl bg-[#c6f432] px-4 py-2 font-mono text-xs font-bold text-[#080808] transition hover:bg-[#b0dc28]"
+                        className="flex min-h-[38px] flex-1 cursor-pointer items-center justify-center rounded-xl bg-white/10 px-4 py-2 font-mono text-xs font-semibold text-white transition hover:bg-white/20"
+                      >
+                        {isId ? "Tutup Peringatan" : "Dismiss Notice"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleStarterPlot}
+                        className="flex min-h-[38px] flex-1 cursor-pointer items-center justify-center rounded-xl bg-[#c6f432] px-4 py-2 font-mono text-xs font-bold text-[#080808] transition hover:bg-[#b0dc28]"
                       >
                         {isId
-                          ? "Masuk Langsung Sebagai Akun Nawfal (Bypass Provider) →"
-                          : "Continue as Verified Resident (Nawfal) →"}
+                          ? "Masuk Plot Demo (Bypass) →"
+                          : "Explore Demo Plot →"}
                       </button>
                     </div>
                   </div>

@@ -380,6 +380,7 @@ export const useVerdaraStore = create<VerdaraState>()(
         if (typeof window !== "undefined") {
           try {
             window.sessionStorage.removeItem("verdara_auth_session_v3");
+            window.localStorage.removeItem("verdara_spatial_store_v3");
           } catch {
             // Ignore storage errors
           }

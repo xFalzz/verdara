@@ -48,6 +48,17 @@ export default function StudioShell({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchingGeo, setSearchingGeo] = useState(false);
 
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore network errors on logout
+    }
+    logout();
+    router.push("/login");
+  };
+
   const isId = locale === "id";
   const isLight = theme === "light";
 
@@ -454,8 +465,8 @@ export default function StudioShell({
             <button
               type="button"
               onClick={() => {
-                logout();
-                router.push("/login");
+                handleLogout();
+
               }}
               title={displayName}
               className={`min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium whitespace-nowrap transition ${
@@ -620,8 +631,8 @@ export default function StudioShell({
                     <button
                       type="button"
                       onClick={() => {
-                        logout();
-                        router.push("/login");
+                        handleLogout();
+        
                       }}
                       className="cursor-pointer rounded-full bg-rose-500/20 px-3 py-1 font-mono text-[11px] text-rose-300 hover:bg-rose-500/30"
                     >
