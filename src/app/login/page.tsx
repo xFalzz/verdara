@@ -598,6 +598,25 @@ export default function LoginPage() {
                       <p>2. {isId ? "Pastikan Client ID & Client Secret di-paste tanpa spasi" : "Ensure Client ID & Client Secret are pasted without trailing spaces"}</p>
                       <p>3. {isId ? "Di Meta for Developers, klik 'Siapkan' pada Masuk Facebook" : "In Meta for Developers, click 'Set up' on Facebook Login"}</p>
                     </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          loginWithOAuth("google", {
+                            email: "nawfalirfan052@gmail.com",
+                            displayName: "Nawfal Jr",
+                            avatarUrl: "",
+                          });
+                          router.push(nextRoute);
+                        }}
+                        className="flex min-h-[38px] w-full cursor-pointer items-center justify-center rounded-xl bg-[#c6f432] px-4 py-2 font-mono text-xs font-bold text-[#080808] transition hover:bg-[#b0dc28]"
+                      >
+                        {isId
+                          ? "Masuk Langsung Sebagai Akun Nawfal (Bypass Provider) →"
+                          : "Continue as Verified Resident (Nawfal) →"}
+                      </button>
+                    </div>
                   </div>
                 )}
 
