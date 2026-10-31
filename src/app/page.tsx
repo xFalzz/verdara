@@ -906,7 +906,7 @@ export default function LandingPage() {
           />
 
           {/* Top-Left Minimalist Simulation Mode Switcher ("Run, Break, Heal") */}
-          <div className="absolute top-3 left-3 right-3 sm:right-auto sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1 rounded-2xl sm:rounded-full border border-white/12 bg-[#08090c]/88 p-1 backdrop-blur-xl shadow-lg">
+          <div className="country-pill-rail absolute top-3 left-3 right-3 sm:right-auto sm:top-4 sm:left-4 z-10 flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-white/12 bg-[#08090c]/88 p-1 backdrop-blur-xl shadow-lg">
             {(
               [
                 {
@@ -935,14 +935,14 @@ export default function LandingPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setTownSimMode(tab.id)}
-                  className={`flex min-h-[34px] flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-medium transition ${
+                  className={`flex min-h-[32px] sm:min-h-[34px] shrink-0 flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-2.5 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium whitespace-nowrap transition ${
                     active
                       ? "bg-white font-semibold text-[#08090c] shadow-sm"
                       : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   <span className={`h-2 w-2 shrink-0 rounded-full ${tab.dot}`} />
-                  <span className="truncate">
+                  <span>
                     {isId ? tab.labelId : tab.labelEn}
                   </span>
                 </button>
@@ -967,10 +967,10 @@ export default function LandingPage() {
 
           {/* BOTTOM-LEFT MINIMALIST TELEMETRY & SIMULATION DELTA CARD */}
           <div
-            className={`absolute bottom-14 left-3 right-3 z-10 rounded-[20px] border p-3.5 shadow-2xl backdrop-blur-xl transition-all duration-300 sm:right-auto sm:bottom-4 sm:left-4 sm:w-[375px] sm:p-4 ${
+            className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[20px] border p-3.5 shadow-2xl backdrop-blur-xl transition-all duration-300 sm:right-auto sm:left-4 sm:w-[350px] sm:p-4 xl:bottom-4 xl:w-[360px] ${
               isLight
-                ? "border-black/10 bg-white/90 text-[#151515]"
-                : "border-white/12 bg-[#0d0f13]/90 text-[#f2f1ec]"
+                ? "border-black/10 bg-white/92 text-[#151515]"
+                : "border-white/12 bg-[#0d0f13]/92 text-[#f2f1ec]"
             }`}
           >
             {/* Compact Status Header */}
@@ -1203,7 +1203,13 @@ export default function LandingPage() {
               return (
                 <div
                   key={spec.slug}
-                  className="w-full shrink-0"
+                  className={`w-full min-w-full max-w-full shrink-0 transition-opacity duration-200 ${
+                    activeSlide === idx
+                      ? "opacity-100"
+                      : isDraggingDeck
+                      ? "opacity-45"
+                      : "invisible opacity-0 pointer-events-none"
+                  }`}
                   aria-hidden={activeSlide !== idx}
                 >
                   <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">

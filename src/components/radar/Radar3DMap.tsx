@@ -272,64 +272,66 @@ export default function Radar3DMap({
     >
       <div ref={containerRef} className="h-full w-full" />
 
-      {/* Top-Left Telemetry Pills */}
-      <div className="pointer-events-none absolute top-3 left-3 flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] backdrop-blur-md">
-          3D Urban Extrusion ({is3DPitch ? "Pitch 58°" : "Top-Down 2D"}) · {city}
-        </span>
-        <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1 font-mono text-[11px] text-[#F2F7F4] backdrop-blur-md">
-          {hubs.length}{" "}
-          {isId ? "Hub Sirkular OSM Aktif" : "Verified OSM Circular Hubs"}
-        </span>
-        {inspectedRoof && (
-          <span className="rounded-full border border-[#10b981]/50 bg-[#08090c]/90 px-3 py-1 font-mono text-[11px] text-[#34d399] backdrop-blur-md">
-            {isId ? "Atap Terpilih:" : "Inspected Roof:"} {inspectedRoof.areaM2} m² ·{" "}
-            {inspectedRoof.kwp} kWp
+      {/* Responsive Top HUD Bar: Telemetry Pills + 3D Camera Controls (Zero Collision on All Devices) */}
+      <div className="pointer-events-none absolute top-2.5 right-2.5 left-2.5 z-10 flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-2.5 py-1 font-mono text-[10px] sm:text-[11px] font-semibold text-[#c6f432] backdrop-blur-md">
+            3D Urban ({is3DPitch ? "58°" : "2D"}) · {city}
           </span>
-        )}
+          <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-2.5 py-1 font-mono text-[10px] sm:text-[11px] text-[#F2F7F4] backdrop-blur-md">
+            {hubs.length}{" "}
+            {isId ? "Hub OSM" : "OSM Hubs"}
+          </span>
+          {inspectedRoof && (
+            <span className="rounded-full border border-[#10b981]/50 bg-[#08090c]/90 px-2.5 py-1 font-mono text-[10px] sm:text-[11px] text-[#34d399] backdrop-blur-md">
+              {isId ? "Atap:" : "Roof:"} {inspectedRoof.areaM2} m² ·{" "}
+              {inspectedRoof.kwp} kWp
+            </span>
+          )}
+        </div>
+
+        {/* Interactive 3D Camera Controls */}
+        <div className="country-pill-rail pointer-events-auto flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-md">
+          <button
+            type="button"
+            onClick={handleTogglePitch}
+            className={`min-h-[30px] shrink-0 cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
+              is3DPitch
+                ? "bg-[#c6f432] text-[#08090c]"
+                : "text-[#c9c7c0] hover:bg-white/10"
+            }`}
+          >
+            {is3DPitch ? "3D 58°" : "2D Top"}
+          </button>
+          <button
+            type="button"
+            onClick={handleRotate90}
+            className="min-h-[30px] shrink-0 cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] text-[#c9c7c0] whitespace-nowrap transition hover:bg-white/10 hover:text-white"
+          >
+            {isId ? "Putar 90°" : "Rotate 90°"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAutoOrbit((o) => !o)}
+            className={`min-h-[30px] shrink-0 cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
+              autoOrbit
+                ? "bg-[#1e9e5a] text-white"
+                : "text-[#c9c7c0] hover:bg-white/10"
+            }`}
+          >
+            {autoOrbit ? "360°: ON" : "360°: OFF"}
+          </button>
+          <button
+            type="button"
+            onClick={handleRecenter}
+            className="min-h-[30px] shrink-0 cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] text-[#c9c7c0] whitespace-nowrap transition hover:bg-white/10 hover:text-white"
+          >
+            {isId ? "Reset" : "Reset"}
+          </button>
+        </div>
       </div>
 
-      {/* Top-Right Interactive 3D Camera Controls */}
-      <div className="pointer-events-auto absolute top-3 right-3 flex flex-wrap items-center gap-1 rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-md">
-        <button
-          type="button"
-          onClick={handleTogglePitch}
-          className={`min-h-[30px] cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold transition ${
-            is3DPitch
-              ? "bg-[#c6f432] text-[#08090c]"
-              : "text-[#c9c7c0] hover:bg-white/10"
-          }`}
-        >
-          {is3DPitch ? "3D 58°" : "2D Top"}
-        </button>
-        <button
-          type="button"
-          onClick={handleRotate90}
-          className="min-h-[30px] cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] text-[#c9c7c0] transition hover:bg-white/10 hover:text-white"
-        >
-          {isId ? "Putar 90°" : "Rotate 90°"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setAutoOrbit((o) => !o)}
-          className={`min-h-[30px] cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold transition ${
-            autoOrbit
-              ? "bg-[#1e9e5a] text-white"
-              : "text-[#c9c7c0] hover:bg-white/10"
-          }`}
-        >
-          {autoOrbit ? "360°: ON" : "360°: OFF"}
-        </button>
-        <button
-          type="button"
-          onClick={handleRecenter}
-          className="min-h-[30px] cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] text-[#c9c7c0] transition hover:bg-white/10 hover:text-white"
-        >
-          {isId ? "Reset" : "Reset"}
-        </button>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-3 left-3 rounded-full border border-white/15 bg-[#08090c]/90 px-3.5 py-1.5 font-mono text-[11px] text-[#c9c7c0] backdrop-blur-md">
+      <div className="pointer-events-none absolute right-14 bottom-2.5 left-2.5 rounded-2xl sm:rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1.5 font-mono text-[10px] sm:text-[11px] text-[#c9c7c0] backdrop-blur-md">
         {isId
           ? "Scroll untuk Zoom 3D · Klik-kanan/Ctrl+geser untuk rotasi 360° · Klik atap bangunan untuk audit kWp surya."
           : "Scroll to 3D Zoom · Right-click/Ctrl+drag to orbit 360° · Click any building roof to audit solar kWp."}

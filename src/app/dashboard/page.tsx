@@ -126,7 +126,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 2. DOVV STAGE FRAME + TOWNHOUSE.DEV LIVING TOWN CANVAS */}
-        <div className="dovv-stage-frame h-[500px] w-full sm:h-[600px]">
+        <div className="dovv-stage-frame h-[560px] w-full sm:h-[640px] lg:h-[680px]">
           <EcoIslandCanvas
             biome={geo.biome}
             level={level}
@@ -144,42 +144,42 @@ export default function DashboardPage() {
 
           {/* Townhouse Bottom-Left Floating Summary Card */}
           <div
-            className={`absolute bottom-4 left-4 right-4 z-10 rounded-[16px] border p-5 shadow-2xl backdrop-blur-md sm:right-auto sm:bottom-6 sm:left-6 sm:w-[440px] ${
+            className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[18px] border p-3.5 shadow-2xl backdrop-blur-xl sm:right-auto sm:left-4 sm:w-[355px] sm:p-4 xl:bottom-4 ${
               isLight
-                ? "border-[#151515]/10 bg-white/95 text-[#151515]"
-                : "border-white/10 bg-[#16171a]/95 text-[#f2f1ec]"
+                ? "border-[#151515]/10 bg-white/92 text-[#151515]"
+                : "border-white/10 bg-[#16171a]/92 text-[#f2f1ec]"
             }`}
           >
-            <div className="flex items-center justify-between font-mono text-xs">
+            <div className="flex items-center justify-between font-mono text-[11px]">
               <span className="inline-flex items-center gap-1.5 font-semibold text-[#1e9e5a]">
                 <span className="h-2 w-2 rounded-full bg-[#1e9e5a]" />
                 TOWN LEVEL {level} ({xp} XP · {progressPct}%)
               </span>
               <span className="opacity-65">
-                {unlockedItems.length} Modules Active
+                {unlockedItems.length} Modules
               </span>
             </div>
 
-            <p className="townhouse-title mt-2 text-2xl">
+            <p className="townhouse-title mt-1.5 text-lg sm:text-xl font-semibold">
               {formatArea(housingCalc.footprintM2, units, locale)} roof ·{" "}
               {housingCalc.solar.kwp} kWp solar
             </p>
-            <p className="mt-1 text-xs opacity-75">
+            <p className="mt-1 text-[11px] sm:text-xs leading-relaxed opacity-75">
               {isId
-                ? "Putar 360 derajat untuk memeriksa panel surya atap, pipa air hujan, tangki sisterna, dan sumur resapan biopori."
-                : "Drag 360 degrees to inspect rooftop solar panels, copper rainwater conduits, cistern tank, and biopore shafts."}
+                ? "Putar 360 derajat atau scroll untuk memeriksa panel surya atap, pipa tembaga, tangki air hujan, dan sumur biopori."
+                : "Drag 360 degrees or scroll to inspect rooftop solar panels, copper rainwater conduits, cistern tank, and biopore shafts."}
             </p>
 
-            <div className="mt-3.5 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Link
                 href="/lens"
-                className="inline-flex min-h-[40px] items-center rounded-[8px] bg-[#080808] px-3.5 text-xs font-medium text-white"
+                className="inline-flex min-h-[38px] items-center rounded-lg bg-[#080808] px-3.5 text-xs font-medium text-white"
               >
                 {isId ? "Pindai dengan SAM 3.1" : "Scan with SAM 3.1"}
               </Link>
               <Link
                 href="/council"
-                className="inline-flex min-h-[40px] items-center rounded-[8px] border border-current/20 px-3.5 text-xs font-medium"
+                className="inline-flex min-h-[38px] items-center rounded-lg border border-current/20 px-3.5 text-xs font-medium"
               >
                 {isId ? "Sidang Dewan AI" : "Convene Council"}
               </Link>

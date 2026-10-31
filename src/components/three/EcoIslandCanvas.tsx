@@ -229,16 +229,19 @@ function CameraRigController({
   preset: CameraViewPreset;
   controlsRef: React.RefObject<OrbitControlsImpl | null>;
 }) {
-  const desiredPos = useMemo(
+  const basePos = useMemo(
     () => new THREE.Vector3(...CAMERA_PRESET_CONFIG[preset].pos),
     [preset]
   );
-  const desiredTarget = useMemo(
+  const baseTarget = useMemo(
     () => new THREE.Vector3(...CAMERA_PRESET_CONFIG[preset].target),
     [preset]
   );
+  const scaledPosRef = useRef(new THREE.Vector3());
+  const scaledTargetRef = useRef(new THREE.Vector3());
   const lastPresetRef = useRef<CameraViewPreset>(preset);
-  const transitionFramesRef = useRef<number>(0);
+  const lastAspectBucketRef = useRef<number>(-1);
+  const transitionFramesRef = useRef<number>(40);
 
   if (lastPresetRef.current !== preset) {
     lastPresetRef.current = preset;
@@ -248,11 +251,35 @@ function CameraRigController({
   useFrame((state, delta) => {
     const ctrl = controlsRef.current;
     if (!ctrl) return;
+
+    const aspect = state.size.width / Math.max(1, state.size.height);
+    const aspectBucket = Math.round(aspect * 10);
+    if (lastAspectBucketRef.current !== aspectBucket) {
+      lastAspectBucketRef.current = aspectBucket;
+      transitionFramesRef.current = Math.max(transitionFramesRef.current, 35);
+    }
+
+    // Responsive camera distance & vertical framing for mobile/tablet portrait and narrow panes
+    const distScale =
+      aspect < 0.75
+        ? 1.38
+        : aspect < 1.05
+        ? 1.22
+        : aspect < 1.35
+        ? 1.1
+        : 1.0;
+    const targetYShift = aspect < 0.9 ? -0.26 : aspect < 1.25 ? -0.12 : 0;
+
+    scaledPosRef.current.copy(basePos).multiplyScalar(distScale);
+    scaledTargetRef.current
+      .copy(baseTarget)
+      .setY(baseTarget.y + targetYShift);
+
     const step = Math.min(1, delta * 5.5);
-    ctrl.target.lerp(desiredTarget, step);
+    ctrl.target.lerp(scaledTargetRef.current, step);
 
     if (transitionFramesRef.current > 0) {
-      state.camera.position.lerp(desiredPos, step);
+      state.camera.position.lerp(scaledPosRef.current, step);
       transitionFramesRef.current -= 1;
     }
     ctrl.update();
@@ -2773,7 +2800,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
 
       {/* Built-in Top-Left Mode Switcher when parent page does not supply simMode (e.g. /dashboard & /login) */}
       {props.simMode === undefined && !props.hideHudOverlays && !props.compact && (
-        <div className="pointer-events-auto absolute top-3 left-3 z-10 flex flex-wrap items-center gap-1 rounded-full border border-white/12 bg-[#08090c]/88 p-1 shadow-lg backdrop-blur-xl sm:top-4 sm:left-4">
+        <div className="country-pill-rail pointer-events-auto absolute top-3 left-3 right-3 z-10 flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-white/12 bg-[#08090c]/88 p-1 shadow-lg backdrop-blur-xl sm:top-4 sm:right-auto sm:left-4">
           {(
             [
               { id: "run", labelEn: "01 Normal Day", labelId: "01 Hari Normal", dot: "bg-[#10b981]" },
@@ -2787,7 +2814,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
                 key={tab.id}
                 type="button"
                 onClick={() => setInternalSimMode(tab.id)}
-                className={`flex min-h-[32px] cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium transition ${
+                className={`flex min-h-[32px] shrink-0 flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 rounded-full px-2.5 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium whitespace-nowrap transition ${
                   active
                     ? "bg-white font-semibold text-[#08090c] shadow-sm"
                     : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
@@ -2803,19 +2830,9 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
 
       {/* Minimalist, Clean HUD Overlays inside 3D Stage */}
       {!props.hideHudOverlays && !props.compact && (
-        <div className="pointer-events-none absolute right-3 bottom-3 left-3 z-10 flex flex-wrap items-end justify-between gap-2 sm:right-4 sm:bottom-4 sm:left-auto">
-          {/* Active Feature / Mode Diff Telemetry Pill */}
-          <div
-            className={`pointer-events-auto hidden items-center gap-2 rounded-full border px-3.5 py-1.5 font-mono text-[11px] font-medium backdrop-blur-xl transition-all duration-300 xl:flex ${modeFeedback.pillBg} bg-[#08090c]/85`}
-          >
-            <span
-              className={`h-2 w-2 shrink-0 rounded-full ${modeFeedback.dot}`}
-            />
-            <span>{isId ? modeFeedback.statusId : modeFeedback.statusEn}</span>
-          </div>
-
+        <div className="pointer-events-none absolute right-3 bottom-3 left-3 z-10 flex items-end justify-end sm:right-4 sm:bottom-4 sm:left-auto">
           {/* Interactive 3D Camera Focus Bar (All 5 Angles including Rear 360°) */}
-          <div className="pointer-events-auto ml-auto flex flex-wrap items-center gap-1 rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-xl">
+          <div className="country-pill-rail pointer-events-auto flex w-full sm:w-auto max-w-full flex-nowrap items-center justify-between sm:justify-end gap-1 overflow-x-auto rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-xl">
             {(
               [
                 { id: "overview", labelEn: "Overview", labelId: "Utama" },
@@ -2831,7 +2848,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
                   key={preset.id}
                   type="button"
                   onClick={() => setCamPreset(preset.id)}
-                  className={`min-h-[32px] cursor-pointer rounded-full px-2.5 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium transition ${
+                  className={`min-h-[32px] shrink-0 cursor-pointer rounded-full px-2.5 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] font-medium whitespace-nowrap transition ${
                     active
                       ? "bg-[#c6f432] font-bold text-[#080808]"
                       : "text-[#c9c7c0] hover:bg-white/10 hover:text-white"
@@ -2844,7 +2861,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
             <button
               type="button"
               onClick={() => setAutoOrbit((o) => !o)}
-              className={`min-h-[32px] cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] sm:text-[11px] font-semibold transition ${
+              className={`min-h-[32px] shrink-0 cursor-pointer rounded-full px-2.5 py-1 font-mono text-[10px] sm:text-[11px] font-semibold whitespace-nowrap transition ${
                 autoOrbit
                   ? "bg-white/15 text-[#c6f432]"
                   : "bg-white/5 text-[#aaa9ad]"

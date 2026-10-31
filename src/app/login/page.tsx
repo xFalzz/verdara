@@ -187,7 +187,7 @@ export default function LoginPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left 7 Columns: Framed 3D Eco-District Stage */}
           <div className="lg:col-span-7">
-            <div className="dovv-stage-frame h-[520px] sm:h-[580px] w-full">
+            <div className="dovv-stage-frame h-[540px] sm:h-[600px] w-full">
               <EcoIslandCanvas
                 biome={geo.biome}
                 level={5}
@@ -202,16 +202,16 @@ export default function LoginPage() {
                 locale={locale}
               />
 
-              <div className="absolute bottom-4 left-4 right-4 rounded-[18px] border border-[#151515]/10 bg-white/95 p-5 text-[#151515] shadow-xl sm:right-auto sm:w-[440px]">
-                <p className="font-mono text-xs font-semibold text-[#1e9e5a]">
+              <div className="absolute bottom-[54px] left-3 right-3 z-10 rounded-[18px] border border-[#151515]/10 bg-white/92 p-3.5 text-[#151515] shadow-xl backdrop-blur-xl sm:right-auto sm:left-4 sm:w-[355px] sm:p-4">
+                <p className="font-mono text-[11px] font-semibold text-[#1e9e5a]">
                   01 / PROTECTED STUDIO GATE · $35.00 JUDGE RESERVE
                 </p>
-                <p className="townhouse-title mt-1 text-2xl">
+                <p className="townhouse-title mt-1 text-lg sm:text-xl font-semibold">
                   {isId
                     ? "Otentikasi Diperlukan Sebelum Masuk Dasbor"
                     : "Sign In Required Before Entering Studio"}
                 </p>
-                <p className="mt-1.5 text-xs leading-relaxed text-[#4b4b48]">
+                <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-[#4b4b48]">
                   {isId
                     ? "Pilih login cepat Demo Juri (Lv.5) atau masuk menggunakan akun email Anda untuk membuka Dasbor Kota 3D, Lensa SAM 3.1, Radar 3D, dan Dewan AI."
                     : "Choose 1-Click Judge Demo (Lv.5) or sign in with your resident email to unlock the 3D Living Town Dashboard, SAM 3.1 Lens, 3D Radar, and AI Council."}
