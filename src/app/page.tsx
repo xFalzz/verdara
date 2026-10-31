@@ -215,6 +215,35 @@ export default function LandingPage() {
   const [dragOffsetPx, setDragOffsetPx] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
 
+  // Live GitHub Repository Stars State
+  const [githubStars, setGithubStars] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/github-stars")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data && typeof data.stars === "number") {
+          setGithubStars(data.stars);
+        }
+      })
+      .catch(() => {
+        fetch("https://api.github.com/repos/xFalzz/verdara", {
+          headers: { Accept: "application/vnd.github+json" },
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (active && d && typeof d.stargazers_count === "number") {
+              setGithubStars(d.stargazers_count);
+            }
+          })
+          .catch(() => {});
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const pageRef = useRef<HTMLDivElement | null>(null);
   const domeRef = useRef<SVGSVGElement | null>(null);
 
@@ -2770,7 +2799,7 @@ export default function LandingPage() {
                       "Klasifikasi iklim otomatis dan kurva cuaca 12 bulan ERA5 untuk negara dan koordinat mana pun di seluruh dunia.",
                   },
                   {
-                    badge: "60 FPS WEBGL",
+                    badge: "60 FPS 3D TWIN",
                     color: "text-cyan-300",
                     colorLight: "text-[#0e7490]",
                     titleEn: "Procedural 3D PBR Architecture",
@@ -2857,7 +2886,7 @@ export default function LandingPage() {
                       >
                         * DIN 1989-1 HYDROLOGICAL CISTERN
                       </span>
-                      <span>195+ COUNTRIES · 60 FPS WEBGL</span>
+                      <span>195+ COUNTRIES · REAL-TIME 3D</span>
                       <span
                         className={isSectionLight ? "text-[#d97706]" : "text-amber-300"}
                       >
@@ -2880,48 +2909,104 @@ export default function LandingPage() {
             : "bg-[#0b0c0e] text-[#f2f1ec] border-white/15"
         }`}
       >
-        <div className="mx-auto max-w-[1440px] px-4 pt-14 pb-6">
+        {/* Wordmark Hero Banner Area */}
+        <div className="relative mx-auto max-w-[1440px] px-4 pt-14 pb-8 sm:pb-12 text-center">
+          {/* Ambient Architectural Radial Glow */}
+          <div
+            className={`pointer-events-none absolute inset-0 -top-10 mx-auto h-[200px] max-w-5xl rounded-full blur-3xl opacity-35 transition-opacity ${
+              isLight
+                ? "bg-[radial-gradient(ellipse_at_center,rgba(22,163,74,0.20),transparent_70%)]"
+                : "bg-[radial-gradient(ellipse_at_center,rgba(198,244,50,0.18),transparent_70%)]"
+            }`}
+          />
+
+          {/* Architectural Eyebrow Tag */}
+          <div className="relative z-10 flex items-center justify-center gap-2 mb-4">
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1 font-mono text-[11px] font-medium tracking-[0.2em] uppercase transition-colors ${
+                isLight
+                  ? "border-black/10 bg-white/90 text-[#15803d] shadow-sm"
+                  : "border-white/10 bg-[#121418]/90 text-[#c6f432] shadow-sm"
+              }`}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              {isId
+                ? "KOTA SPASIAL EKOLOGIS MANDIRI · 195+ NEGARA"
+                : "AUTONOMOUS ECOLOGICAL SPATIAL TWIN · 195+ COUNTRIES"}
+            </span>
+          </div>
+
           <Link
             href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-            className="block select-none text-center transition-opacity hover:opacity-85"
+            className="group relative z-10 block select-none text-center transition-all duration-300"
           >
-            <DovvInteractiveWordmark
-              lines={["VERDARA TOWN"]}
-              className="text-center text-[17.5vw] leading-[0.85]"
-            />
+            <div
+              className={`transition-colors duration-300 ${
+                isLight
+                  ? "text-[#0a0a0c] group-hover:text-[#15803d]"
+                  : "text-[#f5f5f3] group-hover:text-[#c6f432]"
+              }`}
+            >
+              <DovvInteractiveWordmark
+                lines={["VERDARA TOWN"]}
+                className="text-center text-[clamp(2.1rem,7.8vw,8.8rem)] leading-[0.9] tracking-tight font-black"
+              />
+            </div>
+            <p
+              className={`mt-3 font-mono text-[11px] sm:text-xs tracking-[0.24em] uppercase transition-all duration-200 ${
+                isLight
+                  ? "text-[#71717a] group-hover:text-[#0a0a0c]"
+                  : "text-[#a1a1aa] group-hover:text-white"
+              }`}
+            >
+              {isId
+                ? "* KLIK UNTUK MASUK KE STUDIO KOTA 3D *"
+                : "* CLICK TO EXPLORE LIVING 3D TOWN DISTRICT *"}
+            </p>
           </Link>
         </div>
 
+        {/* 4-Column Architectural Grid */}
         <div
           className={`mx-auto grid max-w-[1440px] grid-cols-1 border-t md:grid-cols-2 xl:grid-cols-4 ${
             isLight ? "border-black/15" : "border-white/15"
           }`}
         >
-          {/* Cell 1: Brand & Judge Demo Action */}
+          {/* Cell 1: Civic Brand & Resident Studio Launch */}
           <div
-            className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
+            className={`flex flex-col justify-between gap-4 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <VerdaraLogo size={40} />
-              <div>
-                <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
-                  01 / Judge Quick-Start
-                </span>
-                <p className="text-lg font-semibold tracking-tight">
-                  Verdara Spatial Eco-Town
-                </p>
+            <div className="space-y-3.5">
+              <div className="flex items-center gap-3">
+                <VerdaraLogo size={42} />
+                <div>
+                  <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
+                    01 / Civic Quick-Start
+                  </span>
+                  <p className="text-lg font-semibold tracking-tight">
+                    Verdara Spatial Eco-Town
+                  </p>
+                </div>
               </div>
+              <p className="text-xs sm:text-sm leading-relaxed opacity-80">
+                {isAuthenticated
+                  ? isId
+                    ? `Selamat datang kembali, Residen Lv.${level} ${displayName}. Akses 6 bangunan ekologis, mikrokisi fotovoltaik, dan dewan AI terbuka.`
+                    : `Welcome back, Lv.${level} Resident ${displayName}. All 6 eco-structures, simulated microgrid, and AI council are active.`
+                  : isId
+                    ? "Akses satu klik untuk mengeksplorasi seluruh distrik kota 3D dengan atap fotovoltaik, tandon air hujan, dan koridor regeneratif mandiri."
+                    : "One-click access to explore the complete living 3D town district with solar roofs, rainwater cisterns, and regenerative corridors."}
+              </p>
             </div>
-            <p className="text-xs sm:text-sm opacity-80">
-              {isId
-                ? "Klik tombol di bawah untuk langsung masuk ke Kota 3D Level 5 dengan seluruh 6 bangunan ekologis terbuka."
-                : "Click below to launch the Level 5 Judge Demo Town with all 6 ecological structures unlocked."}
-            </p>
+
             <Link
               href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-              className={`zeggo-btn mt-1 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full px-5 text-sm font-semibold transition ${
+              className={`zeggo-btn mt-2 inline-flex min-h-[46px] cursor-pointer items-center gap-2 self-start rounded-full px-5 text-sm font-semibold transition ${
                 isLight
                   ? "bg-[#080808] text-white hover:bg-[#1e9e5a]"
                   : "bg-[#c6f432] text-[#080808] hover:bg-[#d5f759]"
@@ -2942,85 +3027,240 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Cell 2: Spatial Workspaces & Docs */}
+          {/* Cell 2: Spatial Workspaces & Navigation */}
           <div
             className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 xl:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
-              02 / Workspaces &amp; Docs
+              02 / Workspaces &amp; Navigation
             </span>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2.5">
               {[
-                { href: "/dashboard", label: "LIVING TOWN 3D" },
-                { href: "/lens", label: "SAM 3.1 LENS" },
-                { href: "/radar", label: "3D ROOF RADAR" },
-                { href: "/council", label: "SPECIALIST COUNCIL" },
-                { href: "/docs", label: "DOCUMENTS (/DOCS)" },
-                { href: "/faq", label: "FAQ & GUIDE (/FAQ)" },
-                { href: "/settings", label: "CREDIT SHIELD" },
+                { href: "/dashboard", label: "01 LIVING TOWN 3D", badge: "CORE" },
+                { href: "/lens", label: "02 SAM 3.1 LENS", badge: "VISION" },
+                { href: "/radar", label: "03 ROOF RADAR", badge: "MAPS" },
+                { href: "/council", label: "04 AI COUNCIL", badge: "AGENTS" },
+                { href: "/docs", label: "05 SYSTEM DOCS", badge: "SPEC" },
+                { href: "/faq", label: "06 FAQ & GUIDE", badge: "GUIDE" },
+                { href: "/settings", label: "07 CREDIT SHIELD", badge: "$150 READY" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`dovv-wordmark inline-block text-2xl transition-all hover:pl-2 ${
+                    className={`group inline-flex items-center justify-between w-full text-base sm:text-lg font-semibold tracking-tight transition-all duration-200 ${
                       isLight
-                        ? "hover:text-[#1e9e5a]"
-                        : "hover:text-[#c6f432]"
+                        ? "text-[#18181b] hover:text-[#15803d]"
+                        : "text-[#f4f3ee] hover:text-[#c6f432]"
                     }`}
                   >
-                    {link.label}
+                    <span className="dovv-wordmark text-xl sm:text-2xl transition-transform group-hover:translate-x-1.5">
+                      {link.label}
+                    </span>
+                    <span
+                      className={`font-mono text-[10px] uppercase tracking-wider rounded-md px-1.5 py-0.5 border ${
+                        isLight
+                          ? "border-black/10 bg-black/5 text-neutral-600"
+                          : "border-white/10 bg-white/5 text-neutral-400"
+                      }`}
+                    >
+                      {link.badge}
+                    </span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Cell 3: Scientific Citations */}
+          {/* Cell 3: Environmental Science & AI Systems (Sanitized of all language/engine names) */}
           <div
             className={`flex flex-col gap-3.5 border-b p-6 sm:p-8 md:border-b-0 xl:border-r ${
               isLight ? "border-black/15" : "border-white/15"
             }`}
           >
             <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
-              03 / Meta AI &amp; Science Stack
+              03 / Environmental Science &amp; AI
             </span>
-            <ul className="space-y-1.5 text-sm opacity-80">
-              <li>Meta SAM 3.1 Concept Segmentation</li>
-              <li>Meta Muse Spark &amp; muse-spark-open</li>
-              <li>Meta Muse Image Eco-Retrofit</li>
-              <li>NREL PVWatts v8 Rooftop Solar Model</li>
-              <li>Open-Meteo ERA5 10-Yr Climatology</li>
-              <li>Enterprise Database v3.2 &amp; OWASP Guard</li>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              {[
+                { name: "Meta SAM 3.1", desc: "Aerial Canopy & Roof Segmentation" },
+                { name: "Meta Muse Spark", desc: "3-Specialist Civic Eco-Council" },
+                { name: "Meta Muse Image", desc: "Zero-Loss Generative Eco-Retrofit" },
+                { name: "NREL PVWatts v8", desc: "Solar Irradiance & Tilt Modeling" },
+                { name: "DIN 1989-1", desc: "Hydrological Cistern & Runoff Yield" },
+                { name: "Open-Meteo ERA5", desc: "10-Year Global Climatology Normals" },
+                { name: "OWASP ASVS Guard", desc: "Edge Firewall & Sliding-Window Gate" },
+              ].map((spec) => (
+                <li key={spec.name} className="flex flex-col">
+                  <span className="font-medium text-foreground">
+                    {spec.name}
+                  </span>
+                  <span className="text-xs opacity-70">
+                    {spec.desc}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Cell 4: Live Jurisdiction & Status */}
-          <div className="flex flex-col justify-between gap-4 p-6 sm:p-8">
-            <div className="space-y-2">
+          {/* Cell 4: Active World Jurisdiction & Live GitHub Telemetry */}
+          <div className="flex flex-col justify-between gap-5 p-6 sm:p-8">
+            <div className="space-y-3">
               <span className="font-mono text-xs uppercase tracking-[0.12em] opacity-60">
-                04 / Active World Jurisdiction
+                04 / Active Jurisdiction &amp; Telemetry
               </span>
-              <p
-                className={`dovv-wordmark text-3xl ${
-                  isLight ? "text-[#14733f]" : "text-[#c6f432]"
+              <div>
+                <p
+                  className={`dovv-wordmark text-2xl sm:text-3xl ${
+                    isLight ? "text-[#14733f]" : "text-[#c6f432]"
+                  }`}
+                >
+                  {geo.city} ({geo.countryCode})
+                </p>
+                <div className="mt-1 flex items-center gap-2 text-xs sm:text-sm opacity-80">
+                  <span className="h-2 w-2 rounded-full bg-[#16c847] animate-pulse" />
+                  <span>
+                    {geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}° · Köppen{" "}
+                    {geo.koppen.code}
+                  </span>
+                </div>
+              </div>
+
+              {/* GitHub Repository Live Card with Live Star Count */}
+              <a
+                href="https://github.com/xFalzz/verdara"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group mt-3 flex flex-col gap-2.5 rounded-2xl border p-4 transition-all duration-300 ${
+                  isLight
+                    ? "border-black/10 bg-white/70 hover:border-black/25 hover:shadow-md"
+                    : "border-white/10 bg-[#121418] hover:border-[#c6f432]/40 hover:shadow-[0_0_24px_rgba(198,244,50,0.12)]"
                 }`}
               >
-                {geo.city} ({geo.countryCode})
-              </p>
-              <div className="flex items-center gap-2 text-sm opacity-80">
-                <span className="h-2 w-2 rounded-full bg-[#16c847]" />
-                <span>
-                  {geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}° · Köppen{" "}
-                  {geo.koppen.code}
-                </span>
-              </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="h-4 w-4 fill-current opacity-90 transition-transform group-hover:scale-110"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                      />
+                    </svg>
+                    <span className="font-mono text-xs font-semibold">
+                      xFalzz / verdara
+                    </span>
+                  </div>
+
+                  {/* Live Star Count Badge */}
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold ${
+                      isLight
+                        ? "bg-[#0a0a0c] text-white"
+                        : "bg-[#c6f432] text-[#0a0a0c]"
+                    }`}
+                  >
+                    <svg
+                      className="h-3 w-3 fill-current text-amber-400"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span suppressHydrationWarning>
+                      {githubStars !== null ? githubStars : "0"}
+                    </span>
+                    <span className="text-[9px] font-normal uppercase opacity-75">
+                      stars
+                    </span>
+                  </span>
+                </div>
+
+                <p className="text-xs leading-relaxed opacity-75">
+                  {isId
+                    ? "Repositori resmi sumber terbuka. Berikan bintang Anda untuk mendukung masa depan regenerasi kota mandiri!"
+                    : "Official open repository. Star on GitHub to support verified autonomous eco-town regeneration!"}
+                </p>
+
+                <div className="flex items-center justify-between pt-1 font-mono text-[11px]">
+                  <span className="inline-flex items-center gap-1.5 text-emerald-500 font-medium">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live GitHub Sync
+                  </span>
+                  <span
+                    className={`font-semibold transition-transform group-hover:translate-x-1 ${
+                      isLight ? "text-[#15803d]" : "text-[#c6f432]"
+                    }`}
+                  >
+                    Star on GitHub -&gt;
+                  </span>
+                </div>
+              </a>
             </div>
 
             <p className="font-mono text-xs opacity-60">
-              Verdara Spatial Studio · 195+ Countries · 60 FPS WebGL
+              Verdara Spatial Studio · 195+ Countries · Real-Time 3D Eco-Twin
             </p>
+          </div>
+        </div>
+
+        {/* Bottom Utility Bar: Copyright & GitHub Link Pill */}
+        <div
+          className={`mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-4 border-t px-6 sm:px-8 py-6 text-xs transition-colors ${
+            isLight
+              ? "border-black/10 text-[#52525b]"
+              : "border-white/10 text-[#a1a1aa]"
+          }`}
+        >
+          {/* Left: Copyright & Civic Attribution */}
+          <div className="flex flex-wrap items-center gap-2 text-center sm:text-left">
+            <span className="font-semibold text-foreground">Verdara Town</span>
+            <span>·</span>
+            <span>
+              {isId
+                ? "Platform Kembar Spasial Ekologis Mandiri"
+                : "Autonomous Ecological Spatial Twin Platform"}
+            </span>
+            <span>·</span>
+            <span className="font-mono">© {new Date().getFullYear()}</span>
+          </div>
+
+          {/* Right: Direct GitHub Link with Live Star Count */}
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/xFalzz/verdara"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Verdara GitHub Repository"
+              className={`group inline-flex items-center gap-2 rounded-full border px-4 py-2 font-mono text-xs transition-all duration-200 ${
+                isLight
+                  ? "border-black/10 bg-white hover:border-black/30 hover:shadow-sm text-[#111111]"
+                  : "border-white/10 bg-[#14161a] hover:border-white/30 hover:shadow-[0_0_20px_rgba(198,244,50,0.12)] text-[#f2f1ec]"
+              }`}
+            >
+              <svg
+                className="h-3.5 w-3.5 fill-current transition-transform group-hover:scale-110"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                />
+              </svg>
+              <span>github.com/xFalzz/verdara</span>
+              <span className="h-3 w-[1px] bg-current opacity-25" />
+              <span className="inline-flex items-center gap-1 text-amber-500 font-bold">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span suppressHydrationWarning>{githubStars !== null ? githubStars : "0"}</span>
+              </span>
+            </a>
           </div>
         </div>
       </footer>

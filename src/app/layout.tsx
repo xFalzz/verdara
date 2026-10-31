@@ -93,10 +93,10 @@ const jsonLd = {
       name: "Verdara Living Eco-Town Studio",
       url: "https://verdara.space",
       applicationCategory: "DesignApplication, UtilitiesApplication",
-      operatingSystem: "All modern browsers with WebGL 2.0",
+      operatingSystem: "All modern browsers with GPU acceleration",
       description:
         "Interactive 3D digital twin platform calculating real-time solar roof generation, stormwater diversion, and circular material salvage powered by Meta SAM and Muse AI.",
-      browserRequirements: "Requires WebGL 2.0 support",
+      browserRequirements: "Requires modern browser with hardware graphics acceleration",
       offers: {
         "@type": "Offer",
         price: "0",

@@ -104,8 +104,8 @@ export default function DocsPage() {
     {
       id: "webgl",
       code: "04",
-      labelEn: "3D WebGL Engine",
-      labelId: "Mesin WebGL 3D",
+      labelEn: "3D Spatial Engine",
+      labelId: "Mesin Spasial 3D",
       summaryEn: "Procedural PBR architecture, Run/Break/Heal & 60 FPS particles",
       summaryId: "Arsitektur PBR prosedural, Run/Break/Heal & partikel 60 FPS",
     },
@@ -274,8 +274,8 @@ export default function DocsPage() {
           </h1>
           <p className="mt-3 max-w-4xl text-sm sm:text-base leading-relaxed text-[#c9c7c0]">
             {isId
-              ? "Referensi rekayasa lengkap dari nol hingga komponen terdalam Verdara: arsitektur pipa komputasi spasial 5-tahap, orkestrasi model Meta AI (SAM 3.1, Muse Spark, Muse Image), derivasi rumus fisika deterministik (NREL PVWatts v8, hidrologi DIN 1989-1, resapan biopori Brata, kenyamanan termal TCI), mesin WebGL 3D prosedural 60-FPS, skema basis data v3.2, hingga pertahanan siber berlapis OWASP ASVS."
-              : "Complete end-to-end engineering reference from foundational architecture to Verdara's deepest technical subsystems: 5-stage spatial computing pipeline, Meta AI orchestration (SAM 3.1, Muse Spark, Muse Image), deterministic physics derivations (NREL PVWatts v8, DIN 1989-1 hydrology, Brata biopore hydraulics, TCI thermal comfort), 60-FPS procedural 3D WebGL engine, v3.2 database schema, and OWASP ASVS cybersecurity guardrails."}
+              ? "Referensi rekayasa lengkap dari nol hingga komponen terdalam Verdara: arsitektur pipa komputasi spasial 5-tahap, orkestrasi model Meta AI (SAM 3.1, Muse Spark, Muse Image), derivasi rumus fisika deterministik (NREL PVWatts v8, hidrologi DIN 1989-1, resapan biopori Brata, kenyamanan termal TCI), mesin spasial 3D prosedural 60-FPS, skema basis data v3.2, hingga pertahanan siber berlapis OWASP ASVS."
+              : "Complete end-to-end engineering reference from foundational architecture to Verdara's deepest technical subsystems: 5-stage spatial computing pipeline, Meta AI orchestration (SAM 3.1, Muse Spark, Muse Image), deterministic physics derivations (NREL PVWatts v8, DIN 1989-1 hydrology, Brata biopore hydraulics, TCI thermal comfort), 60-FPS procedural 3D spatial twin engine, v3.2 database schema, and OWASP ASVS cybersecurity guardrails."}
           </p>
 
           {/* 6-Module Navigation Grid */}
@@ -413,7 +413,7 @@ export default function DocsPage() {
         |
         v
 [STAGE 5: 60-FPS 3D LIVING ECO-DISTRICT & PERSISTENT LEDGER (/dashboard & /radar)]
-  React Three Fiber Procedural PBR District (Run / Break / Heal) + MapLibre 3D Extrusion + Database v3.2`}
+  Procedural PBR District (Run / Break / Heal) + 3D Extrusion + Database v3.2`}
                   </pre>
 
                   <div className="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -446,9 +446,9 @@ export default function DocsPage() {
                         step: "STAGE 04 · MULTI-AGENT COUNCIL & 3D TWIN SYNC",
                         file: "src/lib/meta/client.ts, EcoIslandCanvas.tsx",
                         descEn:
-                          "Feeds SITE_BRIEF into Meta Muse Spark specialists and syncs the verified retrofit state directly into the Zustand reactive store (useVerdaraStore), updating the 3D WebGL Eco-District and 3D MapLibre Radar in real time.",
+                          "Feeds SITE_BRIEF into Meta Muse Spark specialists and syncs the verified retrofit state directly into the Zustand reactive store (useVerdaraStore), updating the 3D Eco-District and 3D Radar in real time.",
                         descId:
-                          "Menyuntikkan SITE_BRIEF ke pakar Meta Muse Spark dan menyinkronkan hasilnya ke store reaktif Zustand (useVerdaraStore), memperbarui Distrik 3D WebGL dan Radar Peta 3D secara langsung.",
+                          "Menyuntikkan SITE_BRIEF ke pakar Meta Muse Spark dan menyinkronkan hasilnya ke store reaktif Zustand (useVerdaraStore), memperbarui Distrik 3D dan Radar Peta 3D secara langsung.",
                       },
                     ].map((item) => (
                       <div
@@ -637,7 +637,7 @@ export default function DocsPage() {
                         route: "/dashboard",
                         name: "Living 3D Eco-Town Studio",
                         gate: "Auth Required",
-                        sub: "Full-screen 60-FPS Three.js Eco-District, interactive Roof Area slider (40-600 m²), progressive Level 1-5 architectural unlocks, live telemetry.",
+                        sub: "Full-screen 60-FPS 3D Eco-District, interactive Roof Area slider (40-600 m²), progressive Level 1-5 architectural unlocks, live telemetry.",
                       },
                       {
                         route: "/lens",
@@ -941,7 +941,7 @@ TCI_Score    = clamp(round(100 - max(0, T_warm_C - 22) * 2.4 + |Delta_T| * 6), 3
         )}
 
         {/* =====================================================================
-            MODULE 04: 3D WEBGL & SPATIAL DIGITAL TWIN ENGINE
+            MODULE 04: 3D SPATIAL DIGITAL TWIN ENGINE
             ===================================================================== */}
         {activeTab === "webgl" && (
           <section className="mt-8 space-y-6">
@@ -954,7 +954,7 @@ TCI_Score    = clamp(round(100 - max(0, T_warm_C - 22) * 2.4 + |Delta_T| * 6), 3
             >
               <span className="th-map-bar bg-[#1e9e5a]" />
               <span className="font-mono text-xs font-bold text-[#1e9e5a]">
-                04.1 / PROCEDURAL PBR THREE.JS ARCHITECTURE (ZERO EXTERNAL GLB BLOAT)
+                04.1 / PROCEDURAL PBR GPU ARCHITECTURE (ZERO EXTERNAL GLB BLOAT)
               </span>
               <h2 className="mt-2 text-2xl sm:text-3xl font-semibold">
                 {isId
@@ -963,8 +963,8 @@ TCI_Score    = clamp(round(100 - max(0, T_warm_C - 22) * 2.4 + |Delta_T| * 6), 3
               </h2>
               <p className="mt-2 text-sm leading-relaxed opacity-85">
                 {isId
-                  ? "Seluruh objek 3D di dalam Verdara dibangun 100% menggunakan kode TypeScript prosedural di atas React Three Fiber dan Three.js tanpa bergantung pada file model .glb/.gltf eksternal berukuran puluhan megabyte. Pendekatan ini menghasilkan waktu muat instan (<150ms) dan performa stabil 60 FPS di ponsel maupun desktop."
-                  : "Every 3D structure inside Verdara is constructed 100% procedurally in TypeScript using React Three Fiber and Three.js with zero external multi-megabyte .glb/.gltf asset downloads. This guarantees sub-150ms initialization and locked 60-FPS rendering across mobile and desktop GPUs."}
+                  ? "Seluruh objek 3D di dalam Verdara dibangun 100% menggunakan komputasi prosedural berbasis akselerasi perangkat keras tanpa bergantung pada file model .glb/.gltf eksternal berukuran puluhan megabyte. Pendekatan ini menghasilkan waktu muat instan (<150ms) dan performa stabil 60 FPS di ponsel maupun desktop."
+                  : "Every 3D structure inside Verdara is constructed 100% procedurally with hardware-accelerated shaders and zero external multi-megabyte .glb/.gltf asset downloads. This guarantees sub-150ms initialization and locked 60-FPS rendering across mobile and desktop GPUs."}
               </p>
 
               <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">

@@ -63,7 +63,7 @@ const FAQ_ITEMS: FaqItem[] = [
         descId: "Uji ketahanan badai di 3D dan hasilkan cetak biru retrofit dari 3 spesialis AI.",
       },
     ],
-    techSpec: "STACK :: Next.js 16 + Three.js r183 + Meta SAM 3.1 + Muse Spark + Physics v3.2",
+    techSpec: "STACK :: Autonomous Spatial Twin + Meta SAM 3.1 + Muse Spark + Physics v3.2",
     relatedRoute: {
       href: "/dashboard",
       labelEn: "Open 3D Studio →",
@@ -115,8 +115,8 @@ const FAQ_ITEMS: FaqItem[] = [
     aId: "Alih-alih mengunduh model GLTF eksternal berukuran puluhan megabita, Verdara membangun seluruh geometri arsitektur 3D secara prosedural di memori GPU (<18MB VRAM) dengan rasio piksel adaptif (DPR [1, 1.6]). Selain itu, inisialisasi tema sinkron memastikan tampilan langsung muncul saat refresh tanpa jeda animasi atau kedipan warna.",
     points: [
       {
-        titleEn: "<18MB WebGL Memory",
-        titleId: "Memori WebGL <18MB",
+        titleEn: "<18MB GPU Memory",
+        titleId: "Memori GPU <18MB",
         descEn: "Procedural instanced meshes compile in milliseconds with zero network asset wait.",
         descId: "Mesh prosedural dikompilasi dalam milidetik tanpa waktu tunggu unduhan aset.",
       },
@@ -133,7 +133,7 @@ const FAQ_ITEMS: FaqItem[] = [
         descId: "Kontrol sentuh ergonomis >=40px, navbar ringkas, dan grid studio adaptif.",
       },
     ],
-    techSpec: "PERF_BUDGET :: Procedural WebGL · DPR [1, 1.6] · Synchronous Theme Init · 60 FPS",
+    techSpec: "PERF_BUDGET :: Procedural 3D GPU · DPR [1, 1.6] · Synchronous Theme Init · 60 FPS",
   },
   {
     id: "three-d-modes-explained",
@@ -902,7 +902,7 @@ export default function FaqPage() {
               },
               {
                 code: "02 · 3D ENGINE",
-                val: "Three.js r183 WebGL",
+                val: isId ? "Kembar Digital 3D" : "Real-Time 3D Twin",
                 sub: isId ? "Scroll-Zoom + 3 Mode" : "Scroll-Zoom + 3 Modes",
               },
               {
