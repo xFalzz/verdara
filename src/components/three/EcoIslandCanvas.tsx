@@ -262,14 +262,26 @@ function CameraRigController({
 
     // Responsive camera distance & vertical framing for mobile/tablet portrait and narrow panes
     const distScale =
-      aspect < 0.75
-        ? 1.38
-        : aspect < 1.05
-        ? 1.22
-        : aspect < 1.35
-        ? 1.1
+      aspect < 0.65
+        ? 1.78
+        : aspect < 0.85
+        ? 1.54
+        : aspect < 1.1
+        ? 1.34
+        : aspect < 1.4
+        ? 1.16
         : 1.0;
-    const targetYShift = aspect < 0.9 ? -0.26 : aspect < 1.25 ? -0.12 : 0;
+    const targetYShift =
+      aspect < 0.75
+        ? -0.42
+        : aspect < 1.0
+        ? -0.25
+        : aspect < 1.3
+        ? -0.1
+        : 0;
+
+    // Dynamically expand maximum zoom-out distance for mobile portrait viewports
+    ctrl.maxDistance = aspect < 0.85 ? 32.0 : 28.0;
 
     scaledPosRef.current.copy(basePos).multiplyScalar(distScale);
     scaledTargetRef.current
@@ -2678,7 +2690,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
     if (!ctrl) return;
     const offset = ctrl.object.position.clone().sub(ctrl.target);
     const curDist = offset.length();
-    const nextDist = THREE.MathUtils.clamp(curDist * factor, 3.0, 13.5);
+    const nextDist = THREE.MathUtils.clamp(curDist * factor, 2.2, 30.0);
     offset.setLength(nextDist);
     ctrl.object.position.copy(ctrl.target).add(offset);
     ctrl.update();
@@ -2730,10 +2742,10 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: isBreak ? 0.92 : props.isNight ? 0.96 : 1.06,
         }}
-        camera={{ position: [7.4, 4.9, 7.4], fov: 32 }}
+        camera={{ position: [7.4, 4.9, 7.4], fov: 32, near: 0.2, far: 120 }}
       >
         <color attach="background" args={[bgHex]} />
-        <fog attach="fog" args={[bgHex, 15, 32]} />
+        <fog attach="fog" args={[bgHex, 24, 75]} />
 
         <StudioEnvironment simMode={simMode} isNight={props.isNight} />
 
@@ -2758,11 +2770,11 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
           }
           shadow-mapSize={[1024, 1024]}
           shadow-camera-near={1}
-          shadow-camera-far={28}
-          shadow-camera-left={-6.2}
-          shadow-camera-right={6.2}
-          shadow-camera-top={6.2}
-          shadow-camera-bottom={-6.2}
+          shadow-camera-far={42}
+          shadow-camera-left={-8.5}
+          shadow-camera-right={8.5}
+          shadow-camera-top={8.5}
+          shadow-camera-bottom={-8.5}
           shadow-bias={-0.0003}
         />
 
@@ -2788,22 +2800,22 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
         <ContactShadows
           position={[0, -1.32, 0]}
           opacity={0.38}
-          scale={14.5}
+          scale={20.0}
           blur={2.2}
-          far={4.6}
+          far={6.0}
         />
 
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
           enableZoom={true}
-          zoomSpeed={0.95}
+          zoomSpeed={1.2}
           enableDamping={true}
           dampingFactor={0.08}
-          minDistance={2.8}
-          maxDistance={13.8}
-          minPolarAngle={Math.PI / 7.2}
-          maxPolarAngle={Math.PI / 2.18}
+          minDistance={2.2}
+          maxDistance={30.0}
+          minPolarAngle={Math.PI / 8.5}
+          maxPolarAngle={Math.PI / 2.15}
           autoRotate={autoOrbit}
           autoRotateSpeed={isBreak ? 0.75 : 0.42}
           touches={{
