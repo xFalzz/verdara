@@ -1,28 +1,33 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { useVerdaraStore } from '@/store/useVerdaraStore';
+import React, { useState, useMemo } from "react";
+import Link from "next/link";
+import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   VerdaraLogo,
   ZeggoRollText,
   CompactWorldCityPicker,
   VerdaraBottomDock,
-} from '@/components/ui/InteractiveEffects';
+} from "@/components/ui/InteractiveEffects";
+
+interface FaqPoint {
+  titleEn: string;
+  titleId: string;
+  descEn: string;
+  descId: string;
+}
 
 interface FaqItem {
   id: string;
-  category: 'overview' | 'ai' | 'physics' | 'three-d' | 'database' | 'security';
-  badgeEn: string;
-  badgeId: string;
-  questionEn: string;
-  questionId: string;
-  answerEn: string;
-  answerId: string;
-  highlightsEn: string[];
-  highlightsId: string[];
-  specCode: string;
-  relatedLink?: {
+  category: "overview" | "three-d" | "ai" | "physics" | "database" | "security";
+  badge: string;
+  qEn: string;
+  qId: string;
+  aEn: string;
+  aId: string;
+  points: FaqPoint[];
+  techSpec: string;
+  relatedRoute?: {
     href: string;
     labelEn: string;
     labelId: string;
@@ -31,534 +36,661 @@ interface FaqItem {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    id: 'what-is-verdara',
-    category: 'overview',
-    badgeEn: '01 · PLATFORM OVERVIEW',
-    badgeId: '01 · GAMBARAN PLATFORM',
-    questionEn: 'What exactly is Verdara and what problem does it solve?',
-    questionId: 'Apa sebenarnya Verdara dan masalah apa yang diselesaikannya?',
-    answerEn:
-      'Verdara is a Global Spatial AI & Sustainable Architecture Digital Twin platform. It bridges the gap between complex environmental engineering (solar photovoltaics, urban hydrology, circular material auditing) and everyday homeowners, architects, and city planners. By selecting any country or city worldwide, or uploading a real building photo, Verdara builds an interactive 3D eco-district and computes exact rooftop solar yield, rainwater harvesting capacity, biopore flood infiltration, and circular waste recovery value in real time.',
-    answerId:
-      'Verdara adalah platform Global Spatial AI & Digital Twin Arsitektur Berkelanjutan. Platform ini menjembatani kesenjangan antara rekayasa lingkungan tingkat lanjut (fotovoltaik surya, hidrologi perkotaan, audit material sirkular) dengan pemilik rumah, arsitek, dan perencana kota. Dengan memilih negara atau kota mana pun di dunia, atau mengunggah foto bangunan asli, Verdara membangun distrik ekologi 3D interaktif serta menghitung kapasitas surya atap, volume panen air hujan, infiltrasi banjir biopori, dan nilai daur ulang secara real-time.',
-    highlightsEn: [
-      'Translates raw satellite climatology (NASA POWER GHI & ERA5 precipitation) into actionable residential and commercial retrofit blueprints.',
-      'Combines deterministic civil and electrical engineering physics with Meta AI vision segmentation and multi-agent architectural reasoning.',
-      'Supports 195+ countries with localized electricity tariffs, carbon grid intensities, currency formatting, and bilingual EN/ID interfaces.',
+    id: "what-is-verdara",
+    category: "overview",
+    badge: "OVERVIEW",
+    qEn: "What is Verdara and how does it work from start to finish?",
+    qId: "Apa itu Verdara dan bagaimana cara kerjanya dari awal hingga akhir?",
+    aEn: "Verdara is a Spatial Eco-Twin & Architectural AI platform that transforms any building plot or home photo in 195+ countries into an interactive 3D ecological simulation. It combines satellite climatology (NASA POWER GHI & ERA5 rainfall), deterministic civil engineering physics, and Meta AI vision/reasoning to compute rooftop solar capacity, rainwater harvesting volume, biopore flood absorption, and circular waste value in real time.",
+    aId: "Verdara adalah platform Spatial Eco-Twin & AI Arsitektur yang mengubah kavling bangunan atau foto rumah di 195+ negara menjadi simulasi distrik ekologis 3D interaktif. Platform ini memadukan data satelit (NASA POWER GHI & curah hujan ERA5), fisika teknik sipil deterministik, serta visi dan penalaran Meta AI untuk menghitung kapasitas surya atap, panen air hujan, resapan banjir biopori, dan nilai daur ulang secara real-time.",
+    points: [
+      {
+        titleEn: "01 · Select Plot or Photo",
+        titleId: "01 · Pilih Kota atau Foto",
+        descEn: "Pick any of 195+ countries or scan a real building photo with Meta SAM 3.1.",
+        descId: "Pilih dari 195+ negara atau pindai foto bangunan asli dengan Meta SAM 3.1.",
+      },
+      {
+        titleEn: "02 · Deterministic Physics",
+        titleId: "02 · Fisika Deterministik",
+        descEn: "Computes exact kWp solar, rainwater Liters, and biopore wells without LLM guesswork.",
+        descId: "Menghitung kWp surya, Liter air hujan, dan sumur biopori tanpa tebakan AI.",
+      },
+      {
+        titleEn: "03 · 3D & Multi-Agent Plan",
+        titleId: "03 · Simulasi 3D & Rencana AI",
+        descEn: "Test storm resilience in 3D and generate a verified 3-specialist retrofit blueprint.",
+        descId: "Uji ketahanan badai di 3D dan hasilkan cetak biru retrofit dari 3 spesialis AI.",
+      },
     ],
-    highlightsId: [
-      'Menerjemahkan klimatologi satelit mentah (NASA POWER GHI & presipitasi ERA5) menjadi cetak biru retrofit hunian dan komersial yang siap dieksekusi.',
-      'Menggabungkan fisika teknik sipil dan elektro deterministik dengan segmentasi visi Meta AI serta penalaran arsitektur multi-agen.',
-      'Mendukung 195+ negara dengan tarif listrik lokal, intensitas karbon jaringan, format mata uang lokal, dan antarmuka dwibahasa EN/ID.',
-    ],
-    specCode: 'STACK :: Next.js 16 (App Router) + Three.js r183 WebGL + Meta SAM 3.1 + Muse Spark + Physics Engine v3.2',
-    relatedLink: {
-      href: '/dashboard',
-      labelEn: 'Explore 3D Living Town Studio',
-      labelId: 'Buka Studio 3D Living Town',
+    techSpec: "STACK :: Next.js 16 + Three.js r183 + Meta SAM 3.1 + Muse Spark + Physics v3.2",
+    relatedRoute: {
+      href: "/dashboard",
+      labelEn: "Open 3D Studio →",
+      labelId: "Buka Studio 3D →",
     },
   },
   {
-    id: 'global-cities-coverage',
-    category: 'overview',
-    badgeEn: '02 · 195+ COUNTRIES & CLIMATES',
-    badgeId: '02 · 195+ NEGARA & ZONA IKLIM',
-    questionEn: 'How does Verdara calculate accurate numbers for 195+ countries and different climate zones?',
-    questionId: 'Bagaimana Verdara menghitung angka yang akurat untuk 195+ negara dan zona iklim yang berbeda?',
-    answerEn:
-      'Every city and country in Verdara is mapped to a Köppen-Geiger climate classification (such as Aw Tropical Monsoon, Cfb Oceanic, Csb Mediterranean, BWh Hot Desert, or Dfb Continental) and paired with 12-month ERA5 hourly weather normals and NASA POWER Global Horizontal Irradiance (GHI). When you switch countries in the navbar or slide through the 10-country comparator deck, all solar, water, thermal comfort, and currency calculations recalibrate instantaneously.',
-    answerId:
-      'Setiap kota dan negara di Verdara dipetakan ke klasifikasi iklim Köppen-Geiger (seperti Aw Monsun Tropis, Cfb Oseanik, Csb Mediterania, BWh Gurun Panas, atau Dfb Kontinental) dan dipasangkan dengan normal cuaca 12-bulan ERA5 serta Global Horizontal Irradiance (GHI) NASA POWER. Saat Anda mengganti negara di navbar atau menggeser dek komparator 10 negara, seluruh kalkulasi surya, air, kenyamanan termal, dan mata uang dikalibrasi ulang secara instan.',
-    highlightsEn: [
-      '5 Deep-Calibration Benchmark Profiles: Menlo Park (Csb), London (Cfb), Tokyo (Cfa), Dubai (BWh), and Yogyakarta/Jakarta (Am/Aw).',
-      '10-Country Interactive Drag Deck on the landing page for side-by-side comparison of solar kWp, rainwater liters, and thermal comfort scores.',
-      'Automatic unit conversion between Metric (m², Liters, °C) and Imperial (sq ft, US Gallons, °F) across every chart and 3D badge.',
+    id: "global-climate-calibration",
+    category: "overview",
+    badge: "195+ COUNTRIES",
+    qEn: "How does Verdara calibrate weather, currency, and solar data across 195+ countries?",
+    qId: "Bagaimana Verdara mengkalibrasi cuaca, mata uang, dan data surya di 195+ negara?",
+    aEn: "Every country and city in Verdara is indexed to a Köppen-Geiger climate zone (such as Aw Tropical Monsoon, Cfb Oceanic, Csb Mediterranean, or BWh Hot Desert) paired with 12-month ERA5 precipitation normals and NASA POWER solar irradiance. Switching locations immediately updates local utility tariffs, currency formatting, grid CO2e intensity, and the 3D biome palette.",
+    aId: "Setiap negara dan kota di Verdara dipetakan ke klasifikasi iklim Köppen-Geiger (seperti Aw Monsun Tropis, Cfb Oseanik, Csb Mediterania, atau BWh Gurun Panas) bersama normal presipitasi 12-bulan ERA5 dan radiasi surya NASA POWER. Mengganti lokasi akan langsung memperbarui tarif listrik lokal, format mata uang, intensitas karbon jaringan, dan palet bioma 3D.",
+    points: [
+      {
+        titleEn: "Köppen-Geiger Biomes",
+        titleId: "Bioma Köppen-Geiger",
+        descEn: "6 procedural 3D biome palettes (Tropical, Arid, Mediterranean, Temperate, Continental, Polar).",
+        descId: "6 palet bioma 3D prosedural (Tropis, Arid, Mediterania, Sedang, Kontinental, Polar).",
+      },
+      {
+        titleEn: "10-Country Drag Comparator",
+        titleId: "Komparator Geser 10 Negara",
+        descEn: "Interactive drag-slide deck comparing solar kWp, rainfall, and comfort scores.",
+        descId: "Dek geser interaktif untuk membandingkan kWp surya, curah hujan, dan skor termal.",
+      },
+      {
+        titleEn: "Metric & Imperial Sync",
+        titleId: "Sinkronisasi Metrik & Imperial",
+        descEn: "1-click toggle between m² / Liters / °C and sq ft / US Gallons / °F.",
+        descId: "Tombol 1-klik untuk beralih antara m² / Liter / °C dan ft² / Galon AS / °F.",
+      },
     ],
-    highlightsId: [
-      '5 Profil Benchmark Kalibrasi Mendalam: Menlo Park (Csb), London (Cfb), Tokyo (Cfa), Dubai (BWh), dan Yogyakarta/Jakarta (Am/Aw).',
-      'Dek Geser Interaktif 10 Negara di halaman utama untuk perbandingan berdampingan kapasitas kWp surya, liter air hujan, dan skor kenyamanan termal.',
-      'Konversi satuan otomatis antara Metrik (m², Liter, °C) dan Imperial (sq ft, Galon AS, °F) di seluruh grafik dan lencana 3D.',
-    ],
-    specCode: 'CLIMATE_DB :: 195+ ISO-3166 Countries · 12-Month ERA5 Normals · Local Grid Tariffs & CO2e Factors',
-    relatedLink: {
-      href: '/radar',
-      labelEn: 'Inspect Global 3D Radar Map',
-      labelId: 'Periksa Peta 3D Radar Global',
+    techSpec: "CLIMATE_ENGINE :: 195+ ISO Countries · ERA5 12-Month Normals · Local Grid Tariffs",
+    relatedRoute: {
+      href: "/radar",
+      labelEn: "Explore 3D Radar →",
+      labelId: "Jelajahi Radar 3D →",
     },
   },
   {
-    id: 'why-login-required',
-    category: 'security',
-    badgeEn: '03 · AUTHENTICATION GATE',
-    badgeId: '03 · GERBANG OTENTIKASI',
-    questionEn: 'Why do I need to sign in before entering the Dashboard or AI workspaces?',
-    questionId: 'Mengapa saya harus login terlebih dahulu sebelum masuk ke Dashboard atau ruang kerja AI?',
-    answerEn:
-      'First-time visitors land on our public architectural showcase (/), Documentation (/docs), and FAQ (/faq) so they can explore the 3D Eco-District and benchmark climate decks freely. Signing in unlocks your dedicated personal spatial workspace (/dashboard, /lens, /radar, /council, /academy, /settings) where custom roof area sliders, Meta SAM 3.1 polygon scans, multi-agent blueprints, and field proof ledger receipts are isolated and persisted to your authenticated profile.',
-    answerId:
-      'Pengunjung pertama kali diarahkan ke halaman showcase publik (/), Dokumentasi (/docs), dan FAQ (/faq) agar dapat menjelajahi Distrik Ekologi 3D serta dek iklim secara bebas. Login membuka ruang kerja spasial pribadi Anda (/dashboard, /lens, /radar, /council, /academy, /settings) tempat slider luas atap kustom, pindaian poligon Meta SAM 3.1, cetak biru multi-agen, dan bukti lapangan disimpan secara terisolasi ke profil Anda.',
-    highlightsEn: [
-      'Instant 1-Click Judge / Demo Access on the /login page provisions a Level 5 Eco-Architect session without requiring external credentials.',
-      'Full support for custom email/password registration and login with cryptographic session token persistence.',
-      'Route-level AuthGate protection ensures unauthenticated users are cleanly redirected to /login with a return-path memory.',
+    id: "device-performance-60fps",
+    category: "overview",
+    badge: "PERFORMANCE",
+    qEn: "How does the platform stay lightweight and run at 60 FPS across mobile and desktop?",
+    qId: "Bagaimana platform ini tetap ringan dan berjalan 60 FPS di ponsel maupun desktop?",
+    aEn: "Instead of downloading heavy 50MB external GLTF models, Verdara generates its entire 3D architecture procedurally in GPU memory (<18MB VRAM) with adaptive pixel ratios (DPR capped at [1, 1.6]). Furthermore, synchronous theme initialization and zero-delay CSS rendering ensure instant first paint on refresh without layout shift or hidden opacity lag.",
+    aId: "Alih-alih mengunduh model GLTF eksternal berukuran puluhan megabita, Verdara membangun seluruh geometri arsitektur 3D secara prosedural di memori GPU (<18MB VRAM) dengan rasio piksel adaptif (DPR [1, 1.6]). Selain itu, inisialisasi tema sinkron memastikan tampilan langsung muncul saat refresh tanpa jeda animasi atau kedipan warna.",
+    points: [
+      {
+        titleEn: "<18MB WebGL Memory",
+        titleId: "Memori WebGL <18MB",
+        descEn: "Procedural instanced meshes compile in milliseconds with zero network asset wait.",
+        descId: "Mesh prosedural dikompilasi dalam milidetik tanpa waktu tunggu unduhan aset.",
+      },
+      {
+        titleEn: "Instant First Paint",
+        titleId: "Tampilan Awal Instan",
+        descEn: "Zero opacity:0 traps on load; hero typography and 3D canvas render immediately.",
+        descId: "Tanpa jebakan opacity:0 saat muat; tipografi dan kanvas 3D tampil seketika.",
+      },
+      {
+        titleEn: "320px to 4K Responsive",
+        titleId: "Responsif 320px hingga 4K",
+        descEn: "Touch-ergonomic >=40px controls, compact navbar, and adaptive studio grids.",
+        descId: "Kontrol sentuh ergonomis >=40px, navbar ringkas, dan grid studio adaptif.",
+      },
     ],
-    highlightsId: [
-      'Akses Juri / Demo 1-Klik instan di halaman /login langsung mengaktifkan sesi Eco-Architect Level 5 tanpa memerlukan kredensial eksternal.',
-      'Dukungan penuh pendaftaran dan login email/kata sandi kustom dengan penyimpanan token sesi kriptografis.',
-      'Proteksi AuthGate tingkat rute memastikan pengguna yang belum login diarahkan dengan rapi ke /login dan dikembalikan ke halaman tujuan setelah masuk.',
+    techSpec: "PERF_BUDGET :: Procedural WebGL · DPR [1, 1.6] · Synchronous Theme Init · 60 FPS",
+  },
+  {
+    id: "three-d-modes-explained",
+    category: "three-d",
+    badge: "3D SIMULATION",
+    qEn: "What is the exact difference between '01 Normal Day', '02 Storm Surge', and '03 AI Solution'?",
+    qId: "Apa perbedaan spesifik antara mode '01 Normal Day', '02 Storm Surge', dan '03 AI Solution'?",
+    aEn: "The 3D Eco-District simulates how a residential block responds to climate extremes. Switching modes changes the atmospheric lighting, rain particle velocity, canal water height, flood warning overlays, and structural green retrofits in real time so you can visually verify before-and-after environmental resilience.",
+    aId: "Distrik Ekologis 3D mensimulasikan bagaimana blok hunian merespons cuaca ekstrem. Mengganti mode akan mengubah pencahayaan atmosfer, partikel hujan, tinggi permukaan air kanal, indikator banjir, serta aktivasi infrastruktur hijau secara real-time sehingga Anda dapat membandingkan ketahanan lingkungan sebelum dan sesudah intervensi AI.",
+    points: [
+      {
+        titleEn: "01 Normal Day (Run)",
+        titleId: "01 Normal Day (Run)",
+        descEn: "Baseline solar roof generation, steady canal flow, wind turbines, and EV shuttle transit.",
+        descId: "Produksi surya normal, aliran kanal stabil, turbin angin, dan mobilitas shuttle EV.",
+      },
+      {
+        titleEn: "02 Storm Surge (Break)",
+        titleId: "02 Storm Surge (Break)",
+        descEn: "Heavy monsoon rain streaks, +18cm street flood surge, and +4.2°C roof thermal stress.",
+        descId: "Hujan badai deras, luapan banjir jalan +18cm, dan tekanan panas atap +4,2°C.",
+      },
+      {
+        titleEn: "03 AI Solution (Heal)",
+        titleId: "03 AI Solution (Heal)",
+        descEn: "Activates SAM 3.1 laser scan, dual PV arrays (+25% kWp), biopore drains, and 0cm flood.",
+        descId: "Mengaktifkan pemindaian laser SAM 3.1, panel surya ganda (+25% kWp), biopori, dan bebas banjir.",
+      },
     ],
-    specCode: 'AUTH_FLOW :: Public (/, /docs, /faq, /login) -> AuthGate -> Protected Studio Routes (Session v3.2)',
-    relatedLink: {
-      href: '/login',
-      labelEn: 'Open Login & 1-Click Judge Access',
-      labelId: 'Buka Halaman Login & Akses Juri 1-Klik',
+    techSpec: "3D_MODES :: Run (Baseline) -> Break (+18cm Flood Stress) -> Heal (SAM 3.1 Retrofit)",
+    relatedRoute: {
+      href: "/dashboard",
+      labelEn: "Test 3D Modes Live →",
+      labelId: "Uji Mode 3D Langsung →",
     },
   },
   {
-    id: 'three-d-district-modes',
-    category: 'three-d',
-    badgeEn: '04 · 3D LIVING ECO-DISTRICT',
-    badgeId: '04 · DISTRIK EKOLOGI 3D',
-    questionEn: 'What happens when I switch between "01 Normal Day", "02 Storm Surge", and "03 AI Solution" in the 3D Stage?',
-    questionId: 'Apa perbedaan nyata saat saya mengganti mode "01 Normal Day", "02 Storm Surge", dan "03 AI Solution" di kotak 3D?',
-    answerEn:
-      'The 3D Living Eco-District is a real-time Three.js WebGL procedural simulation of a Mass-Timber (CLT) Solar Atrium, twin residential villas, a hydro retention canal, active biopore wells, and an EV transit corridor. Switching between the 3 simulation modes dynamically alters the 3D geometry, water physics, weather particles, and structural telemetry cards so you can observe how green infrastructure responds to extreme climate stress.',
-    answerId:
-      'Distrik Ekologi 3D adalah simulasi prosedural WebGL Three.js real-time yang mencakup Atrium Surya Mass-Timber (CLT), dua vila hunian, kanal retensi hidro, sumur biopori aktif, dan koridor transit EV. Mengganti 3 mode simulasi akan mengubah geometri 3D, fisika air, partikel cuaca, dan kartu telemetri secara dinamis sehingga Anda dapat melihat langsung bagaimana infrastruktur hijau merespons tekanan iklim ekstrem.',
-    highlightsEn: [
-      '01 Normal Day (Run): Clear atmospheric sky, baseline canal water level, active rooftop PV generation, steady wind turbine rotation, and EV street transit.',
-      '02 Storm Surge (Break): Dark cumulonimbus storm atmosphere, 420 heavy rain droplets, surging canal water level (+0.26m flood stress), and amber overflow warning rings.',
-      '03 AI Solution (Heal): Deploys an elevated green-roof pergola canopy, expands the rainwater retention tank (1.28x capacity), activates cyan biopore infiltration plumes, and restores thermal comfort (+6 pts).',
+    id: "three-d-scroll-zoom-camera",
+    category: "three-d",
+    badge: "3D SCROLL ZOOM",
+    qEn: "How do 3D scroll zoom, orbit drag, and page Smooth Scroll work together?",
+    qId: "Bagaimana fitur scroll zoom 3D, rotasi orbit, dan Smooth Scroll halaman bekerja bersamaan?",
+    aEn: "When your cursor is positioned inside the 3D Eco-District or 3D Radar viewport, scrolling your mouse wheel or trackpad zooms the 3D camera smoothly in and out (3.2m close-up to 13.5m overview), while dragging orbits 360 degrees. As soon as your cursor moves outside the 3D canvas, our universal Lenis Smooth Scroll glides the page without conflict.",
+    aId: "Saat kursor Anda berada di dalam area Distrik 3D atau Peta Radar 3D, menggulir roda mouse atau trackpad akan melakukan zoom in/out pada kamera 3D secara halus (jarak dekat 3,2m hingga tampilan penuh 13,5m), sedangkan klik-geser memutar sudut pandang 360 derajat. Begitu kursor berada di luar kotak 3D, mesin Lenis Smooth Scroll menggulir halaman dengan mulus tanpa bentrok.",
+    points: [
+      {
+        titleEn: "Damped 3D Scroll Zoom",
+        titleId: "Scroll Zoom 3D Halus",
+        descEn: "OrbitControls zoom (3.2m to 13.5m) with 0.08 damping factor for cinematic inspection.",
+        descId: "Zoom OrbitControls (3,2m hingga 13,5m) dengan faktor redaman 0,08 untuk inspeksi presisi.",
+      },
+      {
+        titleEn: "4 Camera Focus Presets",
+        titleId: "4 Preset Fokus Kamera",
+        descEn: "1-click camera flight to Overview, Solar Hub, Hydro Canal, or Autonomous EV Street.",
+        descId: "Transisi kamera 1-klik menuju Utama, Atap Surya, Kanal Air, atau Jalan EV.",
+      },
+      {
+        titleEn: "Smart Scroll Isolation",
+        titleId: "Isolasi Scroll Cerdas",
+        descEn: "data-lenis-prevent boundary ensures 3D zooming never accidentally scrolls the page.",
+        descId: "Batas data-lenis-prevent memastikan zoom 3D tidak menggeser posisi halaman.",
+      },
     ],
-    highlightsId: [
-      '01 Normal Day (Run): Langit cerah normal, tinggi air kanal stabil, pembangkitan PV atap aktif, rotasi turbin angin stabil, dan mobilitas jalan EV.',
-      '02 Storm Surge (Break): Atmosfer badai gelap, 420 partikel hujan deras, permukaan air kanal meluap (+0.26m tekanan banjir), dan cincin peringatan luapan kuning-merah.',
-      '03 AI Solution (Heal): Mengaktifkan kanopi pergola atap hijau, memperbesar tangki retensi air hujan (kapasitas 1.28x), menyalakan cincin infiltrasi biopori sian, dan memulihkan kenyamanan termal (+6 poin).',
+    techSpec: "CAMERA_RIG :: OrbitControls (enableZoom: true, 3.2m-13.5m) + Lenis Boundary Guard",
+  },
+  {
+    id: "radar-3d-extrusion-map",
+    category: "three-d",
+    badge: "3D GIS RADAR",
+    qEn: "How does the 3D Urban Radar locate nearby recycling hubs and calculate distances?",
+    qId: "Bagaimana Radar Urban 3D menemukan hub daur ulang terdekat dan menghitung jaraknya?",
+    aEn: "The 3D Geospatial Radar (/radar) renders a 55-degree pitched MapLibre GL 3D building extrusion map synchronized with your active city. It queries verified circular economy drop-off points (Waste Banks, Compost Hubs, E-Waste stations) and computes exact geodesic distance (km/mi) using the spherical Haversine formula.",
+    aId: "Radar Geospasial 3D (/radar) menampilkan peta ekstrusi bangunan 3D MapLibre GL dengan kemiringan 55 derajat yang tersinkronisasi dengan kota aktif Anda. Fitur ini memetakan titik ekonomi sirkular terverifikasi (Bank Sampah, Hub Kompos, Stasiun E-Waste) dan menghitung jarak geodesik presisi (km/mil) menggunakan rumus bola Haversine.",
+    points: [
+      {
+        titleEn: "55° 3D Building Pitch",
+        titleId: "Ekstrusi Gedung 3D 55°",
+        descEn: "Interactive 3D urban terrain with scroll-wheel zoom and click-to-measure roof area.",
+        descId: "Peta kota 3D interaktif dengan scroll-zoom dan klik gedung untuk estimasi luas atap.",
+      },
+      {
+        titleEn: "Haversine Geodesic Math",
+        titleId: "Geodesik Haversine",
+        descEn: "Computes exact spherical distance and estimated travel time to every circular hub.",
+        descId: "Menghitung jarak lengkung bumi presisi dan estimasi waktu tempuh ke setiap hub.",
+      },
+      {
+        titleEn: "12-Month ERA5 Charts",
+        titleId: "Grafik ERA5 12-Bulan",
+        descEn: "Displays monthly rainfall (mm) and solar irradiance (GHI) bars for the selected city.",
+        descId: "Menampilkan grafik bulanan curah hujan (mm) dan radiasi surya (GHI) kota terpilih.",
+      },
     ],
-    specCode: 'WEBGL_STAGE :: Three.js r183 · ACESFilmicToneMapping · 4 Camera Focus Presets · Day/Night PBR Materials',
-    relatedLink: {
-      href: '/dashboard',
-      labelEn: 'Test 3D Simulation Modes Live',
-      labelId: 'Uji Mode Simulasi 3D Secara Langsung',
+    techSpec: "GIS_RADAR :: MapLibre GL 3D (Pitch 55°, scrollZoom: true) + Haversine Distance Engine",
+    relatedRoute: {
+      href: "/radar",
+      labelEn: "Launch 3D Radar →",
+      labelId: "Buka Radar 3D →",
     },
   },
   {
-    id: 'three-d-camera-and-scroll',
-    category: 'three-d',
-    badgeEn: '05 · 3D SCROLL ZOOM & CAMERA PRESETS',
-    badgeId: '05 · SCROLL ZOOM 3D & PRESET KAMERA',
-    questionEn: 'How do I zoom in/out and inspect specific parts of the 3D town alongside Smooth Scroll?',
-    questionId: 'Bagaimana cara zoom in/out dan memeriksa bagian tertentu di kota 3D bersama Smooth Scroll?',
-    answerEn:
-      'We engineered the 3D canvas and the global inertial Smooth Scroll engine to work seamlessly together. When your cursor is over the 3D Eco-District stage, scrolling your mouse wheel or trackpad zooms the 3D camera smoothly in and out (from 3.2m close-up inspection out to 13.5m district overview), and click-and-drag orbits 360 degrees. When your cursor is outside the 3D box, the global inertial Smooth Scroll glides down the page.',
-    answerId:
-      'Kami merancang kanvas 3D dan mesin Smooth Scroll inersia global agar bekerja selaras. Saat kursor Anda berada di atas panggung Distrik Ekologi 3D, menggulir roda mouse atau trackpad akan melakukan zoom in/out kamera 3D secara mulus (dari jarak dekat 3,2m hingga tampilan distrik utuh 13,5m), dan klik-geser memutar sudut pandang 360 derajat. Saat kursor berada di luar kotak 3D, Smooth Scroll akan menggulir halaman dengan halus.',
-    highlightsEn: [
-      'Direct 3D Scroll Zoom: Hover over any 3D stage or 3D Radar map and scroll to zoom in/out with damped orbital physics.',
-      '4 Targeted Camera Presets smoothly interpolate the camera position and look-at target toward the CLT Solar Hub, Hydro Canal, or EV Street.',
-      'Universal Inertial Smooth Scroll (60fps critically damped lerp) automatically yields when your cursor is inside a 3D canvas so page scroll and 3D zoom never clash.',
+    id: "meta-sam-vision-segmentation",
+    category: "ai",
+    badge: "META SAM 3.1",
+    qEn: "How does Meta SAM 3.1 segment roof pitches and recyclable materials from a photo?",
+    qId: "Bagaimana Meta SAM 3.1 melakukan segmentasi bidang atap dan material daur ulang dari foto?",
+    aEn: "In the SAM 3.1 Spatial Lens (/lens), uploaded photos are processed through /api/vision/segment. Meta SAM 3.1 executes zero-shot spatial polygon segmentation to isolate unobstructed roof slabs (subtracting chimneys, HVAC units, and tree shade), gutter catchment perimeters, and circular waste items, returning SVG vector masks and usable m²/ft² area.",
+    aId: "Di Lensa Spasial SAM 3.1 (/lens), foto yang diunggah diproses melalui /api/vision/segment. Meta SAM 3.1 menjalankan segmentasi poligon spasial zero-shot untuk mengisolasi bidang atap bersih (mengurangi cerobong, unit AC, dan bayangan pohon), keliling talang air, serta objek daur ulang, lalu menghasilkan mask vektor SVG dan luas efektif m²/ft².",
+    points: [
+      {
+        titleEn: "Zero-Shot Polygon Masks",
+        titleId: "Mask Poligon Zero-Shot",
+        descEn: "Extracts precise SVG vector boundaries and confidence IoU scores from raw imagery.",
+        descId: "Mengekstrak batas vektor SVG presisi dan skor akurasi IoU dari foto mentah.",
+      },
+      {
+        titleEn: "6 Golden Specimens (<50ms)",
+        titleId: "6 Spesimen Uji (<50mdtk)",
+        descEn: "Pre-verified rooftop, courtyard, and recycling specimens load in <50ms at $0 API cost.",
+        descId: "6 spesimen atap, halaman, dan daur ulang terverifikasi dimuat <50mdtk dengan biaya API $0.",
+      },
+      {
+        titleEn: "Muse Image Retrofit Slider",
+        titleId: "Slider Retrofit Muse Image",
+        descEn: "Interactive Before/After architectural comparison showing installed solar & biopores.",
+        descId: "Perbandingan interaktif Before/After yang menampilkan hasil instalasi surya & biopori.",
+      },
     ],
-    highlightsId: [
-      'Scroll Zoom 3D Langsung: Arahkan kursor ke panggung 3D atau peta Radar 3D lalu scroll untuk zoom in/out dengan fisika kamera yang halus.',
-      '4 Preset Kamera Terfokus menggerakkan posisi dan titik pandang kamera secara halus menuju Solar Hub CLT, Kanal Hidro, atau Jalan EV.',
-      'Universal Inertial Smooth Scroll (interpolasi lerp 60fps) otomatis memberi ruang saat kursor berada di dalam kanvas 3D sehingga zoom 3D dan scroll halaman tidak bentrok.',
-    ],
-    specCode: 'SCROLL_ENGINE :: 3D Canvas Scroll-Zoom (enableZoom: true, 3.2m-13.5m) + Lenis Smooth Scroll Boundary Isolation',
-  },
-  {
-    id: 'meta-sam-vision-lens',
-    category: 'ai',
-    badgeEn: '06 · META SAM 3.1 SPATIAL LENS',
-    badgeId: '06 · LENSA SPASIAL META SAM 3.1',
-    questionEn: 'How does the Meta SAM 3.1 Vision Lens extract usable roof area and materials from a photo?',
-    questionId: 'Bagaimana Lensa Visi Meta SAM 3.1 mengekstrak luas atap dan material dari sebuah foto?',
-    answerEn:
-      'When you upload a photo of a rooftop, yard, or recyclable material in the SAM 3.1 Spatial Lens (/lens), the image is processed through our server-side vision pipeline (/api/vision/segment). Meta SAM 3.1 performs zero-shot spatial polygon segmentation to isolate unobstructed roof pitches, gutter catchment edges, impervious concrete surfaces, and circular waste items (PET, HDPE, aluminum, cardboard), returning normalized SVG vector contours and confidence scores.',
-    answerId:
-      'Saat Anda mengunggah foto atap, halaman rumah, atau material daur ulang di Lensa Spasial SAM 3.1 (/lens), gambar diproses melalui pipeline visi sisi-server kami (/api/vision/segment). Meta SAM 3.1 melakukan segmentasi poligon spasial zero-shot untuk mengisolasi bidang atap tanpa bayangan, tepi talang air, permukaan beton kedap air, serta material daur ulang (PET, HDPE, aluminium, kardus), lalu mengembalikan kontur vektor SVG ternormalisasi beserta skor akurasinya.',
-    highlightsEn: [
-      'Computes net usable solar area by subtracting chimneys, skylights, HVAC units, and tree-shading masks from the gross roof footprint.',
-      'Includes 6 pre-calibrated Golden Specimen benchmarks (Rooftop Solar Slab, Tropical Monsoon Courtyard, Urban Biopore Drain, Circular PET/Alu Batch, etc.) for instant <50ms evaluation.',
-      'Features an interactive Before / After Architectural Retrofit slider powered by Meta Muse Image synthesis.',
-    ],
-    highlightsId: [
-      'Menghitung luas surya bersih yang dapat digunakan dengan mengurangi cerobong, skylight, unit HVAC, dan area bayangan pohon dari total luas atap.',
-      'Menyediakan 6 spesimen benchmark terkalibrasi (Atap Surya, Halaman Monsun Tropis, Drainase Biopori, Batch Daur Ulang PET/Alu, dll.) untuk pengujian instan <50mdtk.',
-      'Dilengkapi slider perbandingan Before / After Retrofit Arsitektur interaktif yang didukung sintesis Meta Muse Image.',
-    ],
-    specCode: 'VISION_API :: POST /api/vision/segment · Meta SAM 3.1 Polygon Contours + Muse Image Retrofit',
-    relatedLink: {
-      href: '/lens',
-      labelEn: 'Launch Meta SAM 3.1 Spatial Lens',
-      labelId: 'Buka Lensa Spasial Meta SAM 3.1',
+    techSpec: "VISION_PIPELINE :: POST /api/vision/segment · Meta SAM 3.1 + Muse Image Synthesis",
+    relatedRoute: {
+      href: "/lens",
+      labelEn: "Try SAM 3.1 Lens →",
+      labelId: "Coba Lensa SAM 3.1 →",
     },
   },
   {
-    id: 'muse-spark-ai-council',
-    category: 'ai',
-    badgeEn: '07 · 3-AGENT AI COUNCIL & FACT VALIDATOR',
-    badgeId: '07 · DEWAN AI 3-AGEN & VALIDATOR FAKTA',
-    questionEn: 'Who are the 3 AI specialists in the Eco-Architect Council and how do you prevent AI hallucinations?',
-    questionId: 'Siapa saja 3 spesialis AI di Dewan Eco-Architect dan bagaimana Verdara mencegah halusinasi angka AI?',
-    answerEn:
-      'In the AI Council workspace (/council), Meta Muse Spark orchestrates three domain-specific engineering personas in parallel: (1) Dr. Flora (Urban Botanist & Microclimate Specialist), (2) Ir. Arka (Solar PV & Hydrological Civil Engineer), and (3) Sirkula (Circular Economy & Material Auditor). Crucially, the AI models are never allowed to invent physics numbers: our deterministic Physics Engine computes all kWh, Liters, and currency values first, injects them into the prompt, and runs a post-generation +/-3% Fact Validator.',
-    answerId:
-      'Di ruang kerja Dewan AI (/council), Meta Muse Spark mengoordinasikan tiga persona insinyur spesialis secara paralel: (1) Dr. Flora (Ahli Botani Perkotaan & Iklim Mikro), (2) Ir. Arka (Insinyur Sipil Hidrologi & Surya PV), serta (3) Sirkula (Auditor Ekonomi Sirkular & Material). Yang paling penting, model AI tidak pernah diizinkan mengarang angka fisika: Mesin Fisika deterministik kami menghitung seluruh nilai kWh, Liter, dan mata uang terlebih dahulu, menyuntikkannya ke prompt, lalu menjalankan Validator Fakta +/-3% pasca-generasi.',
-    highlightsEn: [
-      'Dr. Flora specifies native drought- or monsoon-resilient vegetation, green roof substrates, and Urban Heat Island (UHI) cooling strategies.',
-      'Ir. Arka designs the monocrystalline PV string layout, LiFePO4 battery sizing, first-flush rainwater diverters, and biopore trench spacing.',
-      'Deterministic Fact Validator parses every numeric claim in the LLM output and flags or corrects any deviation exceeding +/-3% from the physics ground truth.',
+    id: "muse-spark-three-agent-council",
+    category: "ai",
+    badge: "MUSE SPARK COUNCIL",
+    qEn: "How does the 3-Agent AI Council deliberate and guarantee zero hallucinated numbers?",
+    qId: "Bagaimana Dewan AI 3-Agen berunding dan menjamin tidak ada angka fisika yang mengarang?",
+    aEn: "The AI Council (/council) uses Meta Muse Spark to orchestrate 3 specialist personas: Dr. Flora (Botanist & Microclimate), Ir. Arka (Solar & Hydrological Civil Engineer), and Sirkula (Circular Material Economist). To eliminate AI hallucination, our deterministic Physics Engine calculates all kWh, Liters, and CAPEX/ROI figures first, locks them into the system prompt, and validates every output claim within a strict +/-3% tolerance.",
+    aId: "Dewan AI (/council) menggunakan Meta Muse Spark untuk mengoordinasikan 3 spesialis: Dr. Flora (Ahli Botani & Iklim Mikro), Ir. Arka (Insinyur Sipil Surya & Hidrologi), serta Sirkula (Ekonom Material Sirkular). Untuk mencegah halusinasi AI, Mesin Fisika deterministik menghitung seluruh angka kWh, Liter, dan ROI terlebih dahulu, menguncinya ke dalam prompt, dan memvalidasi setiap klaim numerik dengan toleransi ketat +/-3%.",
+    points: [
+      {
+        titleEn: "Dr. Flora · Urban Botanist",
+        titleId: "Dr. Flora · Botani Kota",
+        descEn: "Selects native Köppen-matched flora, green roof substrates, and UHI cooling layouts.",
+        descId: "Memilih vegetasi lokal sesuai iklim Köppen, substrat atap hijau, dan pendinginan UHI.",
+      },
+      {
+        titleEn: "Ir. Arka · Civil & Solar",
+        titleId: "Ir. Arka · Sipil & Surya",
+        descEn: "Specifies PV string sizing, LiFePO4 battery storage, cisterns, and biopore spacing.",
+        descId: "Merancang kapasitas string PV, baterai LiFePO4, tangki tandon, dan jarak biopori.",
+      },
+      {
+        titleEn: "Sirkula + +/-3% Validator",
+        titleId: "Sirkula + Validator +/-3%",
+        descEn: "Audits circular payback and enforces strict +/-3% numeric alignment with physics math.",
+        descId: "Mengaudit nilai ekonomi sirkular dan menjaga akurasi angka +/-3% terhadap rumus fisika.",
+      },
     ],
-    highlightsId: [
-      'Dr. Flora merumuskan vegetasi lokal tahan kekeringan/monsun, substrat atap hijau, dan strategi pendinginan Urban Heat Island (UHI).',
-      'Ir. Arka merancang tata letak string PV monokristalin, kapasitas baterai LiFePO4, pengalih air hujan pertama (first-flush), dan jarak sumur biopori.',
-      'Validator Fakta Deterministik memeriksa setiap klaim numerik pada respons LLM dan mengoreksi deviasi apa pun yang melebihi +/-3% dari hasil mesin fisika.',
-    ],
-    specCode: 'COUNCIL_ENGINE :: POST /api/ai/council · Meta Muse Spark + Llama 4 Scout Open-Weight + +/-3% Validator',
-    relatedLink: {
-      href: '/council',
-      labelEn: 'Consult the 3-Agent AI Council',
-      labelId: 'Konsultasi dengan Dewan AI 3-Agen',
+    techSpec: "AGENT_COUNCIL :: POST /api/ai/council · Muse Spark + Llama 4 Scout + +/-3% Validator",
+    relatedRoute: {
+      href: "/council",
+      labelEn: "Consult AI Council →",
+      labelId: "Konsultasi Dewan AI →",
     },
   },
   {
-    id: 'solar-physics-math',
-    category: 'physics',
-    badgeEn: '08 · NREL PVWATTS V8 SOLAR PHYSICS',
-    badgeId: '08 · FISIKA SURYA NREL PVWATTS V8',
-    questionEn: 'What exact mathematical formula is used to calculate rooftop solar power and financial savings?',
-    questionId: 'Rumus matematika apa yang digunakan untuk menghitung energi surya atap dan penghematan biaya?',
-    answerEn:
-      'Verdara implements the industry-standard NREL PVWatts v8 equation in src/lib/science/solar.ts. Using your selected roof area, usable roof ratio (default 72% after setbacks), panel efficiency (20.8% N-type monocrystalline silicon), local daily Global Horizontal Irradiance (GHI), and ambient temperature derating, the engine computes peak capacity (kWp), annual generation (kWh/yr), local utility bill savings, and avoided grid carbon emissions (kg CO2e/yr).',
-    answerId:
-      'Verdara mengimplementasikan persamaan standar industri NREL PVWatts v8 di dalam src/lib/science/solar.ts. Menggunakan luas atap pilihan Anda, rasio atap bersih (default 72% setelah batas tepi), efisiensi panel (20,8% silikon monokristalin tipe-N), radiasi harian lokal (GHI), serta faktor koreksi suhu udara, mesin menghitung kapasitas puncak (kWp), produksi tahunan (kWh/thn), penghematan tagihan listrik lokal, dan reduksi emisi karbon (kg CO2e/thn).',
-    highlightsEn: [
-      'Thermal Cell Derating: Accounts for cell temperature rise above 25°C STC using gamma = -0.0038 / °C so hot desert cities (like Dubai) reflect realistic thermal losses.',
-      'System Performance Ratio (PR): Incorporates inverter efficiency (96%), DC/AC wiring losses (2%), and seasonal soiling factors (0.82 to 0.86 net PR).',
-      'Localized Financial ROI: Multiplies annual kWh yield by the exact local electricity tariff and grid carbon intensity factor of the active city.',
+    id: "solar-pvwatts-formula",
+    category: "physics",
+    badge: "SOLAR PHYSICS",
+    qEn: "How is rooftop solar capacity (kWp) and annual generation (kWh/yr) calculated?",
+    qId: "Bagaimana kapasitas surya atap (kWp) dan produksi listrik tahunan (kWh/thn) dihitung?",
+    aEn: "Verdara implements the NREL PVWatts v8 physical formulation in src/lib/science/solar.ts. Net usable roof area (72% of gross footprint after perimeter setbacks) is multiplied by monocrystalline module efficiency (20.8%), local daily solar irradiance (GHI), system performance ratio (0.84), and a thermal cell derating coefficient (gamma = -0.0038/°C above 25°C STC).",
+    aId: "Verdara menerapkan formulasi fisik NREL PVWatts v8 di src/lib/science/solar.ts. Luas atap efektif (72% dari luas kotor setelah batas tepi) dikalikan dengan efisiensi modul monokristalin (20,8%), radiasi surya harian lokal (GHI), rasio performa sistem (0,84), serta koefisien derating suhu sel (gamma = -0,0038/°C di atas 25°C STC).",
+    points: [
+      {
+        titleEn: "Thermal Cell Derating",
+        titleId: "Koreksi Suhu Sel",
+        descEn: "Applies gamma = -0.0038/°C so extreme desert heat accurately reduces peak cell output.",
+        descId: "Menerapkan gamma = -0,0038/°C agar suhu panas ekstrem terhitung secara realistis.",
+      },
+      {
+        titleEn: "Performance Ratio (0.84)",
+        titleId: "Rasio Performa (0,84)",
+        descEn: "Accounts for 96% inverter efficiency, DC/AC wiring losses, and surface dust soiling.",
+        descId: "Memperhitungkan efisiensi inverter 96%, rugi kabel DC/AC, dan debu permukaan panel.",
+      },
+      {
+        titleEn: "Tariff & Carbon Offset",
+        titleId: "Penghematan & Karbon",
+        descEn: "Multiplies annual kWh by local utility tariffs and national grid kg CO2e/kWh factors.",
+        descId: "Mengalikan kWh tahunan dengan tarif listrik lokal dan faktor emisi kg CO2e/kWh.",
+      },
     ],
-    highlightsId: [
-      'Derating Termal Sel: Memperhitungkan kenaikan suhu sel di atas 25°C STC menggunakan koefisien gamma = -0.0038 / °C sehingga kota bersuhu tinggi tercermin secara realistis.',
-      'Performance Ratio Sistem (PR): Mencakup efisiensi inverter (96%), rugi kabel DC/AC (2%), dan faktor debu musiman (net PR 0,82 hingga 0,86).',
-      'ROI Finansial Lokal: Mengalikan produksi kWh tahunan dengan tarif listrik lokal dan faktor intensitas karbon jaringan di kota aktif.',
-    ],
-    specCode: 'SOLAR_EQ :: E_annual = A_net * eta_pv(0.208) * GHI_daily * 365 * PR(0.84) * [1 + gamma*(T_cell - 25)]',
-    relatedLink: {
-      href: '/docs',
-      labelEn: 'Review Full Physics Formulas in Docs',
-      labelId: 'Lihat Rumus Fisika Lengkap di Dokumen',
+    techSpec: "PVWATTS_V8 :: E_yr = A_net * 0.208 * GHI_d * 365 * PR(0.84) * [1 - 0.0038*(T_cell - 25)]",
+    relatedRoute: {
+      href: "/docs",
+      labelEn: "View Math Derivations →",
+      labelId: "Lihat Derivasi Rumus →",
     },
   },
   {
-    id: 'rainwater-and-biopore-math',
-    category: 'physics',
-    badgeEn: '09 · DIN 1989-1 HYDROLOGY & BIOPORES',
-    badgeId: '09 · HIDROLOGI DIN 1989-1 & BIOPORI',
-    questionEn: 'How are rainwater harvesting volume, cistern tank size, and biopore wells calculated?',
-    questionId: 'Bagaimana cara perhitungan volume panen air hujan, ukuran tangki tandon, dan jumlah sumur biopori?',
-    answerEn:
-      'Rainwater harvesting follows the German DIN 1989-1 standard, multiplying your effective roof catchment area by local annual precipitation (mm/yr), material runoff coefficient (psi = 0.85 for pitched tile/metal roofs), and first-flush filter efficiency (eta_filter = 0.90). For ground-level flood mitigation, Verdara applies Darcy’s Law of soil infiltration to calculate how many 10cm x 100cm organic-compost biopore shafts are needed to absorb peak monsoon runoff.',
-    answerId:
-      'Panen air hujan mengikuti standar Jerman DIN 1989-1, dengan mengalikan luas tangkapan atap efektif dengan curah hujan tahunan lokal (mm/thn), koefisien limpasan material (psi = 0,85 untuk atap genteng/logam), dan efisiensi filter first-flush (eta_filter = 0,90). Untuk mitigasi banjir permukaan tanah, Verdara menerapkan Hukum Infiltrasi Tanah Darcy guna menghitung jumlah lubang resapan biopori (diameter 10cm x kedalaman 100cm) yang dibutuhkan untuk menyerap limpasan hujan puncak.',
-    highlightsEn: [
-      'Optimal Cistern Sizing: Calculates retention tank volume (Liters or US Gallons) to buffer 21 days of peak wet-season collection without overflow.',
-      'Biopore Absorption Rate: Each standard 100cm vertical biopore shaft filled with organic leaf compost infiltrates ~180 to 360 Liters/hour depending on soil permeability.',
-      'Household Water Autonomy: Estimates how many days of non-potable household demand (toilet flushing, landscape irrigation, cooling) the harvested rainwater covers.',
+    id: "rainwater-din-biopore-math",
+    category: "physics",
+    badge: "HYDROLOGY MATH",
+    qEn: "What formulas govern rainwater harvesting volume and biopore flood absorption?",
+    qId: "Rumus apa yang digunakan untuk menghitung volume panen air hujan dan resapan biopori?",
+    aEn: "Rainwater harvesting follows the German DIN 1989-1 standard, combining effective roof catchment area, annual ERA5 rainfall (mm/yr), surface runoff coefficient (psi = 0.85), and first-flush filter efficiency (eta = 0.90). Ground flood mitigation uses Brata’s Cylindrical Biopore Hydraulics and Darcy’s Law to size 10cm x 100cm compost-filled infiltration shafts.",
+    aId: "Panen air hujan mengacu pada standar Jerman DIN 1989-1, menggabungkan luas tangkapan atap efektif, curah hujan tahunan ERA5 (mm/thn), koefisien limpasan permukaan (psi = 0,85), dan efisiensi filter first-flush (eta = 0,90). Mitigasi banjir permukaan menggunakan Hidrolika Biopori Silindris Brata dan Hukum Darcy untuk menentukan jumlah sumur resapan 10cm x 100cm.",
+    points: [
+      {
+        titleEn: "DIN 1989-1 Cistern Sizing",
+        titleId: "Ukuran Tangki DIN 1989-1",
+        descEn: "Sizes retention tanks to buffer 21 days of peak monsoon rainfall without overflow.",
+        descId: "Menentukan kapasitas tandon untuk menampung cadangan 21 hari puncak musim hujan.",
+      },
+      {
+        titleEn: "Darcy Biopore Infiltration",
+        titleId: "Infiltrasi Biopori Darcy",
+        descEn: "Each 100cm vertical compost shaft absorbs ~180-360 L/hr of storm surface runoff.",
+        descId: "Setiap lubang biopori sedalam 100cm menyerap ~180-360 L/jam limpasan air hujan.",
+      },
+      {
+        titleEn: "Non-Potable Autonomy",
+        titleId: "Kemandirian Air",
+        descEn: "Calculates household days of irrigation, sanitation, and cooling water autonomy.",
+        descId: "Menghitung jumlah hari kemandirian air rumah tangga untuk sanitasi dan penyiraman.",
+      },
     ],
-    highlightsId: [
-      'Ukuran Tangki Optimal: Menghitung volume tandon retensi (Liter atau Galon AS) untuk menampung cadangan 21 hari musim hujan puncak tanpa luapan.',
-      'Laju Serapan Biopori: Setiap lubang biopori vertikal sedalam 100cm berisi kompos organik menyerap ~180 hingga 360 Liter/jam tergantung permeabilitas tanah.',
-      'Kemandirian Air Rumah Tangga: Mengestimasi berapa hari kebutuhan air non-minum (penyiraman taman, pembilasan sanitasi, pendinginan) yang dapat dipenuhi.',
-    ],
-    specCode: 'HYDRO_EQ :: V_rain = A_catchment * P_annual_mm * psi(0.85) * eta_filter(0.90) · N_biopore = ceil(A_roof / 10)',
+    techSpec: "DIN_1989_1 :: V_L = A_eff * P_mm * psi(0.85) * eta(0.90) · N_biopore = ceil(A_roof / 10)",
   },
   {
-    id: 'thermal-comfort-index',
-    category: 'physics',
-    badgeEn: '10 · URBAN HEAT & COMFORT INDEX',
-    badgeId: '10 · PULAU PANAS & INDEKS KENYAMANAN',
-    questionEn: 'What does the Thermal Comfort Score (0-100) mean and how do green retrofits improve it?',
-    questionId: 'Apa arti Skor Kenyamanan Termal (0-100) dan bagaimana retrofit hijau meningkatkannya?',
-    answerEn:
-      'The Thermal Comfort Score (0 to 100) evaluates outdoor and indoor microclimate stress based on ASHRAE 55 and ISO 7730 principles, factoring in local ambient temperature, relative humidity, solar radiation load, and urban surface albedo. When you activate rooftop solar panels (which shade the roof slab), cool-roof high-albedo coatings, and vegetated pergolas, Verdara calculates the surface temperature drop (-1.8°C to -3.2°C) and resulting HVAC cooling energy savings.',
-    answerId:
-      'Skor Kenyamanan Termal (0 hingga 100) mengevaluasi tingkat kenyamanan iklim mikro berdasarkan prinsip ASHRAE 55 dan ISO 7730, dengan memperhitungkan suhu udara lokal, kelembapan relatif, beban radiasi matahari, dan albedo permukaan kota. Saat Anda mengaktifkan panel surya atap (yang menaungi pelat atap), pelapis cool-roof ber-albedo tinggi, dan pergola vegetasi, Verdara menghitung penurunan suhu permukaan (-1,8°C hingga -3,2°C) beserta penghematan energi pendingin ruangan (AC).',
-    highlightsEn: [
-      'Photovoltaic Roof Shading: Rooftop solar arrays intercept direct solar irradiance before it heats the structural concrete or timber roof deck.',
-      'Evapotranspirative Cooling: Biopore soil moisture and native canopy trees increase latent heat dissipation around the building envelope.',
-      'Dynamic 3D Verification: Switching to Mode 03 (AI Solution) in the 3D stage immediately demonstrates the +6 point comfort recovery after storm and heat stress.',
+    id: "thermal-comfort-index-tci",
+    category: "physics",
+    badge: "THERMAL COMFORT",
+    qEn: "How is the Thermal Comfort Index (0-100) computed and improved by green retrofits?",
+    qId: "Bagaimana Indeks Kenyamanan Termal (0-100) dihitung dan ditingkatkan oleh retrofit hijau?",
+    aEn: "The Thermal Comfort Index (TCI, 0 to 100) models microclimate heat stress using ASHRAE-55 principles, combining ambient temperature, relative humidity, solar radiation load, and roof surface albedo. Installing solar shading panels, high-albedo cool-roof coatings, and biopore-fed vegetation reduces roof slab temperature by 1.8°C to 3.2°C.",
+    aId: "Indeks Kenyamanan Termal (TCI, 0 hingga 100) memodelkan beban panas iklim mikro berdasarkan prinsip ASHRAE-55, memadukan suhu udara, kelembapan relatif, beban radiasi matahari, dan albedo atap. Pemasangan panel surya peneduh, pelapis cool-roof ber-albedo tinggi, dan vegetasi biopori menurunkan suhu pelat atap sebesar 1,8°C hingga 3,2°C.",
+    points: [
+      {
+        titleEn: "PV Roof Slab Shading",
+        titleId: "Peneduh Pelat Atap PV",
+        descEn: "Elevated solar modules intercept direct radiation before it heats the roof structure.",
+        descId: "Modul surya menahan radiasi matahari langsung sebelum memanaskan struktur atap.",
+      },
+      {
+        titleEn: "High-Albedo Cool Roof",
+        titleId: "Cool Roof Albedo Tinggi",
+        descEn: "Reflective roof membranes + vegetative pergolas cut indoor cooling HVAC loads.",
+        descId: "Membran reflektif dan pergola vegetasi memangkas beban energi pendingin ruangan (AC).",
+      },
+      {
+        titleEn: "+6 Pt Comfort Recovery",
+        titleId: "Pemulihan Skor +6 Poin",
+        descEn: "Switching to 3D Mode 03 (AI Solution) demonstrates immediate microclimate recovery.",
+        descId: "Beralih ke Mode 3D 03 (AI Solution) menampilkan pemulihan kenyamanan iklim mikro.",
+      },
     ],
-    highlightsId: [
-      'Penajana Surya Atap: Rangkaian panel surya menahan radiasi matahari langsung sebelum memanaskan pelat atap beton atau kayu struktural.',
-      'Pendinginan Evapotranspirasi: Kelembapan tanah biopori dan kanopi pohon lokal meningkatkan pelepasan panas laten di sekitar selubung bangunan.',
-      'Verifikasi 3D Dinamis: Beralih ke Mode 03 (AI Solution) di panggung 3D langsung memperlihatkan pemulihan skor kenyamanan +6 poin.',
-    ],
-    specCode: 'THERMAL_MODEL :: ASHRAE-55 Microclimate Index · Cool-Roof Albedo Delta (-1.8°C to -3.2°C Surface Temp)',
+    techSpec: "TCI_ASHRAE :: Score(0-100) = f(T_amb, RH%, GHI, Albedo) · Cool-Roof Delta: -1.8°C to -3.2°C",
   },
   {
-    id: 'radar-3d-map',
-    category: 'three-d',
-    badgeEn: '11 · 3D GEOSPATIAL RADAR & ISOCHRONES',
-    badgeId: '11 · RADAR GEOSPASIAL 3D & ISOKRON',
-    questionEn: 'How does the 3D Geospatial Radar locate recycling hubs, solar microgrids, and flood sensors?',
-    questionId: 'Bagaimana Radar Geospasial 3D menemukan titik bank sampah, mikrogrid surya, dan sensor banjir?',
-    answerEn:
-      'The 3D Radar workspace (/radar) pairs a hardware-accelerated MapLibre GL 3D terrain and building extrusion map with our Haversine spatial query engine. It plots verified circular waste drop-off hubs (Bank Sampah / Municipal Material Recovery Facilities), communal solar microgrids, and flood telemetry stations around your selected city, computing exact geodesic distance (km/mi) and walking/driving travel time isochrones.',
-    answerId:
-      'Ruang kerja Radar 3D (/radar) memadukan peta ekstrusi bangunan 3D berbasis MapLibre GL dengan mesin kueri spasial Haversine kami. Fitur ini memetakan titik pengumpulan daur ulang terverifikasi (Bank Sampah / Fasilitas Pemulihan Material), mikrogrid surya komunal, dan stasiun telemetri banjir di sekitar kota pilihan Anda, lengkap dengan jarak geodesik presisi (km/mil) dan estimasi waktu tempuh.',
-    highlightsEn: [
-      'Interactive 12-Month ERA5 Rainfall & Solar GHI Bar Charts synchronized with the active radar viewport.',
-      'Category filtering across Circular Waste Hubs, Solar Microgrids, Hydro Retention Basins, and Urban Cooling Corridors.',
-      'Interactive 3D Scroll-Zoom & Pitch: Scroll inside the 3D map viewport to zoom in/out on individual building footprints and drag to orbit.',
+    id: "enterprise-database-v32",
+    category: "database",
+    badge: "DATABASE V3.2",
+    qEn: "How is Verdara's Enterprise Database v3.2 structured and can I export live snapshots?",
+    qId: "Bagaimana struktur Database Enterprise v3.2 Verdara dan bisakah saya mengekspor datanya?",
+    aEn: "Verdara operates an Enterprise Relational Database Engine v3.2 (src/lib/db/verdaraDatabase.ts & /api/db) featuring normalized tables with foreign-key integrity and dual-layer persistence (IndexedDB / LocalStorage client state synced with server-side JSON-WAL snapshots). You can inspect live records and export full JSON snapshots from /docs or /settings.",
+    aId: "Verdara menjalankan Mesin Database Relasional Enterprise v3.2 (src/lib/db/verdaraDatabase.ts & /api/db) dengan tabel ternormalisasi, integritas foreign-key, serta persistensi lapis ganda (state klien IndexedDB / LocalStorage yang disinkronkan dengan snapshot JSON-WAL server). Anda dapat memeriksa baris tabel dan mengekspor bundel JSON langsung di /docs atau /settings.",
+    points: [
+      {
+        titleEn: "Normalized Relational Tables",
+        titleId: "Tabel Relasional Normal",
+        descEn: "Tracks Users, Spatial Plots, SAM 3.1 Scans, AI Council Sessions, Field Proofs & Audit Logs.",
+        descId: "Mencatat Users, Spatial Plots, Pindaian SAM 3.1, Sesi Dewan AI, Bukti Lapangan & Log Audit.",
+      },
+      {
+        titleEn: "REST Inspector (/api/db)",
+        titleId: "Inspektur REST (/api/db)",
+        descEn: "Supports GET table telemetry and validated POST transactions with ACID-like integrity.",
+        descId: "Mendukung inspeksi tabel (GET) dan transaksi tervalidasi (POST) secara konsisten.",
+      },
+      {
+        titleEn: "1-Click JSON Snapshot",
+        titleId: "Snapshot JSON 1-Klik",
+        descEn: "Download the entire database state as a portable JSON archive for audit or backup.",
+        descId: "Unduh seluruh state database sebagai arsip JSON portabel untuk audit atau cadangan.",
+      },
     ],
-    highlightsId: [
-      'Grafik Batang Curah Hujan ERA5 & Radiasi Surya GHI 12-Bulan interaktif yang tersinkronisasi dengan area pandang radar aktif.',
-      'Filter kategori mencakup Titik Daur Ulang Sirkular, Mikrogrid Surya, Kolam Retensi Hidro, dan Koridor Pendingin Kota.',
-      'Scroll-Zoom & Rotasi 3D Interaktif: Gulir di dalam peta 3D untuk memperbesar/memperkecil bangunan hingga tingkat tapak dan geser untuk memutar sudut pandang.',
-    ],
-    specCode: 'RADAR_GIS :: MapLibre GL 3D Extrusions + Haversine Geodesic Distance + 12-Month ERA5 Telemetry',
-    relatedLink: {
-      href: '/radar',
-      labelEn: 'Open 3D Geospatial Radar',
-      labelId: 'Buka Radar Geospasial 3D',
+    techSpec: "DB_ENGINE_V3.2 :: Normalized Relational Schema · /api/db REST API · Dual Persistence",
+    relatedRoute: {
+      href: "/docs",
+      labelEn: "Inspect Live DB in Docs →",
+      labelId: "Periksa Database di Docs →",
     },
   },
   {
-    id: 'field-proofs-ledger',
-    category: 'database',
-    badgeEn: '12 · CRYPTOGRAPHIC FIELD PROOFS',
-    badgeId: '12 · BUKTI LAPANGAN KRIPTOGRAFIS',
-    questionEn: 'How does the Field Proof Ledger (/academy) verify real-world environmental actions?',
-    questionId: 'Bagaimana Buku Besar Bukti Lapangan (/academy) memverifikasi aksi lingkungan nyata?',
-    answerEn:
-      'Verdara goes beyond theoretical simulation by allowing citizens and engineers to log real-world sustainability actions in the Field Proofs workspace (/academy), such as installing a biopore well, sorting recyclable PET/aluminum, or mounting a rooftop solar module. When you submit photographic evidence, Meta SAM 3.1 verifies the physical object, calculates the exact CO2e and water impact, and records an immutable SHA-256 + 64-bit dHash perceptual receipt in the ledger.',
-    answerId:
-      'Verdara melampaui simulasi teoretis dengan memungkinkan warga dan insinyur mencatat aksi keberlanjutan nyata di ruang kerja Bukti Lapangan (/academy), seperti memasang sumur biopori, memilah sampah PET/aluminium, atau memasang modul surya atap. Saat Anda mengunggah bukti foto, Meta SAM 3.1 memverifikasi objek fisik tersebut, menghitung dampak CO2e dan air secara presisi, lalu mencatat tanda terima kriptografis SHA-256 + dHash 64-bit ke dalam buku besar.',
-    highlightsEn: [
-      '5 Structured Mission Tiers progressing from Novice Eco-Scout (Lv.1) to Principal Spatial Architect (Lv.5).',
-      'Every verified action generates a tamper-evident SHA-256 verification hash and 64-bit dHash anti-replay fingerprint.',
-      'Aggregates community-wide impact metrics (total kg CO2e avoided, Liters infiltrated, and circular material weight recovered).',
+    id: "field-proofs-dhash-ledger",
+    category: "database",
+    badge: "FIELD PROOFS",
+    qEn: "How does the Field Proof Ledger verify real-world eco-actions and prevent fake duplicate photos?",
+    qId: "Bagaimana Buku Besar Bukti Lapangan memverifikasi aksi nyata dan menolak foto duplikat?",
+    aEn: "In the Field Proofs workspace (/academy), users upload photos of real sustainability installations (solar panels, biopore holes, sorted recyclables). Meta SAM 3.1 verifies the object class, while our perceptual 64-bit dHash algorithm (dhash.ts) computes an 8x8 luminance gradient fingerprint and rejects duplicate or slightly cropped photos whenever Hamming distance <= 8.",
+    aId: "Di ruang kerja Bukti Lapangan (/academy), pengguna mengunggah foto aksi keberlanjutan nyata (panel surya, lubang biopori, pilahan daur ulang). Meta SAM 3.1 memverifikasi objek fisik tersebut, sementara algoritma perceptual dHash 64-bit (dhash.ts) menghitung sidik jari gradien luminans 8x8 dan menolak foto duplikat jika jarak Hamming <= 8.",
+    points: [
+      {
+        titleEn: "64-Bit Perceptual dHash",
+        titleId: "Perceptual dHash 64-Bit",
+        descEn: "Detects duplicate or re-cropped submissions via Hamming distance <= 8 anti-replay check.",
+        descId: "Mendeteksi foto ulang atau potongan gambar yang sama melalui pemeriksaan jarak Hamming <= 8.",
+      },
+      {
+        titleEn: "SHA-256 Receipt Ledger",
+        titleId: "Buku Besar Resi SHA-256",
+        descEn: "Generates an immutable cryptographic receipt binding timestamp, GPS, and SAM 3.1 IoU.",
+        descId: "Menghasilkan tanda terima kriptografis SHA-256 yang mengikat waktu, lokasi, dan skor SAM 3.1.",
+      },
+      {
+        titleEn: "5 Architect Progression Tiers",
+        titleId: "5 Level Progres Arsitek",
+        descEn: "Unlocks new 3D district assets as you advance from Level 1 Scout to Level 5 Architect.",
+        descId: "Membuka aset distrik 3D baru seiring kenaikan dari Level 1 Scout hingga Level 5 Architect.",
+      },
     ],
-    highlightsId: [
-      '5 Tingkatan Misi Terstruktur mulai dari Novice Eco-Scout (Lv.1) hingga Principal Spatial Architect (Lv.5).',
-      'Setiap aksi terverifikasi menghasilkan hash verifikasi SHA-256 anti-manipulasi dan sidik jari anti-duplikasi dHash 64-bit.',
-      'Mengagregasi metrik dampak komunitas secara menyeluruh (total kg CO2e yang dicegah, Liter air yang diresapkan, dan berat material daur ulang).',
-    ],
-    specCode: 'PROOF_LEDGER :: SAM 3.1 Visual Audit -> 64-Bit dHash + SHA-256 Receipt -> Relational Proof Table',
-    relatedLink: {
-      href: '/academy',
-      labelEn: 'View Verified Field Proofs & Missions',
-      labelId: 'Lihat Bukti Lapangan & Misi Terverifikasi',
+    techSpec: "ANTI_REPLAY :: 64-Bit Luminance dHash (Hamming <= 8) + SHA-256 Cryptographic Ledger",
+    relatedRoute: {
+      href: "/academy",
+      labelEn: "Open Field Proofs →",
+      labelId: "Buka Bukti Lapangan →",
     },
   },
   {
-    id: 'database-architecture-v32',
-    category: 'database',
-    badgeEn: '13 · ENTERPRISE DATABASE SCHEMA V3.2',
-    badgeId: '13 · SKEMA DATABASE ENTERPRISE V3.2',
-    questionEn: 'How is Verdara’s database architected and can I inspect or export the live relational tables?',
-    questionId: 'Bagaimana arsitektur database Verdara dirancang dan bisakah saya memeriksa atau mengekspor tabel relasionalnya?',
-    answerEn:
-      'Verdara runs on our Enterprise Relational Database Engine v3.2 (src/lib/db/verdaraDatabase.ts & /api/db), engineered with normalized relational tables, strict foreign-key integrity, and dual-layer persistence (IndexedDB / LocalStorage client state synchronized with server-side JSON-WAL snapshots). You can inspect live rows, run audit queries, and export full JSON database snapshots directly from the Documentation (/docs) or Shield (/settings) pages.',
-    answerId:
-      'Verdara berjalan di atas Mesin Database Relasional Enterprise v3.2 (src/lib/db/verdaraDatabase.ts & /api/db) yang dirancang dengan tabel relasional ternormalisasi, integritas kunci asing (foreign-key) ketat, dan persistensi lapis ganda (cache klien IndexedDB / LocalStorage yang disinkronkan dengan snapshot JSON-WAL sisi-server). Anda dapat memeriksa baris tabel secara langsung, menjalankan kueri audit, serta mengekspor snapshot JSON langsung dari halaman Dokumentasi (/docs) atau Shield (/settings).',
-    highlightsEn: [
-      'Normalized Relational Schema covering Users, Spatial Plots, SAM 3.1 Segmentation Runs, AI Council Sessions, Field Proof Ledger, and Security Audit Logs.',
-      'REST API Endpoint (/api/db): Supports GET health/table inspection and POST mutations with strict schema validation.',
-      '1-Click Snapshot Export: Download complete relational state as a portable JSON bundle for compliance or backup.',
+    id: "auth-gate-login-flow",
+    category: "security",
+    badge: "AUTH GATE",
+    qEn: "Why must users sign in before accessing the Dashboard, and how does 1-Click Judge Access work?",
+    qId: "Mengapa pengguna harus login sebelum masuk ke Dashboard, dan bagaimana cara kerja Akses Juri 1-Klik?",
+    aEn: "To protect API quotas and isolate personal spatial configurations, first-time visitors start on the public showcase (/), Documentation (/docs), and FAQ (/faq). Navigating to any studio workspace (/dashboard, /lens, /radar, /council, /academy, /settings) triggers our AuthGate, which redirects unauthenticated visitors to /login and restores their target destination immediately after sign-in.",
+    aId: "Untuk melindungi kuota API dan mengisolasi konfigurasi spasial tiap pengguna, pengunjung pertama kali memulai di halaman publik (/), Dokumentasi (/docs), dan FAQ (/faq). Membuka ruang kerja studio (/dashboard, /lens, /radar, /council, /academy, /settings) akan mengaktifkan AuthGate yang mengarahkan pengguna ke /login dan mengembalikan mereka ke halaman tujuan setelah masuk.",
+    points: [
+      {
+        titleEn: "1-Click Judge / Demo Login",
+        titleId: "Login Juri / Demo 1-Klik",
+        descEn: "Instant Level 5 Principal Eco-Architect session on /login with all 3D assets unlocked.",
+        descId: "Sesi instan Principal Eco-Architect Level 5 di /login dengan seluruh fitur 3D terbuka.",
+      },
+      {
+        titleEn: "Custom Account Registration",
+        titleId: "Pendaftaran Akun Kustom",
+        descEn: "Create a personal account with email & password synced to the v3.2 Users table.",
+        descId: "Buat akun pribadi dengan email & kata sandi yang tersimpan di tabel Users v3.2.",
+      },
+      {
+        titleEn: "Return-Path Memory",
+        titleId: "Memori Rute Tujuan",
+        descEn: "Preserves ?next=/target query routing so you land directly on the workspace you requested.",
+        descId: "Menyimpan parameter ?next=/tujuan agar Anda langsung masuk ke halaman yang diminta.",
+      },
     ],
-    highlightsId: [
-      'Skema Relasional Ternormalisasi mencakup Users, Spatial Plots, SAM 3.1 Segmentation Runs, AI Council Sessions, Field Proof Ledger, dan Security Audit Logs.',
-      'Endpoint REST API (/api/db): Mendukung inspeksi kesehatan/tabel (GET) dan mutasi transaksi (POST) dengan validasi skema ketat.',
-      'Ekspor Snapshot 1-Klik: Unduh seluruh state relasional sebagai bundel JSON portabel untuk audit atau pencadangan.',
-    ],
-    specCode: 'DB_SCHEMA_V3.2 :: Normalized Relational Tables · Foreign-Key Constraints · /api/db REST Inspector · JSON Export',
-    relatedLink: {
-      href: '/docs',
-      labelEn: 'Inspect Live Database Schema in Docs',
-      labelId: 'Periksa Skema Database Langsung di Dokumen',
+    techSpec: "AUTH_GUARD :: Public (/, /docs, /faq, /login) -> AuthGate -> Protected Studio Workspaces",
+    relatedRoute: {
+      href: "/login",
+      labelEn: "Go to Login Page →",
+      labelId: "Ke Halaman Login →",
     },
   },
   {
-    id: 'api-credit-shield',
-    category: 'security',
-    badgeEn: '14 · 7-LAYER API CREDIT SHIELD',
-    badgeId: '14 · PERISAI KREDIT API 7-LAPIS',
-    questionEn: 'How does the 7-Layer API Credit Shield protect cloud AI budgets while keeping demos fast?',
-    questionId: 'Bagaimana Perisai Kredit API 7-Lapis melindungi anggaran cloud AI sekaligus menjaga kecepatan demo?',
-    answerEn:
-      'Live multimodal AI calls (Meta SAM 3.1 segmentation, Muse Spark 3-agent orchestration, and Muse Image synthesis) can rapidly consume API quotas under heavy traffic or automated bot attacks. Our 7-Layer Credit Shield enforces SHA-256 request deduplication, pre-computed Golden Specimen zero-cost caching (<50ms latency at $0.00 cost), sliding-window IP rate limiting, and a hard Reserve Floor lock so evaluation judges always have guaranteed live API capacity.',
-    answerId:
-      'Panggilan AI multimodal langsung (segmentasi Meta SAM 3.1, orkestrasi 3-agen Muse Spark, dan sintesis Muse Image) dapat menghabiskan kuota API dengan cepat saat trafik tinggi atau terjadi serangan bot. Perisai Kredit 7-Lapis kami menerapkan deduplikasi permintaan SHA-256, cache Golden Specimen pra-komputasi (<50mdtk dengan biaya $0,00), pembatasan laju IP (rate limiting), serta penguncian Cadangan Juri agar pengujian langsung selalu terjamin.',
-    highlightsEn: [
-      'Layer 1 & 2 (Golden Specimen Cache & SHA-256 Deduplication): Identical photos or city prompts return verified cached tensors in under 50ms without billing the upstream API.',
-      'Layer 3 & 4 (Client Compression & Token Caps): Automatically downscales oversized uploads to 1024px max dimension and caps LLM output tokens.',
-      'Layer 5, 6 & 7 (Rate Limiter, Budget Reserve Lock & Deterministic Fallback): Guarantees 100% platform uptime even if external cloud endpoints are unreachable.',
+    id: "seven-layer-credit-shield",
+    category: "security",
+    badge: "7-LAYER SHIELD",
+    qEn: "How does the 7-Layer API Credit Shield prevent quota exhaustion while keeping responses under 50ms?",
+    qId: "Bagaimana Perisai Kredit API 7-Lapis mencegah habisnya kuota sekaligus menjaga respons <50mdtk?",
+    aEn: "Multimodal AI inference can be expensive under heavy traffic. Our 7-Layer Credit Shield protects cloud budgets via (1) Pre-verified Golden Specimen caching (<50ms at $0 cost), (2) SHA-256 payload deduplication, (3) client-side image compression (1024px max), (4) strict output token caps, (5) IP sliding-window rate limiting, (6) Judge Reserve budget locking, and (7) deterministic physics fallback.",
+    aId: "Inferensi AI multimodal membutuhkan perlindungan kuota saat trafik tinggi. Perisai Kredit 7-Lapis kami menjaga anggaran cloud melalui: (1) Cache Golden Specimen (<50mdtk dengan biaya $0), (2) Deduplikasi payload SHA-256, (3) Kompresi gambar klien (maks 1024px), (4) Batas token keluaran LLM, (5) Pembatasan laju IP (rate limit), (6) Penguncian cadangan kuota penguji, dan (7) Fallback fisika deterministik.",
+    points: [
+      {
+        titleEn: "SHA-256 Deduplication",
+        titleId: "Deduplikasi SHA-256",
+        descEn: "Identical image or city prompts serve verified cached tensors in <50ms at $0.00 cost.",
+        descId: "Foto atau prompt kota yang identik menyajikan hasil terverifikasi dalam <50mdtk tanpa biaya.",
+      },
+      {
+        titleEn: "Judge Reserve Floor",
+        titleId: "Cadangan Kuota Penguji",
+        descEn: "Locks a dedicated credit buffer so evaluators always experience live Meta AI calls.",
+        descId: "Mengunci cadangan anggaran khusus agar penguji selalu mendapat respons AI langsung.",
+      },
+      {
+        titleEn: "100% Uptime Fallback",
+        titleId: "Fallback Uptime 100%",
+        descEn: "Gracefully synthesizes engineering blueprints from local physics math if cloud APIs time out.",
+        descId: "Menyusun cetak biru rekayasa secara otomatis dari mesin fisika lokal jika jaringan terputus.",
+      },
     ],
-    highlightsId: [
-      'Lapis 1 & 2 (Cache Golden Specimen & Deduplikasi SHA-256): Foto atau prompt kota yang identik mengembalikan tensor terverifikasi dalam <50mdtk tanpa memotong kuota API.',
-      'Lapis 3 & 4 (Kompresi Klien & Batas Token): Mengecilkan resolusi unggahan berlebih ke maksimal 1024px dan membatasi token keluaran LLM.',
-      'Lapis 5, 6 & 7 (Rate Limiter, Kunci Cadangan Anggaran & Fallback Deterministik): Menjamin uptime platform 100% meskipun jaringan cloud eksternal sedang gangguan.',
-    ],
-    specCode: 'CREDIT_SHIELD :: 7 Defense Layers · SHA-256 Payload Cache · <50ms Golden Path · Zero-Downtime Fallback',
-    relatedLink: {
-      href: '/settings',
-      labelEn: 'Inspect Live 7-Layer Shield Telemetry',
-      labelId: 'Periksa Telemetri Perisai 7-Lapis',
+    techSpec: "SHIELD_7L :: Golden Cache (<50ms) + SHA-256 Dedup + Rate Limit + Reserve Floor Lock",
+    relatedRoute: {
+      href: "/settings",
+      labelEn: "Inspect Shield Telemetry →",
+      labelId: "Periksa Telemetri Shield →",
     },
   },
   {
-    id: 'cybersecurity-posture',
-    category: 'security',
-    badgeEn: '15 · OWASP CYBERSECURITY POSTURE',
-    badgeId: '15 · KEAMANAN SIBER STANDAR OWASP',
-    questionEn: 'What cybersecurity protections are built into Verdara’s frontend, API routes, and headers?',
-    questionId: 'Apa saja perlindungan keamanan siber yang ditanamkan pada frontend, rute API, dan header Verdara?',
-    answerEn:
-      'Verdara is hardened against OWASP Top 10 web and LLM vulnerabilities. Every HTTP response is protected by strict security headers configured in next.config.ts (Content-Security-Policy, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy, and Permissions-Policy). On the backend, all API routes (/api/vision/segment, /api/ai/council, /api/weather, /api/db) enforce strict payload size limits, MIME-type magic-byte checks, prompt-injection sanitization, and server-only environment variable isolation.',
-    answerId:
-      'Verdara diperkuat terhadap kerentanan web dan LLM OWASP Top 10. Setiap respons HTTP dilindungi oleh header keamanan ketat di next.config.ts (Content-Security-Policy, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy, dan Permissions-Policy). Di sisi backend, seluruh rute API (/api/vision/segment, /api/ai/council, /api/weather, /api/db) menerapkan batas ukuran payload, pemeriksaan tipe MIME, sanitasi prompt-injection, dan isolasi kunci API di sisi server.',
-    highlightsEn: [
-      'Zero Client Secret Leakage: Meta AI and Open-Weight API keys are strictly accessed inside server-side route handlers and never bundled into browser JavaScript.',
-      'Prompt Injection Firewall: User inputs to the AI Council are stripped of system-override tokens and bounded by strict JSON schema output contracts.',
-      'Audit Trail Logging: Every authentication event, AI invocation, and rate-limit trigger is recorded in the security audit relational table.',
+    id: "owasp-cybersecurity-headers",
+    category: "security",
+    badge: "CYBERSECURITY",
+    qEn: "What OWASP ASVS security headers and backend protections safeguard Verdara?",
+    qId: "Apa saja header keamanan OWASP ASVS dan proteksi backend yang melindungi Verdara?",
+    aEn: "Verdara is engineered to OWASP ASVS L2 standards. Every HTTP response enforces Content-Security-Policy (CSP), X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy, and Permissions-Policy via next.config.ts. All backend routes isolate API keys strictly on the server, validate payload sizes and MIME types, and sanitize user prompts against injection attacks.",
+    aId: "Verdara dirancang mengikuti standar keamanan OWASP ASVS L2. Setiap respons HTTP menerapkan Content-Security-Policy (CSP), X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy, dan Permissions-Policy melalui next.config.ts. Seluruh rute backend mengisolasi kunci API di sisi server, memvalidasi ukuran serta tipe MIME unggahan, dan membersihkan prompt dari serangan injeksi.",
+    points: [
+      {
+        titleEn: "Strict HTTP Security Headers",
+        titleId: "Header Keamanan HTTP",
+        descEn: "Blocks clickjacking (X-Frame-Options: DENY), XSS, and unauthorized script origins.",
+        descId: "Memblokir clickjacking (X-Frame-Options: DENY), XSS, dan skrip lintas-asal ilegal.",
+      },
+      {
+        titleEn: "Server-Only Secret Isolation",
+        titleId: "Isolasi Kunci Sisi-Server",
+        descEn: "Meta AI & cloud credentials never touch client bundles or NEXT_PUBLIC_ variables.",
+        descId: "Kunci API Meta AI tidak pernah diekspos ke bundle browser atau variabel publik.",
+      },
+      {
+        titleEn: "Prompt Injection Firewall",
+        titleId: "Firewall Injeksi Prompt",
+        descEn: "Strips system-override instructions and enforces strict JSON output schemas.",
+        descId: "Menyaring instruksi pembajak sistem dan menerapkan kontrak skema keluaran JSON ketat.",
+      },
     ],
-    highlightsId: [
-      'Nol Kebocoran Kunci Klien: Kunci API Meta AI hanya diakses di dalam handler rute sisi-server dan tidak pernah dikirim ke JavaScript browser.',
-      'Firewall Injeksi Prompt: Masukan pengguna ke Dewan AI dibersihkan dari instruksi pembajak sistem dan dibatasi oleh kontrak skema JSON ketat.',
-      'Pencatatan Jejak Audit: Setiap aktivitas login, pemanggilan AI, dan pemicu batas laju dicatat di tabel relasional audit keamanan.',
-    ],
-    specCode: 'SEC_HEADERS :: CSP + X-Frame-Options: DENY + Nosniff + Prompt-Firewall + Server-Only Secret Isolation',
-  },
-  {
-    id: 'device-responsiveness-performance',
-    category: 'overview',
-    badgeEn: '16 · RESPONSIVE DESIGN & 60FPS PERFORMANCE',
-    badgeId: '16 · DESAIN RESPONSIF & PERFORMA 60FPS',
-    questionEn: 'How does Verdara stay lightweight and responsive across mobile phones, tablets, and desktops despite heavy 3D graphics?',
-    questionId: 'Bagaimana Verdara tetap ringan dan responsif di ponsel, tablet, hingga desktop meskipun memiliki banyak grafik 3D?',
-    answerEn:
-      'We engineered a multi-tier performance architecture so Verdara loads instantaneously and runs at a locked 60fps across all devices. The 3D Eco-District uses procedural low-poly instanced meshes with adaptive devicePixelRatio (capped at [1, 2]) rather than bloated 50MB external GLTF downloads. Furthermore, initial page rendering is completely synchronous with zero hidden opacity traps, and the layout dynamically adapts from a 4-column desktop studio to a touch-friendly mobile dock with >=44px tap targets.',
-    answerId:
-      'Kami merancang arsitektur performa multi-lapis agar Verdara dimuat secara instan dan berjalan mulus 60fps di semua perangkat. Distrik Ekologi 3D menggunakan mesh prosedural ringan dengan devicePixelRatio adaptif (dibatasi pada [1, 2]) tanpa unduhan file 3D eksternal berukuran puluhan megabita. Selain itu, render awal halaman berlangsung sinkron tanpa penundaan animasi tersembunyi, dan tata letak menyesuaikan secara dinamis dari studio desktop ke dok mobile yang ramah sentuhan (target sentuh >=44px).',
-    highlightsEn: [
-      'Zero External 3D Asset Bottlenecks: 100% procedural Three.js geometry compiles in milliseconds and uses <18MB of GPU VRAM.',
-      'Synchronous Theme & Layout Initialization: Eliminates white/dark flash on refresh and renders all hero typography and 3D canvases immediately.',
-      'Full Touch & Mobile Ergonomics: Drag-slide country cards, horizontal scrollable filter bars, and compact top/bottom navigation bars fit 320px to 4K screens.',
-    ],
-    highlightsId: [
-      'Tanpa Bottleneck Aset 3D Eksternal: Geometri Three.js 100% prosedural dikompilasi dalam milidetik dan menggunakan <18MB VRAM GPU.',
-      'Inisialisasi Tema & Tata Letak Sinkron: Menghilangkan kedipan layar saat refresh dan menampilkan tipografi serta kanvas 3D secara langsung.',
-      'Ergonomi Sentuh & Mobile Penuh: Kartu negara yang dapat digeser (drag-slide), bilah filter responsif, dan navigasi ringkas mendukung layar 320px hingga 4K.',
-    ],
-    specCode: 'PERF_BUDGET :: <18MB WebGL VRAM · Adaptive DPR [1, 2] · Zero Opacity Delay · 320px-4K Responsive Grid',
+    techSpec: "OWASP_ASVS :: CSP + X-Frame-Options: DENY + Nosniff + Prompt Sanitizer + Audit Logs",
   },
 ];
 
 export default function FaqPage() {
-  const { locale, setLocale, units, setUnits, theme, setTheme, isAuthenticated } = useVerdaraStore();
-  const isId = locale === 'id';
-  const isLight = theme === 'light';
+  const {
+    locale,
+    setLocale,
+    units,
+    setUnits,
+    theme,
+    setTheme,
+    isAuthenticated,
+    displayName,
+    logout,
+  } = useVerdaraStore();
 
-  const [activeCategory, setActiveCategory] = useState<'all' | FaqItem['category']>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const isId = locale === "id";
+  const isLight = theme === "light";
+
+  const [activeCategory, setActiveCategory] = useState<"all" | FaqItem["category"]>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [openIds, setOpenIds] = useState<string[]>([
-    'what-is-verdara',
-    'three-d-district-modes',
-    'meta-sam-vision-lens',
-    'solar-physics-math',
+    "what-is-verdara",
+    "three-d-modes-explained",
+    "three-d-scroll-zoom-camera",
+    "meta-sam-vision-segmentation",
   ]);
 
-  const toggleFaq = (id: string) => {
-    setOpenIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  const toggleItem = (id: string) => {
+    setOpenIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
   };
 
-  const expandAll = () => {
-    setOpenIds(FAQ_ITEMS.map((item) => item.id));
-  };
-
-  const collapseAll = () => {
-    setOpenIds([]);
-  };
+  const categories: {
+    id: "all" | FaqItem["category"];
+    code: string;
+    labelEn: string;
+    labelId: string;
+    count: number;
+  }[] = [
+    {
+      id: "all",
+      code: "00",
+      labelEn: "All Topics",
+      labelId: "Semua Topik",
+      count: FAQ_ITEMS.length,
+    },
+    {
+      id: "overview",
+      code: "01",
+      labelEn: "Platform & Global Cities",
+      labelId: "Platform & Kota Global",
+      count: FAQ_ITEMS.filter((i) => i.category === "overview").length,
+    },
+    {
+      id: "three-d",
+      code: "02",
+      labelEn: "3D District, Zoom & Radar",
+      labelId: "Distrik 3D, Zoom & Radar",
+      count: FAQ_ITEMS.filter((i) => i.category === "three-d").length,
+    },
+    {
+      id: "ai",
+      code: "03",
+      labelEn: "Meta SAM 3.1 & Muse Spark",
+      labelId: "Meta SAM 3.1 & Muse Spark",
+      count: FAQ_ITEMS.filter((i) => i.category === "ai").length,
+    },
+    {
+      id: "physics",
+      code: "04",
+      labelEn: "Solar, Water & Thermal Math",
+      labelId: "Fisika Surya, Air & Termal",
+      count: FAQ_ITEMS.filter((i) => i.category === "physics").length,
+    },
+    {
+      id: "database",
+      code: "05",
+      labelEn: "Database v3.2 & Field Proofs",
+      labelId: "Database v3.2 & Bukti Nyata",
+      count: FAQ_ITEMS.filter((i) => i.category === "database").length,
+    },
+    {
+      id: "security",
+      code: "06",
+      labelEn: "Login, Shield & Cybersecurity",
+      labelId: "Login, Perisai & Keamanan",
+      count: FAQ_ITEMS.filter((i) => i.category === "security").length,
+    },
+  ];
 
   const filteredFaqs = useMemo(() => {
     return FAQ_ITEMS.filter((item) => {
-      const matchesCat = activeCategory === 'all' || item.category === activeCategory;
-      if (!matchesCat) return false;
+      const catMatch = activeCategory === "all" || item.category === activeCategory;
+      if (!catMatch) return false;
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
       return (
-        item.questionEn.toLowerCase().includes(q) ||
-        item.questionId.toLowerCase().includes(q) ||
-        item.answerEn.toLowerCase().includes(q) ||
-        item.answerId.toLowerCase().includes(q) ||
-        item.badgeEn.toLowerCase().includes(q) ||
-        item.specCode.toLowerCase().includes(q) ||
-        item.highlightsEn.some((h) => h.toLowerCase().includes(q)) ||
-        item.highlightsId.some((h) => h.toLowerCase().includes(q))
+        item.qEn.toLowerCase().includes(q) ||
+        item.qId.toLowerCase().includes(q) ||
+        item.aEn.toLowerCase().includes(q) ||
+        item.aId.toLowerCase().includes(q) ||
+        item.badge.toLowerCase().includes(q) ||
+        item.techSpec.toLowerCase().includes(q) ||
+        item.points.some(
+          (p) =>
+            p.titleEn.toLowerCase().includes(q) ||
+            p.titleId.toLowerCase().includes(q) ||
+            p.descEn.toLowerCase().includes(q) ||
+            p.descId.toLowerCase().includes(q)
+        )
       );
     });
   }, [activeCategory, searchQuery]);
 
-  const categories: { id: 'all' | FaqItem['category']; labelEn: string; labelId: string; count: number }[] = [
-    { id: 'all', labelEn: 'All Questions', labelId: 'Semua Pertanyaan', count: FAQ_ITEMS.length },
-    {
-      id: 'overview',
-      labelEn: 'Overview & Global Cities',
-      labelId: 'Gambaran & Kota Global',
-      count: FAQ_ITEMS.filter((i) => i.category === 'overview').length,
-    },
-    {
-      id: 'three-d',
-      labelEn: '3D District & Radar',
-      labelId: 'Distrik 3D & Radar',
-      count: FAQ_ITEMS.filter((i) => i.category === 'three-d').length,
-    },
-    {
-      id: 'ai',
-      labelEn: 'Meta AI Stack',
-      labelId: 'Teknologi Meta AI',
-      count: FAQ_ITEMS.filter((i) => i.category === 'ai').length,
-    },
-    {
-      id: 'physics',
-      labelEn: 'Solar & Water Math',
-      labelId: 'Fisika Surya & Air',
-      count: FAQ_ITEMS.filter((i) => i.category === 'physics').length,
-    },
-    {
-      id: 'database',
-      labelEn: 'Database v3.2 & Proofs',
-      labelId: 'Database v3.2 & Bukti',
-      count: FAQ_ITEMS.filter((i) => i.category === 'database').length,
-    },
-    {
-      id: 'security',
-      labelEn: 'Login & Cybersecurity',
-      labelId: 'Login & Keamanan Siber',
-      count: FAQ_ITEMS.filter((i) => i.category === 'security').length,
-    },
-  ];
-
-  // Crisp editorial surface tokens matching the previous clean layout style across Day & Night modes
-  const heroBg = isLight
-    ? 'linear-gradient(135deg, rgba(255,255,255,0.96), rgba(244,247,244,0.92))'
-    : 'linear-gradient(135deg, rgba(20,24,22,0.96), rgba(14,17,16,0.94))';
-  const cardSurface = isLight ? '#ffffff' : '#141816';
-  const cardSubtleBg = isLight ? '#f6f8f6' : '#0f1210';
-  const borderHairline = isLight ? 'rgba(17,19,21,0.1)' : 'rgba(255,255,255,0.1)';
-  const borderEmerald = isLight ? '#16804a' : '#10b981';
-  const textPrimary = isLight ? '#111315' : '#f3f5f4';
-  const textSecondary = isLight ? '#374151' : '#cbd5e1';
-  const textMuted = isLight ? '#64748b' : '#94a3b8';
-  const emeraldBgSoft = isLight ? 'rgba(22,128,74,0.1)' : 'rgba(16,185,129,0.14)';
-  const emeraldBorderSoft = isLight ? 'rgba(22,128,74,0.28)' : 'rgba(16,185,129,0.32)';
-  const emeraldText = isLight ? '#136f40' : '#34d399';
+  const shortName = (displayName || "Eco-Architect").split(" ")[0];
 
   return (
     <div
-      className={`min-h-screen pb-32 transition-colors duration-200 ${
-        isLight ? 'bg-[#f5f5f3] text-[#111111]' : 'bg-[#0b0c0e] text-[#f2f1ec]'
+      className={`min-h-screen pb-28 transition-colors duration-200 ${
+        isLight ? "bg-[#f5f5f3] text-[#111111]" : "bg-[#0b0c0e] text-[#f2f1ec]"
       }`}
     >
       {/* CLEAN SINGLE-ROW TOP HEADER */}
@@ -572,7 +704,7 @@ export default function FaqPage() {
                   VERDARA
                 </span>
                 <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] opacity-60 sm:block">
-                  FAQ &amp; Platform Guide
+                  Knowledge Base &amp; FAQ
                 </span>
               </div>
             </Link>
@@ -592,13 +724,13 @@ export default function FaqPage() {
               href="/"
               className="rounded-full px-3.5 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
-              {isId ? 'Beranda' : 'Overview'}
+              {isId ? "Beranda" : "Overview"}
             </Link>
             <Link
               href="/docs"
               className="rounded-full px-3.5 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
-              {isId ? 'Dokumen Teknis' : 'Documentation'}
+              {isId ? "Dokumen Teknis" : "Documentation"}
             </Link>
             <Link
               href="/faq"
@@ -607,494 +739,428 @@ export default function FaqPage() {
               FAQ
             </Link>
             <Link
-              href={isAuthenticated ? '/dashboard' : '/login?next=/dashboard'}
+              href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
               className="rounded-full px-3.5 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
-              {isId ? 'Studio 3D' : '3D Studio'}
+              {isId ? "Studio 3D" : "3D Studio"}
             </Link>
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              onClick={() => setLocale(isId ? 'en' : 'id')}
+              onClick={() => setLocale(isId ? "en" : "id")}
               className="min-h-[40px] cursor-pointer rounded-full border border-current/15 px-3 font-mono text-xs font-semibold"
             >
               {locale.toUpperCase()}
             </button>
             <button
               type="button"
-              onClick={() => setUnits(units === 'metric' ? 'imperial' : 'metric')}
+              onClick={() =>
+                setUnits(units === "metric" ? "imperial" : "metric")
+              }
               className="hidden min-h-[40px] cursor-pointer items-center rounded-full border border-current/15 px-3 font-mono text-xs sm:inline-flex"
             >
-              {units === 'metric' ? 'm² / L' : 'ft² / gal'}
+              {units === "metric" ? "m² / L" : "ft² / gal"}
             </button>
             <button
               type="button"
-              onClick={() => setTheme(isLight ? 'dark' : 'light')}
+              onClick={() => setTheme(isLight ? "dark" : "light")}
               className="min-h-[40px] cursor-pointer rounded-full border border-current/15 px-3 font-mono text-xs"
             >
-              {isLight ? '☀ Day' : '☾ Night'}
+              {isLight ? "☀ Day" : "☾ Night"}
             </button>
-            <Link
-              href={isAuthenticated ? '/dashboard' : '/login?next=/dashboard'}
-              className="zeggo-btn flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#08090c] px-4 text-xs font-semibold text-[#c6f432]"
-            >
-              <ZeggoRollText
-                text={
-                  isAuthenticated
-                    ? isId
-                      ? 'Buka Studio ↗'
-                      : 'Open Studio ↗'
-                    : isId
-                      ? 'Login Studio →'
-                      : 'Sign In →'
-                }
-              />
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href="/dashboard"
+                  className="zeggo-btn flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#1e9e5a] px-4 text-xs font-semibold text-white"
+                >
+                  <ZeggoRollText
+                    text={`Studio (${shortName}) ↗`}
+                  />
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="min-h-[40px] cursor-pointer rounded-full border border-current/15 px-3 text-xs font-medium"
+                >
+                  {isId ? "Keluar" : "Logout"}
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login?next=/dashboard"
+                className="zeggo-btn flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#08090c] px-4 text-xs font-semibold text-[#c6f432]"
+              >
+                <ZeggoRollText
+                  text={isId ? "Login Studio →" : "Sign In →"}
+                />
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-6 sm:pt-8">
-        {/* Clean Editorial Hero Card (Restored Previous Design Style + Upgraded Detail) */}
-        <section
-          className="rounded-[24px] p-6 sm:p-10 mb-8 relative overflow-hidden"
-          style={{
-            background: heroBg,
-            border: `1px solid ${borderHairline}`,
-            boxShadow: isLight
-              ? '0 20px 50px -24px rgba(17, 19, 21, 0.08)'
-              : '0 24px 60px -28px rgba(0, 0, 0, 0.65)',
-          }}
-        >
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="max-w-3xl">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span
-                  className="px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider"
-                  style={{
-                    background: emeraldBgSoft,
-                    color: emeraldText,
-                    border: `1px solid ${emeraldBorderSoft}`,
-                  }}
-                >
-                  VERDARA FAQ · V3.2
-                </span>
-                <span
-                  className="px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider"
-                  style={{
-                    background: cardSubtleBg,
-                    color: textSecondary,
-                    border: `1px solid ${borderHairline}`,
-                  }}
-                >
-                  {isId
-                    ? 'PANDUAN LENGKAP & SPESIFIKASI TEKNIS WEBSITE'
-                    : 'COMPREHENSIVE PLATFORM & ENGINEERING GUIDE'}
-                </span>
-              </div>
+      {/* PROPORTIONAL, WELL-CONSTRAINED CONTAINER (MAX-W-1080PX) SO CARDS NEVER STRETCH TOO WIDE */}
+      <main className="mx-auto max-w-[1080px] px-4 pt-6 sm:px-6 sm:pt-10">
+        {/* MODERN ARCHITECTURAL HERO BANNER (NEWEST DESIGN STYLE, PROPORTIONAL TYPOGRAPHY) */}
+        <section className="rounded-[24px] bg-[#08090c] p-6 sm:p-8 text-white shadow-[inset_0_0_0_1.5px_#232730]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[#c6f432]/15 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432]">
+                VERDARA KNOWLEDGE BASE · v3.2
+              </span>
+              <span className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-[#c9c7c0]">
+                16 ENGINEERING TOPICS · EN / ID
+              </span>
+            </div>
 
-              <h1
-                className="font-bold tracking-[-0.03em] leading-[1.08] mb-3"
-                style={{
-                  fontSize: 'clamp(1.85rem, 3.8vw, 3rem)',
-                  fontFamily: 'var(--font-display)',
-                  color: textPrimary,
-                }}
-              >
+            <Link
+              href="/docs"
+              className="inline-flex min-h-[36px] items-center rounded-full border border-[#c6f432]/40 bg-[#c6f432]/10 px-3.5 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-[#c6f432]/20"
+            >
+              {isId ? "Spesifikasi Teknis (/docs) →" : "Technical Docs (/docs) →"}
+            </Link>
+          </div>
+
+          <div className="mt-4 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div className="max-w-2xl">
+              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-4xl leading-[1.15]">
                 {isId
-                  ? 'Pertanyaan Umum & Panduan Lengkap Verdara.'
-                  : 'Frequently Asked Questions & Platform Guide.'}
+                  ? "Pusat Pengetahuan & Tanya Jawab Sistem (FAQ)"
+                  : "Frequently Asked Questions & System Guide"}
               </h1>
-
-              <p
-                className="text-sm sm:text-base leading-relaxed"
-                style={{ color: textSecondary }}
-              >
+              <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-[#c9c7c0]">
                 {isId
-                  ? 'Penjelasan menyeluruh, terstruktur, dan mendalam tentang cara kerja Verdara: mulai dari simulasi Distrik Ekologi 3D, visi spasial Meta SAM 3.1, orkestrasi 3-Agen Muse Spark, rumus fisika surya NREL PVWatts v8 & hidrologi DIN 1989-1, skema Database Relasional v3.2, hingga standar keamanan siber OWASP.'
-                  : 'Clear, structured, and authoritative answers explaining every subsystem of Verdara: from the interactive 3D Living Eco-District and Meta SAM 3.1 vision pipeline to Muse Spark 3-agent reasoning, NREL PVWatts v8 solar physics, DIN 1989-1 hydrology, Enterprise Database v3.2, and OWASP cybersecurity.'}
+                  ? "Panduan terstruktur mengenai simulasi Distrik Ekologis 3D (Run, Break, Heal & Scroll-Zoom), visi spasial Meta SAM 3.1, dewan 3-Agen Meta Muse Spark, rumus fisika NREL PVWatts v8 & DIN 1989-1, basis data 195+ negara, hingga keamanan siber."
+                  : "Structured engineering guide covering the 3D Eco-District simulation (Run, Break, Heal & Scroll-Zoom), Meta SAM 3.1 computer vision, Meta Muse Spark 3-specialist deliberation, NREL PVWatts v8 & DIN 1989-1 physics formulas, 195+ country database, and cybersecurity."}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-              <button
-                type="button"
-                onClick={expandAll}
-                className="px-4 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer min-h-[44px]"
-                style={{
-                  background: cardSurface,
-                  color: textPrimary,
-                  border: `1px solid ${borderHairline}`,
-                }}
-              >
-                {isId ? 'Buka Semua Jawaban' : 'Expand All Answers'}
-              </button>
-              <button
-                type="button"
-                onClick={collapseAll}
-                className="px-4 py-2.5 rounded-full text-xs font-semibold transition-all cursor-pointer min-h-[44px]"
-                style={{
-                  background: cardSubtleBg,
-                  color: textSecondary,
-                  border: `1px solid ${borderHairline}`,
-                }}
-              >
-                {isId ? 'Tutup Semua' : 'Collapse All'}
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Architecture Telemetry Strip */}
-          <div
-            className="mt-6 pt-5 grid grid-cols-2 sm:grid-cols-4 gap-3"
-            style={{ borderTop: `1px solid ${borderHairline}` }}
-          >
-            {[
-              {
-                labelEn: 'DOCUMENTED TOPICS',
-                labelId: 'TOPIK TERDOKUMENTASI',
-                valueEn: '16 Deep Q&As',
-                valueId: '16 Q&A Mendalam',
-                subEn: '6 Engineering Domains',
-                subId: '6 Domain Rekayasa',
-              },
-              {
-                labelEn: 'GLOBAL COVERAGE',
-                labelId: 'CAKUPAN GLOBAL',
-                valueEn: '195+ Countries',
-                valueId: '195+ Negara',
-                subEn: 'ERA5 + NASA POWER GHI',
-                subId: 'ERA5 + NASA POWER GHI',
-              },
-              {
-                labelEn: 'AI & PHYSICS ENGINE',
-                labelId: 'MESIN AI & FISIKA',
-                valueEn: 'SAM 3.1 + Muse Spark',
-                valueId: 'SAM 3.1 + Muse Spark',
-                subEn: 'NREL PVWatts v8 + DIN 1989-1',
-                subId: 'NREL PVWatts v8 + DIN 1989-1',
-              },
-              {
-                labelEn: 'SECURITY & DB STATE',
-                labelId: 'KEAMANAN & DATABASE',
-                valueEn: '7-Layer Shield',
-                valueId: 'Perisai 7-Lapis',
-                subEn: 'Relational Schema v3.2',
-                subId: 'Skema Relasional v3.2',
-              },
-            ].map((stat, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl px-4 py-3"
-                style={{
-                  background: cardSurface,
-                  border: `1px solid ${borderHairline}`,
-                }}
-              >
-                <div
-                  className="text-[10px] font-mono uppercase tracking-wider mb-0.5"
-                  style={{ color: textMuted }}
-                >
-                  {isId ? stat.labelId : stat.labelEn}
-                </div>
-                <div className="text-sm sm:text-base font-bold" style={{ color: textPrimary }}>
-                  {isId ? stat.valueId : stat.valueEn}
-                </div>
-                <div className="text-[11px] font-mono" style={{ color: emeraldText }}>
-                  {isId ? stat.subId : stat.subEn}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Search & Category Filter Bar */}
-          <div
-            className="mt-5 pt-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4"
-            style={{ borderTop: `1px solid ${borderHairline}` }}
-          >
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
-              {categories.map((cat) => {
-                const active = activeCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setActiveCategory(cat.id)}
-                    className="px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer min-h-[40px] flex items-center gap-1.5"
-                    style={{
-                      background: active ? borderEmerald : cardSurface,
-                      color: active ? '#ffffff' : textSecondary,
-                      border: `1px solid ${active ? borderEmerald : borderHairline}`,
-                    }}
-                  >
-                    <span>{isId ? cat.labelId : cat.labelEn}</span>
-                    <span
-                      className="text-[10px] font-mono px-1.5 py-0.5 rounded-full"
-                      style={{
-                        background: active
-                          ? 'rgba(255,255,255,0.22)'
-                          : isLight
-                            ? 'rgba(17,19,21,0.06)'
-                            : 'rgba(255,255,255,0.08)',
-                        color: active ? '#ffffff' : textMuted,
-                      }}
-                    >
-                      {cat.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="relative min-w-[260px] sm:min-w-[300px]">
+            {/* Search Input Inside Hero */}
+            <div className="w-full lg:w-[310px] shrink-0">
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
                   isId
-                    ? 'Cari topik, rumus, SAM 3.1, 3D, biopori...'
-                    : 'Search topics, formulas, SAM 3.1, 3D, biopores...'
+                    ? "Cari topik (mis. SAM 3.1, 3D, surya, biopori)..."
+                    : "Search topics (e.g. SAM 3.1, 3D, solar, biopore)..."
                 }
-                aria-label={isId ? 'Cari pertanyaan FAQ' : 'Search FAQ questions'}
-                className="w-full px-4 py-2.5 rounded-full text-xs outline-none transition-all min-h-[42px]"
-                style={{
-                  background: cardSurface,
-                  color: textPrimary,
-                  border: `1px solid ${borderHairline}`,
-                }}
+                aria-label={isId ? "Cari pertanyaan FAQ" : "Search FAQ questions"}
+                className="min-h-[42px] w-full rounded-xl border border-white/15 bg-[#13161d] px-3.5 py-2 text-xs text-white placeholder-[#8e929b] focus:border-[#c6f432] focus:outline-none"
               />
             </div>
           </div>
+
+          {/* Compact 4-Metric Telemetry Strip */}
+          <div className="mt-6 grid grid-cols-2 gap-2.5 border-t border-white/10 pt-5 sm:grid-cols-4">
+            {[
+              {
+                code: "01 · COVERAGE",
+                val: isId ? "195+ Negara" : "195+ Countries",
+                sub: "ERA5 + NASA POWER GHI",
+              },
+              {
+                code: "02 · 3D ENGINE",
+                val: "Three.js r183 WebGL",
+                sub: isId ? "Scroll-Zoom + 3 Mode" : "Scroll-Zoom + 3 Modes",
+              },
+              {
+                code: "03 · META AI",
+                val: "SAM 3.1 + Muse Spark",
+                sub: isId ? "Validator Fakta +/-3%" : "+/-3% Fact Validator",
+              },
+              {
+                code: "04 · SECURITY",
+                val: isId ? "Perisai 7-Lapis" : "7-Layer Shield",
+                sub: "OWASP ASVS + DB v3.2",
+              },
+            ].map((m) => (
+              <div
+                key={m.code}
+                className="rounded-xl border border-white/10 bg-[#12151c] px-3.5 py-2.5"
+              >
+                <div className="font-mono text-[10px] text-[#8e929b]">{m.code}</div>
+                <div className="mt-0.5 text-xs sm:text-sm font-semibold text-white">
+                  {m.val}
+                </div>
+                <div className="font-mono text-[10px] text-[#c6f432]">{m.sub}</div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Accordion List (Clean Editorial Rounded Cards with Detailed Breakdown) */}
-        <section className="space-y-3.5">
-          {filteredFaqs.map((faq) => {
-            const isOpen = openIds.includes(faq.id);
-            const highlights = isId ? faq.highlightsId : faq.highlightsEn;
+        {/* 2-COLUMN KNOWLEDGE BASE LAYOUT: STICKY SIDEBAR (250PX) + FOCUSED Q&A COLUMN */}
+        <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)] items-start">
+          {/* LEFT STICKY NAVIGATION SIDEBAR */}
+          <aside className="lg:sticky lg:top-20 space-y-4">
+            <div
+              className={`rounded-2xl border p-3.5 ${
+                isLight
+                  ? "border-black/10 bg-white"
+                  : "border-white/10 bg-[#12141b]"
+              }`}
+            >
+              <div className="mb-2.5 flex items-center justify-between px-1">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-60">
+                  {isId ? "KATEGORI TOPIK" : "TOPIC CATEGORIES"}
+                </span>
+                <span className="font-mono text-[10px] font-semibold text-[#1e9e5a] dark:text-[#c6f432]">
+                  {filteredFaqs.length}/{FAQ_ITEMS.length}
+                </span>
+              </div>
 
-            return (
-              <article
-                key={faq.id}
-                className="rounded-[20px] transition-all overflow-hidden"
-                style={{
-                  background: cardSurface,
-                  border: `1px solid ${isOpen ? borderEmerald : borderHairline}`,
-                  boxShadow: isOpen
-                    ? isLight
-                      ? '0 14px 34px -18px rgba(22, 128, 74, 0.18)'
-                      : '0 16px 38px -18px rgba(16, 185, 129, 0.22)'
-                    : 'none',
-                }}
-              >
+              <div className="flex flex-row gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+                {categories.map((cat) => {
+                  const active = activeCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={`flex min-h-[38px] shrink-0 cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium transition ${
+                        active
+                          ? "bg-[#08090c] text-[#c6f432] font-semibold shadow-sm"
+                          : isLight
+                            ? "text-[#222222] hover:bg-black/5"
+                            : "text-[#c9c7c0] hover:bg-white/5"
+                      }`}
+                    >
+                      <span className="truncate">
+                        <span className="mr-1.5 font-mono text-[10px] opacity-60">
+                          {cat.code}
+                        </span>
+                        {isId ? cat.labelId : cat.labelEn}
+                      </span>
+                      <span
+                        className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
+                          active
+                            ? "bg-[#c6f432]/20 text-[#c6f432]"
+                            : "bg-current/10 opacity-70"
+                        }`}
+                      >
+                        {cat.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Expand / Collapse Controls */}
+              <div className="mt-3 grid grid-cols-2 gap-1.5 border-t border-current/10 pt-3">
                 <button
                   type="button"
-                  onClick={() => toggleFaq(faq.id)}
-                  aria-expanded={isOpen}
-                  className="w-full text-left p-5 sm:p-6 flex items-start justify-between gap-4 cursor-pointer"
+                  onClick={() => setOpenIds(filteredFaqs.map((i) => i.id))}
+                  className="min-h-[36px] cursor-pointer rounded-xl border border-current/15 px-2.5 font-mono text-[11px] font-medium transition hover:bg-current/5"
                 >
-                  <div className="space-y-1.5 pr-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider"
-                        style={{
-                          background: isOpen ? emeraldBgSoft : cardSubtleBg,
-                          color: isOpen ? emeraldText : textMuted,
-                          border: `1px solid ${isOpen ? emeraldBorderSoft : borderHairline}`,
-                        }}
-                      >
-                        {isId ? faq.badgeId : faq.badgeEn}
-                      </span>
-                    </div>
-                    <h2
-                      className="text-base sm:text-lg font-bold leading-snug"
-                      style={{
-                        fontFamily: 'var(--font-display)',
-                        color: textPrimary,
-                      }}
-                    >
-                      {isId ? faq.questionId : faq.questionEn}
-                    </h2>
-                  </div>
-
-                  <span
-                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-mono font-bold transition-transform mt-0.5"
-                    style={{
-                      background: isOpen ? borderEmerald : cardSubtleBg,
-                      color: isOpen ? '#ffffff' : textPrimary,
-                      border: `1px solid ${isOpen ? borderEmerald : borderHairline}`,
-                      transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                  >
-                    {isOpen ? '−' : '+'}
-                  </span>
+                  {isId ? "Buka Semua" : "Expand All"}
                 </button>
-
-                {isOpen && (
-                  <div
-                    className="px-5 sm:px-6 pb-6 pt-3 text-sm leading-relaxed space-y-4"
-                    style={{
-                      color: textSecondary,
-                      borderTop: `1px solid ${borderHairline}`,
-                    }}
-                  >
-                    {/* Main Executive Explanation */}
-                    <p className="text-sm sm:text-[15px] leading-relaxed" style={{ color: textSecondary }}>
-                      {isId ? faq.answerId : faq.answerEn}
-                    </p>
-
-                    {/* Structured Key Technical Points */}
-                    <div
-                      className="rounded-2xl p-4 sm:p-5 space-y-2.5"
-                      style={{
-                        background: cardSubtleBg,
-                        border: `1px solid ${borderHairline}`,
-                      }}
-                    >
-                      <div
-                        className="text-[11px] font-mono font-bold uppercase tracking-wider"
-                        style={{ color: emeraldText }}
-                      >
-                        {isId
-                          ? 'POIN TEKNIS & MEKANISME UTAMA:'
-                          : 'KEY TECHNICAL MECHANISMS & SPECIFICATIONS:'}
-                      </div>
-                      <ul className="space-y-2">
-                        {highlights.map((point, idx) => (
-                          <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm">
-                            <span
-                              className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-mono font-bold mt-0.5"
-                              style={{
-                                background: emeraldBgSoft,
-                                color: emeraldText,
-                                border: `1px solid ${emeraldBorderSoft}`,
-                              }}
-                            >
-                              {idx + 1}
-                            </span>
-                            <span style={{ color: textPrimary }}>{point}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Specification / Formula Bar + Action Link */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                      <div
-                        className="px-3.5 py-2 rounded-xl text-[11px] font-mono overflow-x-auto"
-                        style={{
-                          background: isLight ? 'rgba(17,19,21,0.04)' : 'rgba(255,255,255,0.04)',
-                          color: textMuted,
-                          border: `1px solid ${borderHairline}`,
-                        }}
-                      >
-                        {faq.specCode}
-                      </div>
-
-                      {faq.relatedLink && (
-                        <Link
-                          href={faq.relatedLink.href}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold shrink-0 transition-all self-start sm:self-auto"
-                          style={{
-                            background: emeraldBgSoft,
-                            color: emeraldText,
-                            border: `1px solid ${emeraldBorderSoft}`,
-                          }}
-                        >
-                          <span>{isId ? faq.relatedLink.labelId : faq.relatedLink.labelEn}</span>
-                          <span aria-hidden="true">→</span>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </article>
-            );
-          })}
-
-          {filteredFaqs.length === 0 && (
-            <div
-              className="rounded-[20px] p-10 text-center"
-              style={{
-                background: cardSurface,
-                border: `1px solid ${borderHairline}`,
-              }}
-            >
-              <p className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>
-                {isId
-                  ? 'Tidak ada pertanyaan yang cocok dengan pencarian Anda.'
-                  : 'No questions matched your search query.'}
-              </p>
-              <p className="text-xs mb-4" style={{ color: textMuted }}>
-                {isId
-                  ? 'Coba kata kunci lain seperti "SAM 3.1", "PVWatts", "Biopori", "3D", atau reset filter kategori.'
-                  : 'Try another keyword like "SAM 3.1", "PVWatts", "Biopore", "3D", or reset the category filter.'}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveCategory('all');
-                  setSearchQuery('');
-                }}
-                className="px-4 py-2 rounded-full text-xs font-semibold cursor-pointer"
-                style={{
-                  background: borderEmerald,
-                  color: '#ffffff',
-                }}
-              >
-                {isId ? 'Tampilkan Semua Pertanyaan' : 'Show All Questions'}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setOpenIds([])}
+                  className="min-h-[36px] cursor-pointer rounded-xl border border-current/15 px-2.5 font-mono text-[11px] font-medium opacity-75 transition hover:bg-current/5 hover:opacity-100"
+                >
+                  {isId ? "Tutup Semua" : "Collapse All"}
+                </button>
+              </div>
             </div>
-          )}
+
+            {/* Compact Sidebar Reference Card */}
+            <div className="hidden rounded-2xl bg-[#08090c] p-4 text-white lg:block border border-white/10">
+              <span className="font-mono text-[10px] font-bold text-[#c6f432]">
+                {isId ? "DOKUMENTASI REKAYASA" : "ENGINEERING BLUEPRINTS"}
+              </span>
+              <p className="mt-1.5 text-xs leading-relaxed text-[#c9c7c0]">
+                {isId
+                  ? "Ingin memeriksa skema tabel database v3.2 secara langsung atau melihat derivasi rumus fisika?"
+                  : "Want to inspect the live v3.2 relational database tables or review full mathematical derivations?"}
+              </p>
+              <Link
+                href="/docs"
+                className="mt-3 inline-flex min-h-[36px] w-full items-center justify-center rounded-xl bg-[#c6f432] px-3 text-xs font-semibold text-[#080808] transition hover:opacity-90"
+              >
+                {isId ? "Buka Halaman /docs →" : "Open /docs Reference →"}
+              </Link>
+            </div>
+          </aside>
+
+          {/* RIGHT FOCUSED ACCORDION LIST (PROPORTIONAL READING WIDTH) */}
+          <div className="space-y-3">
+            {filteredFaqs.length === 0 ? (
+              <div
+                className={`rounded-2xl border p-8 text-center ${
+                  isLight
+                    ? "border-black/10 bg-white"
+                    : "border-white/10 bg-[#12141b]"
+                }`}
+              >
+                <p className="text-sm font-semibold">
+                  {isId
+                    ? "Tidak ada topik FAQ yang cocok dengan kata kunci tersebut."
+                    : "No FAQ topics matched your search query."}
+                </p>
+                <p className="mt-1 text-xs opacity-70">
+                  {isId
+                    ? "Coba kata kunci seperti 'SAM 3.1', 'PVWatts', '3D', 'Biopori', atau reset filter."
+                    : "Try keywords like 'SAM 3.1', 'PVWatts', '3D', 'Biopore', or reset the filter."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory("all");
+                    setSearchQuery("");
+                  }}
+                  className="mt-4 min-h-[38px] cursor-pointer rounded-full bg-[#08090c] px-4 font-mono text-xs font-semibold text-[#c6f432]"
+                >
+                  {isId ? "Reset Pencarian" : "Reset Search"}
+                </button>
+              </div>
+            ) : (
+              filteredFaqs.map((item, idx) => {
+                const isOpen = openIds.includes(item.id);
+                return (
+                  <article
+                    key={item.id}
+                    className={`rounded-2xl border transition-all ${
+                      isOpen
+                        ? isLight
+                          ? "border-[#1e9e5a]/50 bg-white shadow-sm"
+                          : "border-[#c6f432]/45 bg-[#14171f]"
+                        : isLight
+                          ? "border-black/10 bg-white/85 hover:border-black/25"
+                          : "border-white/10 bg-[#111319] hover:border-white/20"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleItem(item.id)}
+                      aria-expanded={isOpen}
+                      className="flex w-full cursor-pointer items-start justify-between gap-3.5 p-4 sm:p-5 text-left"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wide ${
+                              isOpen
+                                ? "bg-[#c6f432] text-[#080808]"
+                                : "bg-[#08090c] text-[#c6f432]"
+                            }`}
+                          >
+                            {String(idx + 1).padStart(2, "0")} · {item.badge}
+                          </span>
+                        </div>
+                        <h2 className="text-[15px] sm:text-[17px] font-semibold leading-snug tracking-tight">
+                          {isId ? item.qId : item.qEn}
+                        </h2>
+                      </div>
+
+                      <span
+                        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold transition ${
+                          isOpen
+                            ? "bg-[#1e9e5a] text-white"
+                            : "bg-current/10 text-current"
+                        }`}
+                      >
+                        {isOpen ? "−" : "+"}
+                      </span>
+                    </button>
+
+                    {isOpen && (
+                      <div className="border-t border-current/10 px-4 pt-3.5 pb-5 sm:px-5 space-y-4">
+                        {/* Executive Answer with Comfortable 68ch Reading Width */}
+                        <p className="max-w-[68ch] text-xs sm:text-[13.5px] leading-relaxed opacity-90">
+                          {isId ? item.aId : item.aEn}
+                        </p>
+
+                        {/* Compact 3-Column Technical Breakdown Grid */}
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                          {item.points.map((pt, pIdx) => (
+                            <div
+                              key={pIdx}
+                              className={`rounded-xl border p-3 ${
+                                isLight
+                                  ? "border-black/8 bg-[#f7f8f6]"
+                                  : "border-white/8 bg-[#0c0e13]"
+                              }`}
+                            >
+                              <div className="font-mono text-[11px] font-bold text-[#1e9e5a] dark:text-[#c6f432]">
+                                {isId ? pt.titleId : pt.titleEn}
+                              </div>
+                              <p className="mt-1 text-[11.5px] leading-snug opacity-85">
+                                {isId ? pt.descId : pt.descEn}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Spec Bar & Direct Action Link */}
+                        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+                          <span className="rounded-lg bg-[#08090c] px-3 py-1.5 font-mono text-[10.5px] text-[#c6f432]">
+                            {item.techSpec}
+                          </span>
+
+                          {item.relatedRoute && (
+                            <Link
+                              href={item.relatedRoute.href}
+                              className="inline-flex min-h-[34px] items-center rounded-full bg-[#1e9e5a] px-3.5 text-xs font-semibold text-white transition hover:bg-[#178249]"
+                            >
+                              {isId
+                                ? item.relatedRoute.labelId
+                                : item.relatedRoute.labelEn}
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </article>
+                );
+              })
+            )}
+          </div>
         </section>
 
-        {/* Bottom CTA Card (Restored Clean Editorial Style) */}
+        {/* COMPACT BOTTOM ARCHITECTURAL CTA */}
         <section
-          className="mt-10 rounded-[24px] p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-          style={{
-            background: cardSurface,
-            border: `1px solid ${borderHairline}`,
-          }}
+          className={`mt-8 flex flex-wrap items-center justify-between gap-4 rounded-[22px] border p-5 sm:p-6 ${
+            isLight
+              ? "border-black/10 bg-white"
+              : "border-white/10 bg-[#14161b]"
+          }`}
         >
           <div>
-            <h3
-              className="text-lg font-bold mb-1"
-              style={{ fontFamily: 'var(--font-display)', color: textPrimary }}
-            >
+            <span className="font-mono text-[11px] font-bold text-[#1e9e5a]">
               {isId
-                ? 'Butuh Spesifikasi Teknis & Inspeksi Database?'
-                : 'Need Deeper Engineering Specifications & Live DB Inspection?'}
-            </h3>
-            <p className="text-xs sm:text-sm" style={{ color: textSecondary }}>
+                ? "SPESIFIKASI REKAYASA & BASIS DATA V3.2"
+                : "ENGINEERING SPECIFICATIONS & LIVE DB V3.2"}
+            </span>
+            <h2 className="mt-0.5 text-base sm:text-lg font-semibold">
               {isId
-                ? 'Buka halaman Dokumentasi Teknis (/docs) untuk melihat diagram arsitektur, rumus fisika lengkap, kontrak endpoint REST API, dan tabel database relasional v3.2 secara langsung.'
-                : 'Open the Technical Documentation (/docs) to inspect system architecture blueprints, full mathematical equations, REST API contracts, and live Database v3.2 relational tables.'}
-            </p>
+                ? "Jelajahi 6 Modul Dokumentasi Teknis Verdara (/docs)"
+                : "Explore All 6 Engineering Modules in Technical Documentation (/docs)"}
+            </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+
+          <div className="flex flex-wrap gap-2.5">
             <Link
               href="/docs"
-              className="px-5 py-2.5 rounded-full text-xs font-semibold transition-all min-h-[44px] inline-flex items-center"
-              style={{
-                background: borderEmerald,
-                color: '#ffffff',
-              }}
+              className="inline-flex min-h-[40px] items-center rounded-full bg-[#08090c] px-4 text-xs font-semibold text-[#c6f432] transition hover:opacity-90"
             >
-              {isId ? 'Buka Dokumen Teknis (/docs) →' : 'Open Technical Docs (/docs) →'}
+              {isId ? "Buka Dokumentasi (/docs) →" : "Open Documentation (/docs) →"}
             </Link>
             <Link
-              href="/dashboard"
-              className="px-5 py-2.5 rounded-full text-xs font-semibold transition-all min-h-[44px] inline-flex items-center"
-              style={{
-                background: cardSubtleBg,
-                color: textPrimary,
-                border: `1px solid ${borderHairline}`,
-              }}
+              href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
+              className="inline-flex min-h-[40px] items-center rounded-full bg-[#1e9e5a] px-4 text-xs font-semibold text-white transition hover:bg-[#178249]"
             >
-              {isId ? 'Masuk ke Studio 3D' : 'Enter 3D Studio'}
+              {isAuthenticated
+                ? isId
+                  ? "Buka Studio 3D →"
+                  : "Enter 3D Studio →"
+                : isId
+                  ? "Login ke Studio →"
+                  : "Sign In to Studio →"}
             </Link>
           </div>
         </section>
