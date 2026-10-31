@@ -135,8 +135,12 @@ export default function DocsPage() {
           : "bg-[#0b0c0e] text-[#f2f1ec]"
       }`}
     >
-      {/* CLEAN ULTRA-MODERN STICKY TOP HEADER */}
-      <header className="sticky top-0 z-40 border-b border-current/8 bg-inherit/90 backdrop-blur-2xl transition-all duration-200">
+      {/* CLEAN ULTRA-MODERN STICKY TOP HEADER (THEME-ADAPTED TRANSPARENT) */}
+      <header className={`sticky top-0 z-40 border-b transition-all duration-200 ${
+        isLight
+          ? "border-black/[0.06] bg-[#f5f5f3]/95 text-[#111]"
+          : "border-white/[0.06] bg-[#0b0c0e]/95 text-[#f2f1ec]"
+      }`}>
         <div className="mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
           <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3.5">
             <Link href="/" className="flex min-h-[40px] items-center gap-2.5 select-none">

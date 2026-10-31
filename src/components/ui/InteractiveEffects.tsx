@@ -944,19 +944,30 @@ export function CompactWorldCityPicker({
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="inline-flex min-h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-white/20"
+          className={`inline-flex min-h-[34px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-semibold transition ${
+            isLight
+              ? "border-black/[0.08] bg-black/[0.03] text-[#15803d] hover:bg-black/[0.06] hover:border-black/15"
+              : "border-white/[0.08] bg-white/[0.04] text-[#c6f432] hover:bg-white/[0.08] hover:border-white/15"
+          }`}
         >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              isLight ? "bg-[#15803d]" : "bg-[#c6f432]"
+            }`}
+          />
           <span>{isId ? "195+ Negara" : "195+ Countries"}</span>
-          <span aria-hidden="true">{open ? "^" : "v"}</span>
+          <span aria-hidden="true" className="opacity-60 font-mono text-[10px]">
+            {open ? "^" : "v"}
+          </span>
         </button>
       )}
 
       {open && (
         <div
-          className={`fixed inset-x-3 top-16 z-50 rounded-2xl border p-3.5 shadow-2xl backdrop-blur-xl sm:absolute sm:inset-x-auto sm:top-full sm:mt-2 sm:w-[380px] ${alignClass} ${
+          className={`fixed inset-x-3 top-16 z-50 rounded-2xl border p-3.5 shadow-2xl sm:absolute sm:inset-x-auto sm:top-full sm:mt-2 sm:w-[380px] ${alignClass} ${
             isLight
-              ? "border-black/12 bg-white/98 text-[#111]"
-              : "border-white/15 bg-[#111318]/98 text-white"
+              ? "border-black/10 bg-[#fbfbf9] text-[#0a0a0c] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.14)]"
+              : "border-white/10 bg-[#101217] text-[#f4f3ee] shadow-[0_24px_50px_-15px_rgba(0,0,0,0.65)]"
           }`}
         >
           {/* Compact Header */}

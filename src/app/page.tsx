@@ -217,6 +217,18 @@ export default function LandingPage() {
 
   // Live GitHub Repository Stars State
   const [githubStars, setGithubStars] = useState<number | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 16);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -479,12 +491,16 @@ export default function LandingPage() {
         isId={isId}
       />
 
-      {/* 1. ULTRA-MODERN MINIMALIST STICKY TOP HEADER */}
+      {/* 1. ULTRA-MODERN MINIMALIST TRANSPARENT THEME-ADAPTED STICKY HEADER */}
       <header
-        className={`sticky top-0 z-50 border-b backdrop-blur-2xl transition-all duration-200 ${
-          isLight
-            ? "border-black/[0.07] bg-[#fbfbf9]/85 text-[#111]"
-            : "border-white/[0.08] bg-[#07080a]/88 text-[#f2f1ec]"
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? isLight
+              ? "border-b border-black/[0.06] bg-[#f5f5f3]/95 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.04)]"
+              : "border-b border-white/[0.06] bg-[#0b0c0e]/95 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.3)]"
+            : "border-b border-transparent bg-transparent"
+        } ${
+          isLight ? "text-[#111111]" : "text-[#f2f1ec]"
         }`}
       >
         <div className="mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
@@ -507,47 +523,60 @@ export default function LandingPage() {
             </Link>
 
             {/* Desktop Node Indicator Pill */}
-            <div className="hidden md:flex items-center gap-1.5 rounded-full border border-current/10 bg-current/[0.03] px-2.5 py-1 font-mono text-[10px] opacity-80">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#1e9e5a] animate-pulse" />
+            <div
+              className={`hidden md:flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] transition-colors ${
+                isLight
+                  ? "border-black/[0.08] bg-black/[0.03] text-[#27272a]"
+                  : "border-white/[0.08] bg-white/[0.04] text-[#d4d4d8]"
+              }`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[#16c847] animate-pulse" />
               <span>{geo.city} · {geo.koppen.code}</span>
             </div>
           </div>
 
-          {/* Center: Minimalist Floating Capsule Nav (Desktop) */}
+          {/* Center: Minimalist Transparent Capsule Nav (Desktop) */}
           <nav
             aria-label={isId ? "Menu Bagian" : "Section Menu"}
-            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 lg:flex shadow-xs"
+            className={`hidden items-center gap-1 rounded-full border p-1 lg:flex transition-colors ${
+              isLight
+                ? "border-black/[0.08] bg-black/[0.02]"
+                : "border-white/[0.08] bg-white/[0.03]"
+            }`}
           >
-            <a
-              href="#chapter-town"
-              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
-            >
-              {isId ? "Distrik 3D" : "3D District"}
-            </a>
-            <a
-              href="#chapter-slides"
-              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
-            >
-              {isId ? "10 Negara" : "10 Countries"}
-            </a>
-            <a
-              href="#chapter-tools"
-              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
-            >
-              {isId ? "Fitur AI" : "AI Tools"}
-            </a>
-            <Link
-              href="/docs"
-              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
-            >
-              {isId ? "Dokumen" : "Docs"}
-            </Link>
-            <Link
-              href="/faq"
-              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
-            >
-              FAQ
-            </Link>
+            {[
+              { href: "#chapter-town", label: isId ? "Distrik 3D" : "3D District" },
+              { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
+              { href: "#chapter-tools", label: isId ? "Fitur AI" : "AI Tools" },
+              { href: "/docs", label: isId ? "Dokumen" : "Docs", isRoute: true },
+              { href: "/faq", label: "FAQ", isRoute: true },
+            ].map((item) =>
+              item.isRoute ? (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition-all duration-150 ${
+                    isLight
+                      ? "text-[#3f3f46] hover:text-[#0a0a0c] hover:bg-black/[0.05]"
+                      : "text-[#a1a1aa] hover:text-white hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition-all duration-150 ${
+                    isLight
+                      ? "text-[#3f3f46] hover:text-[#0a0a0c] hover:bg-black/[0.05]"
+                      : "text-[#a1a1aa] hover:text-white hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {item.label}
+                </a>
+              )
+            )}
           </nav>
 
           {/* Right: Controls & Actions */}
@@ -562,38 +591,38 @@ export default function LandingPage() {
               />
             </div>
 
-            {/* Desktop Preferences Capsule (Hidden on mobile to stay minimal and clean) */}
+            {/* Desktop Preferences Capsule */}
             <div
-              className={`hidden sm:inline-flex items-center rounded-full border p-0.5 ${
+              className={`hidden sm:inline-flex items-center rounded-full border p-0.5 transition-colors ${
                 isLight
-                  ? "border-black/10 bg-white shadow-2xs"
-                  : "border-white/10 bg-[#121419]"
+                  ? "border-black/[0.08] bg-black/[0.02]"
+                  : "border-white/[0.08] bg-white/[0.03]"
               }`}
             >
               <button
                 type="button"
                 onClick={() => setLocale(locale === "en" ? "id" : "en")}
-                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] font-semibold transition hover:bg-current/10"
+                className="min-h-[30px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] font-semibold text-foreground/80 transition hover:text-foreground hover:bg-black/[0.06] dark:hover:bg-white/[0.08]"
                 title={isId ? "Ganti Bahasa" : "Switch Language"}
               >
                 {locale.toUpperCase()}
               </button>
-              <span className="h-3 w-[1px] bg-current/15" />
+              <span className="h-3 w-[1px] bg-black/10 dark:bg-white/10" />
               <button
                 type="button"
                 onClick={() =>
                   setUnits(units === "metric" ? "imperial" : "metric")
                 }
-                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+                className="min-h-[30px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] text-foreground/80 transition hover:text-foreground hover:bg-black/[0.06] dark:hover:bg-white/[0.08]"
                 title={isId ? "Ganti Satuan" : "Switch Units"}
               >
                 {units === "metric" ? "m²" : "ft²"}
               </button>
-              <span className="h-3 w-[1px] bg-current/15" />
+              <span className="h-3 w-[1px] bg-black/10 dark:bg-white/10" />
               <button
                 type="button"
                 onClick={() => setTheme(isLight ? "dark" : "light")}
-                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+                className="min-h-[30px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] text-foreground/80 transition hover:text-foreground hover:bg-black/[0.06] dark:hover:bg-white/[0.08]"
                 title={isLight ? "Mode Terang" : "Mode Gelap"}
               >
                 {isLight ? "☀" : "☾"}
@@ -604,7 +633,11 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() => setTheme(isLight ? "dark" : "light")}
-              className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-current/12 bg-current/[0.04] text-xs transition active:scale-95 cursor-pointer"
+              className={`sm:hidden flex h-9 w-9 items-center justify-center rounded-full border text-xs transition active:scale-95 cursor-pointer ${
+                isLight
+                  ? "border-black/[0.08] bg-black/[0.03] text-[#27272a] hover:bg-black/[0.06]"
+                  : "border-white/[0.08] bg-white/[0.04] text-[#d4d4d8] hover:bg-white/[0.08]"
+              }`}
               aria-label={isLight ? "Aktifkan Mode Gelap" : "Aktifkan Mode Terang"}
             >
               {isLight ? "☀" : "☾"}
@@ -615,13 +648,21 @@ export default function LandingPage() {
               type="button"
               onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
               aria-expanded={headerNotchOpen}
-              className={`hidden md:inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-medium transition cursor-pointer border ${
+              className={`hidden md:inline-flex min-h-[34px] items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-medium transition cursor-pointer border ${
                 headerNotchOpen
-                  ? "border-[#c6f432] bg-[#c6f432]/10 text-[#c6f432]"
-                  : "border-current/12 bg-current/[0.03] hover:bg-current/[0.08]"
+                  ? isLight
+                    ? "border-[#15803d] bg-[#15803d]/10 text-[#15803d]"
+                    : "border-[#c6f432] bg-[#c6f432]/10 text-[#c6f432]"
+                  : isLight
+                    ? "border-black/[0.08] bg-black/[0.02] text-[#27272a] hover:border-black/20 hover:bg-black/[0.05]"
+                    : "border-white/[0.08] bg-white/[0.03] text-[#d4d4d8] hover:border-white/20 hover:bg-white/[0.06]"
               }`}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#c6f432]" />
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  isLight ? "bg-[#15803d]" : "bg-[#c6f432]"
+                }`}
+              />
               <ZeggoRollText
                 text={
                   headerNotchOpen
@@ -637,20 +678,30 @@ export default function LandingPage() {
 
             {/* Primary Action Button */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <Link
                   href="/dashboard"
-                  className="zeggo-btn flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#1e9e5a] px-3 sm:px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#178249]"
+                  className={`zeggo-btn flex min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold shadow-xs transition ${
+                    isLight
+                      ? "bg-[#15803d] text-white hover:bg-[#166534]"
+                      : "bg-[#c6f432] text-[#080808] hover:bg-[#d5f759]"
+                  }`}
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#c6f432]" />
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      isLight ? "bg-[#c6f432]" : "bg-[#080808]"
+                    }`}
+                  />
                   <span>Studio</span>
                   <span className="hidden sm:inline">({displayName.split(" ")[0]})</span>
-                  <span>→</span>
+                  <span>-&gt;</span>
                 </Link>
                 <button
                   type="button"
                   onClick={logout}
-                  className="hidden md:inline-flex min-h-[36px] cursor-pointer items-center rounded-full border border-current/12 px-2.5 text-xs font-medium transition hover:bg-rose-500/10 hover:text-rose-500"
+                  className={`hidden md:inline-flex min-h-[34px] cursor-pointer items-center rounded-full border px-2.5 text-xs font-medium opacity-75 transition hover:opacity-100 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 ${
+                    isLight ? "border-black/[0.08]" : "border-white/[0.08]"
+                  }`}
                 >
                   {isId ? "Keluar" : "Logout"}
                 </button>
@@ -658,11 +709,19 @@ export default function LandingPage() {
             ) : (
               <Link
                 href="/login?next=/dashboard"
-                className="zeggo-btn flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#080808] text-white dark:bg-white dark:text-[#080808] px-3 sm:px-3.5 text-xs font-semibold shadow-sm transition hover:opacity-90"
+                className={`zeggo-btn flex min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold shadow-xs transition ${
+                  isLight
+                    ? "bg-[#0a0a0c] text-white hover:bg-[#15803d]"
+                    : "bg-[#c6f432] text-[#080808] hover:bg-[#d5f759]"
+                }`}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#c6f432]" />
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isLight ? "bg-[#c6f432]" : "bg-[#080808]"
+                  }`}
+                />
                 <ZeggoRollText text={isId ? "Login" : "Sign In"} />
-                <span>→</span>
+                <span>-&gt;</span>
               </Link>
             )}
 
@@ -674,8 +733,12 @@ export default function LandingPage() {
               aria-label={isId ? "Buka Menu Navigasi" : "Toggle Menu"}
               className={`flex h-9 w-9 items-center justify-center rounded-full border transition cursor-pointer lg:hidden ${
                 headerNotchOpen
-                  ? "border-[#c6f432] bg-[#c6f432]/15 text-[#c6f432]"
-                  : "border-current/15 bg-current/[0.04] text-current hover:bg-current/10"
+                  ? isLight
+                    ? "border-[#15803d] bg-[#15803d]/10 text-[#15803d]"
+                    : "border-[#c6f432] bg-[#c6f432]/10 text-[#c6f432]"
+                  : isLight
+                    ? "border-black/[0.08] bg-black/[0.03] text-[#27272a] hover:bg-black/[0.06]"
+                    : "border-white/[0.08] bg-white/[0.04] text-[#d4d4d8] hover:bg-white/[0.08]"
               }`}
             >
               <span className="font-mono text-sm leading-none font-bold">
@@ -686,14 +749,14 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ULTRA-MODERN AESTHETIC FLOATING MOBILE / TABLET DRAWER */}
+      {/* ULTRA-MODERN AESTHETIC FLOATING MOBILE / TABLET DRAWER (NO GLASS BLUR) */}
       {headerNotchOpen && (
-        <div className="mx-auto mt-3 max-w-[1440px] px-3.5 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-2 max-w-[1440px] px-3.5 sm:px-6 lg:px-8">
           <div
-            className={`ml-auto max-w-[680px] rounded-[28px] border p-4 sm:p-5 shadow-2xl backdrop-blur-2xl transition-all duration-200 ${
+            className={`ml-auto max-w-[680px] rounded-[24px] border p-4 sm:p-5 transition-all duration-200 ${
               isLight
-                ? "border-black/10 bg-white/98 text-[#111] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)]"
-                : "border-white/12 bg-[#090b0f]/98 text-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)]"
+                ? "border-black/10 bg-[#fbfbf9] text-[#0a0a0c] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.12)]"
+                : "border-white/10 bg-[#0e1014] text-[#f4f3ee] shadow-[0_24px_50px_-15px_rgba(0,0,0,0.6)]"
             }`}
           >
             {/* Drawer Top Header Status */}
