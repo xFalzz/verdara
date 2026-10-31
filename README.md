@@ -469,8 +469,7 @@ npm run dev
 ## 10. Authors, Acknowledgments & License
 
 * **Lead Architect & Developer**: **Nawfal Irfan** ([@xFalzz](https://github.com/xFalzz))
-* **Institution**: Universitas Bina Sarana Informatika, Yogyakarta, Indonesia
-* **Hackathon Track**: Meta AI Challenge 2026 (Spatial Perception, Sustainability & Autonomous Multi-Agent Systems)
+* **Hackathon Track**: Meta Global AI Hackathon 2026 (Spatial Perception, Sustainability & Autonomous Multi-Agent Systems)
 * **Open Science References**:
   * NREL PVWatts v8 Rooftop Photovoltaic Derating Model (National Renewable Energy Laboratory, US DOE)
   * DIN 1989-1: *Rainwater Harvesting Systems - Selection, Installation, and Operation* (Deutsches Institut für Normung)
