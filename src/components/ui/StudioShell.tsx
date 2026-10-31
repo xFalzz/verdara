@@ -214,39 +214,41 @@ export default function StudioShell({
       </a>
 
       {/* CLEAN, STRUCTURED SINGLE-ROW STUDIO HEADER */}
-      <header className="sticky top-0 z-40 border-b border-current/8 bg-inherit/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1440px] flex-nowrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
+      <header className="sticky top-0 z-40 border-b border-current/8 bg-inherit/90 backdrop-blur-2xl transition-all duration-200">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
           {/* Left: Brand & City Picker */}
-          <div className="flex min-w-0 shrink-0 items-center gap-3">
+          <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3.5">
             <Link
               href="/"
               className="group flex min-h-[40px] shrink-0 items-center gap-2.5"
             >
-              <VerdaraLogo size={36} />
-              <div className="flex flex-col text-left">
-                <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
+              <VerdaraLogo size={32} />
+              <div className="flex flex-col text-left leading-none">
+                <span className="dovv-wordmark text-lg sm:text-xl font-black tracking-tight">
                   VERDARA
                 </span>
-                <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] opacity-60 sm:block">
-                  Spatial Eco-OS · Lv.{level}
+                <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.14em] opacity-60">
+                  Spatial OS · Lv.{level}
                 </span>
               </div>
             </Link>
 
-            <span className="hidden h-5 w-[1px] bg-current/15 sm:inline-block" />
+            <span className="hidden h-4 w-[1px] bg-current/15 sm:inline-block" />
 
-            <CompactWorldCityPicker
-              isLight={isLight}
-              isId={isId}
-              variant="hero"
-              align="left"
-            />
+            <div className="hidden sm:block">
+              <CompactWorldCityPicker
+                isLight={isLight}
+                isId={isId}
+                variant="hero"
+                align="left"
+              />
+            </div>
           </div>
 
           {/* Center: Clean Structured Navigation Links (Desktop) */}
           <nav
             aria-label={isId ? "Menu Ruang Kerja" : "Workspace Menu"}
-            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 xl:flex"
+            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 xl:flex shadow-2xs"
           >
             {topLinks.map((item) => {
               const active = pathname === item.href;
@@ -256,7 +258,7 @@ export default function StudioShell({
                   href={item.href}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
                     active
-                      ? "bg-[#08090c] font-semibold text-[#c6f432] shadow-sm"
+                      ? "bg-[#08090c] font-semibold text-[#c6f432] shadow-sm dark:bg-[#c6f432] dark:text-[#08090c]"
                       : "opacity-75 hover:bg-current/8 hover:opacity-100"
                   }`}
                 >
@@ -266,12 +268,13 @@ export default function StudioShell({
             })}
           </nav>
 
-          {/* Right: Compact Preferences, Studio Notch & Logout (100% Usable on Mobile & Desktop) */}
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* Right: Preferences, Studio Notch & Logout */}
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {/* Desktop Preferences Capsule */}
             <div
-              className={`inline-flex items-center rounded-full border p-0.5 ${
+              className={`hidden sm:inline-flex items-center rounded-full border p-0.5 ${
                 isLight
-                  ? "border-black/10 bg-white"
+                  ? "border-black/10 bg-white shadow-2xs"
                   : "border-white/12 bg-[#14161b]"
               }`}
             >
@@ -303,11 +306,22 @@ export default function StudioShell({
               </button>
             </div>
 
+            {/* Mobile Quick Theme Button */}
+            <button
+              type="button"
+              onClick={() => setTheme(isLight ? "dark" : "light")}
+              className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-current/12 bg-current/[0.04] text-xs transition active:scale-95 cursor-pointer"
+              aria-label={isLight ? "Night Mode" : "Day Mode"}
+            >
+              {isLight ? "☀" : "☾"}
+            </button>
+
+            {/* Studio Notch Toggle Button */}
             <button
               type="button"
               onClick={() => setNotchOpen(!notchOpen)}
               aria-expanded={notchOpen}
-              className="zeggo-btn flex min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 sm:gap-2 rounded-full bg-[#08090c] px-2.5 sm:px-3.5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#262932] transition hover:bg-[#16181f]"
+              className="zeggo-btn flex min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 sm:gap-2 rounded-full bg-[#08090c] text-white px-2.5 sm:px-3.5 py-1.5 text-xs font-medium whitespace-nowrap shadow-[inset_0_0_0_1.5px_#262932] transition hover:bg-[#16181f]"
             >
               <span className="font-mono text-[10px] sm:text-[11px] text-[#c6f432]">
                 {xp} XP
@@ -330,6 +344,7 @@ export default function StudioShell({
               </span>
             </button>
 
+            {/* Logout Button */}
             <button
               type="button"
               onClick={() => {
@@ -339,7 +354,7 @@ export default function StudioShell({
               title={displayName}
               className={`min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium whitespace-nowrap transition ${
                 isLight
-                  ? "border-black/15 bg-white text-[#111] hover:bg-rose-50 hover:text-rose-700"
+                  ? "border-black/15 bg-white text-[#111] hover:bg-rose-50 hover:text-rose-700 shadow-2xs"
                   : "border-white/15 bg-[#14161b] text-[#e2e1dc] hover:bg-rose-950/40 hover:text-rose-300"
               }`}
             >

@@ -447,75 +447,80 @@ export default function LandingPage() {
         isId={isId}
       />
 
-      {/* 1. CLEAN, STRUCTURED STICKY TOP HEADER */}
+      {/* 1. ULTRA-MODERN MINIMALIST STICKY TOP HEADER */}
       <header
-        className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors duration-200 ${
+        className={`sticky top-0 z-50 border-b backdrop-blur-2xl transition-all duration-200 ${
           isLight
-            ? "border-black/10 bg-[#f5f5f3]/90"
-            : "border-white/10 bg-[#0b0c0e]/90"
+            ? "border-black/[0.07] bg-[#fbfbf9]/85 text-[#111]"
+            : "border-white/[0.08] bg-[#07080a]/88 text-[#f2f1ec]"
         }`}
       >
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 sm:px-8">
-          {/* Left: Brand Identity + Primary Navigation Links */}
-          <div className="flex min-w-0 items-center gap-3 lg:gap-5">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
+          {/* Left: Brand Identity + Live Indicator */}
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
             <Link
               href="/"
-              className="flex min-h-[44px] shrink-0 items-center gap-2.5"
+              className="flex min-h-[44px] shrink-0 items-center gap-2.5 group select-none"
               aria-label="Verdara Home"
             >
-              <VerdaraLogo size={34} />
+              <VerdaraLogo size={32} />
               <div className="flex flex-col leading-none">
-                <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
+                <span className="dovv-wordmark text-lg sm:text-xl font-black tracking-tight">
                   VERDARA
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.14em] opacity-60">
+                <span className="font-mono text-[8px] uppercase tracking-[0.16em] opacity-60">
                   SPATIAL ECO-TWIN
                 </span>
               </div>
             </Link>
 
-            {/* Clean Structured Section & Page Links */}
-            <nav
-              aria-label={isId ? "Menu Bagian" : "Section Menu"}
-              className={`hidden items-center gap-1 rounded-full border p-1 lg:flex ${
-                isLight
-                  ? "border-black/10 bg-white/80"
-                  : "border-white/10 bg-[#14161a]/90"
-              }`}
-            >
-              <a
-                href="#chapter-town"
-                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                {isId ? "Distrik 3D" : "3D District"}
-              </a>
-              <a
-                href="#chapter-slides"
-                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                {isId ? "5 Zona Iklim" : "5 Climates"}
-              </a>
-              <a
-                href="#chapter-tools"
-                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                {isId ? "Fitur AI" : "AI Tools"}
-              </a>
-              <Link
-                href="/docs"
-                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-semibold text-[#14733f] dark:text-[#c6f432] transition hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                {isId ? "Dokumen" : "Docs"}
-              </Link>
-              <Link
-                href="/faq"
-                className="min-h-[34px] inline-flex items-center rounded-full px-3 text-xs font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                FAQ
-              </Link>
-            </nav>
+            {/* Desktop Node Indicator Pill */}
+            <div className="hidden md:flex items-center gap-1.5 rounded-full border border-current/10 bg-current/[0.03] px-2.5 py-1 font-mono text-[10px] opacity-80">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#1e9e5a] animate-pulse" />
+              <span>{geo.city} · {geo.koppen.code}</span>
+            </div>
+          </div>
 
-            {/* Compact Country & City Selector in Header */}
+          {/* Center: Minimalist Floating Capsule Nav (Desktop) */}
+          <nav
+            aria-label={isId ? "Menu Bagian" : "Section Menu"}
+            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 lg:flex shadow-xs"
+          >
+            <a
+              href="#chapter-town"
+              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
+            >
+              {isId ? "Distrik 3D" : "3D District"}
+            </a>
+            <a
+              href="#chapter-slides"
+              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
+            >
+              {isId ? "10 Negara" : "10 Countries"}
+            </a>
+            <a
+              href="#chapter-tools"
+              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
+            >
+              {isId ? "Fitur AI" : "AI Tools"}
+            </a>
+            <Link
+              href="/docs"
+              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
+            >
+              {isId ? "Dokumen" : "Docs"}
+            </Link>
+            <Link
+              href="/faq"
+              className="min-h-[32px] inline-flex items-center rounded-full px-3 text-xs font-medium transition hover:bg-current/10"
+            >
+              FAQ
+            </Link>
+          </nav>
+
+          {/* Right: Controls & Actions */}
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {/* Country Selector (Desktop only) */}
             <div className="hidden xl:block">
               <CompactWorldCityPicker
                 isLight={isLight}
@@ -524,102 +529,96 @@ export default function LandingPage() {
                 align="left"
               />
             </div>
-          </div>
 
-          {/* Right: Structured Utility Pill + Strict Auth Gate CTA */}
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            {/* Grouped Preferences Pill (Locale, Units, Theme - 100% Visible on Mobile & Desktop) */}
+            {/* Desktop Preferences Capsule (Hidden on mobile to stay minimal and clean) */}
             <div
-              className={`inline-flex items-center gap-0.5 rounded-full border p-0.5 sm:p-1 ${
+              className={`hidden sm:inline-flex items-center rounded-full border p-0.5 ${
                 isLight
-                  ? "border-black/10 bg-white"
-                  : "border-white/12 bg-[#15171b]"
+                  ? "border-black/10 bg-white shadow-2xs"
+                  : "border-white/10 bg-[#121419]"
               }`}
             >
               <button
                 type="button"
                 onClick={() => setLocale(locale === "en" ? "id" : "en")}
-                className="min-h-[32px] sm:min-h-[34px] cursor-pointer rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] font-semibold transition hover:bg-current/10"
                 title={isId ? "Ganti Bahasa" : "Switch Language"}
               >
-                {locale === "id" ? "ID" : "EN"}
+                {locale.toUpperCase()}
               </button>
-              <span className="h-3.5 w-px bg-current opacity-15" />
+              <span className="h-3 w-[1px] bg-current/15" />
               <button
                 type="button"
                 onClick={() =>
                   setUnits(units === "metric" ? "imperial" : "metric")
                 }
-                className="inline-flex min-h-[32px] sm:min-h-[34px] cursor-pointer items-center rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
                 title={isId ? "Ganti Satuan" : "Switch Units"}
               >
                 {units === "metric" ? "m²" : "ft²"}
               </button>
-              <span className="h-3.5 w-px bg-current opacity-15" />
+              <span className="h-3 w-[1px] bg-current/15" />
               <button
                 type="button"
                 onClick={() => setTheme(isLight ? "dark" : "light")}
-                className="min-h-[32px] sm:min-h-[34px] cursor-pointer rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
-                title={isId ? "Mode Terang / Gelap" : "Light / Dark Mode"}
+                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+                title={isLight ? "Mode Terang" : "Mode Gelap"}
               >
                 {isLight ? "☀" : "☾"}
-                <span className="hidden sm:inline">
-                  {isLight ? " Day" : " Night"}
-                </span>
               </button>
             </div>
 
-            {/* Judge Brief & Mobile Quick Menu Drawer Toggle */}
+            {/* Mobile-Only Quick Theme Micro-Button */}
+            <button
+              type="button"
+              onClick={() => setTheme(isLight ? "dark" : "light")}
+              className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-current/12 bg-current/[0.04] text-xs transition active:scale-95 cursor-pointer"
+              aria-label={isLight ? "Aktifkan Mode Gelap" : "Aktifkan Mode Terang"}
+            >
+              {isLight ? "☀" : "☾"}
+            </button>
+
+            {/* Judge Brief Button (Desktop/Tablet) */}
             <button
               type="button"
               onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
               aria-expanded={headerNotchOpen}
-              className="zeggo-btn inline-flex min-h-[36px] sm:min-h-[42px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-2.5 sm:px-3.5 text-[11px] sm:text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#2c2c2c] transition hover:bg-[#1a1a1a]"
+              className={`hidden md:inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-medium transition cursor-pointer border ${
+                headerNotchOpen
+                  ? "border-[#c6f432] bg-[#c6f432]/10 text-[#c6f432]"
+                  : "border-current/12 bg-current/[0.03] hover:bg-current/[0.08]"
+              }`}
             >
-              <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-              <span className="md:hidden">
-                {headerNotchOpen ? "✕" : "☰"}
-              </span>
-              <span className="hidden md:inline">
-                <ZeggoRollText
-                  text={
-                    headerNotchOpen
-                      ? isId
-                        ? "Tutup Info"
-                        : "Close Brief"
-                      : isId
-                      ? "Info Juri"
-                      : "Judge Brief"
-                  }
-                />
-              </span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#c6f432]" />
+              <ZeggoRollText
+                text={
+                  headerNotchOpen
+                    ? isId
+                      ? "Tutup Info"
+                      : "Close Brief"
+                    : isId
+                    ? "Info Juri"
+                    : "Judge Brief"
+                }
+              />
             </button>
 
-            {/* Auth-Aware Primary Studio Button */}
+            {/* Primary Action Button */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-1 sm:gap-1.5">
+              <div className="flex items-center gap-1">
                 <Link
                   href="/dashboard"
-                  className="zeggo-btn group flex min-h-[36px] sm:min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#1e9e5a] px-3 sm:px-4 text-[11px] sm:text-sm font-semibold whitespace-nowrap text-white transition hover:bg-[#178249]"
+                  className="zeggo-btn flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#1e9e5a] px-3 sm:px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#178249]"
                 >
-                  <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-                  <ZeggoRollText
-                    text={
-                      isId
-                        ? `Studio (${displayName.split(" ")[0]})`
-                        : `Studio (${displayName.split(" ")[0]})`
-                    }
-                  />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#c6f432]" />
+                  <span>Studio</span>
+                  <span className="hidden sm:inline">({displayName.split(" ")[0]})</span>
                   <span>→</span>
                 </Link>
                 <button
                   type="button"
                   onClick={logout}
-                  className={`min-h-[36px] sm:min-h-[42px] cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition ${
-                    isLight
-                      ? "border-black/15 bg-white text-[#111] hover:bg-black/5"
-                      : "border-white/15 bg-[#16181c] text-white hover:bg-white/10"
-                  }`}
+                  className="hidden md:inline-flex min-h-[36px] cursor-pointer items-center rounded-full border border-current/12 px-2.5 text-xs font-medium transition hover:bg-rose-500/10 hover:text-rose-500"
                 >
                   {isId ? "Keluar" : "Logout"}
                 </button>
@@ -627,29 +626,85 @@ export default function LandingPage() {
             ) : (
               <Link
                 href="/login?next=/dashboard"
-                className="zeggo-btn group flex min-h-[36px] sm:min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#080808] px-3 sm:px-4 text-[11px] sm:text-sm font-semibold whitespace-nowrap text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition hover:bg-[#222]"
+                className="zeggo-btn flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#080808] text-white dark:bg-white dark:text-[#080808] px-3 sm:px-3.5 text-xs font-semibold shadow-sm transition hover:opacity-90"
               >
-                <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-                <ZeggoRollText
-                  text={isId ? "Login" : "Sign In"}
-                />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#c6f432]" />
+                <ZeggoRollText text={isId ? "Login" : "Sign In"} />
                 <span>→</span>
               </Link>
             )}
+
+            {/* Mobile / Tablet Menu Toggle */}
+            <button
+              type="button"
+              onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
+              aria-expanded={headerNotchOpen}
+              aria-label={isId ? "Buka Menu Navigasi" : "Toggle Menu"}
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition cursor-pointer lg:hidden ${
+                headerNotchOpen
+                  ? "border-[#c6f432] bg-[#c6f432]/15 text-[#c6f432]"
+                  : "border-current/15 bg-current/[0.04] text-current hover:bg-current/10"
+              }`}
+            >
+              <span className="font-mono text-sm leading-none font-bold">
+                {headerNotchOpen ? "x" : "☰"}
+              </span>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* EXPANDABLE JUDGE BRIEF & MOBILE SECTION NAVIGATION DRAWER */}
+      {/* ULTRA-MODERN AESTHETIC FLOATING MOBILE / TABLET DRAWER */}
       {headerNotchOpen && (
-        <div className="mx-auto mt-3 max-w-[1440px] px-4 sm:px-8">
-          <div className="ml-auto max-w-[680px] rounded-[28px] bg-[#080808] p-4 sm:p-5 text-white shadow-[inset_0_0_0_1.5px_#2c2c2c,0_24px_60px_-12px_rgba(0,0,0,0.65)]">
-            {/* Mobile & Tablet Quick Section & Page Navigation Grid */}
-            <div className="mb-4 border-b border-white/10 pb-3.5 lg:hidden">
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#c6f432]">
-                {isId ? "NAVIGASI CEPAT HALAMAN" : "QUICK SECTION & PAGE MENU"}
+        <div className="mx-auto mt-3 max-w-[1440px] px-3.5 sm:px-6 lg:px-8">
+          <div
+            className={`ml-auto max-w-[680px] rounded-[28px] border p-4 sm:p-5 shadow-2xl backdrop-blur-2xl transition-all duration-200 ${
+              isLight
+                ? "border-black/10 bg-white/98 text-[#111] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)]"
+                : "border-white/12 bg-[#090b0f]/98 text-white shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)]"
+            }`}
+          >
+            {/* Drawer Top Header Status */}
+            <div className="mb-3.5 flex items-center justify-between border-b border-current/10 pb-3">
+              <div className="flex items-center gap-2 font-mono text-xs">
+                <span className="h-2 w-2 rounded-full bg-[#1e9e5a] animate-pulse" />
+                <span className="font-semibold">
+                  {geo.city} ({geo.countryCode} · {geo.koppen.code})
+                </span>
+                <span className="hidden sm:inline opacity-60">·</span>
+                <span className="hidden sm:inline font-mono text-[11px] text-[#1e9e5a] dark:text-[#c6f432]">
+                  ${remainingCredit} / $150.00 Meta API
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHeaderNotchOpen(false)}
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-current/10 font-mono text-xs opacity-75 hover:opacity-100"
+                aria-label="Close menu"
+              >
+                x
+              </button>
+            </div>
+
+            {/* Quick Country Switcher Inside Drawer (For Mobile convenience) */}
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-current/10 bg-current/[0.03] p-2.5">
+              <span className="font-mono text-[11px] uppercase tracking-wider opacity-75">
+                {isId ? "Pilih Kota & Iklim:" : "Location & Climate:"}
               </span>
-              <div className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+              <CompactWorldCityPicker
+                isLight={isLight}
+                isId={isId}
+                variant="header"
+                align="left"
+              />
+            </div>
+
+            {/* Mobile & Tablet Quick Navigation Grid */}
+            <div className="mb-4">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-60 block mb-2">
+                {isId ? "NAVIGASI HALAMAN & FITUR" : "PAGE & SECTION NAVIGATION"}
+              </span>
+              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
                 {[
                   { href: "#chapter-town", label: isId ? "Distrik 3D" : "3D District" },
                   { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
@@ -663,7 +718,11 @@ export default function LandingPage() {
                       key={nav.href}
                       href={nav.href}
                       onClick={() => setHeaderNotchOpen(false)}
-                      className="flex min-h-[36px] items-center justify-center rounded-xl border border-[#c6f432]/35 bg-[#c6f432]/10 px-2 text-center font-mono text-[11px] font-semibold text-[#c6f432]"
+                      className={`flex min-h-[40px] items-center justify-center rounded-xl border px-2 text-center font-mono text-[11px] font-semibold transition ${
+                        isLight
+                          ? "border-[#1e9e5a]/30 bg-[#1e9e5a]/10 text-[#14733f] hover:bg-[#1e9e5a]/20"
+                          : "border-[#c6f432]/35 bg-[#c6f432]/10 text-[#c6f432] hover:bg-[#c6f432]/20"
+                      }`}
                     >
                       {nav.label}
                     </Link>
@@ -672,7 +731,7 @@ export default function LandingPage() {
                       key={nav.href}
                       href={nav.href}
                       onClick={() => setHeaderNotchOpen(false)}
-                      className="flex min-h-[36px] items-center justify-center rounded-xl border border-white/10 bg-[#14161a] px-2 text-center font-mono text-[11px] font-medium text-white"
+                      className="flex min-h-[40px] items-center justify-center rounded-xl border border-current/10 bg-current/[0.04] px-2 text-center font-mono text-[11px] font-medium transition hover:bg-current/10"
                     >
                       {nav.label}
                     </a>
@@ -680,45 +739,74 @@ export default function LandingPage() {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
-              <div className="flex flex-col justify-between space-y-3 sm:col-span-5">
+
+            {/* Mobile Preferences Selector Bar */}
+            <div className="mb-4 grid grid-cols-3 gap-2 border-t border-current/10 pt-3 sm:hidden">
+              <button
+                type="button"
+                onClick={() => setLocale(locale === "en" ? "id" : "en")}
+                className="flex min-h-[38px] cursor-pointer items-center justify-center rounded-xl border border-current/12 bg-current/[0.04] font-mono text-xs font-semibold"
+              >
+                🌐 {locale === "id" ? "Bahasa (ID)" : "Language (EN)"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setUnits(units === "metric" ? "imperial" : "metric")}
+                className="flex min-h-[38px] cursor-pointer items-center justify-center rounded-xl border border-current/12 bg-current/[0.04] font-mono text-xs font-medium"
+              >
+                📐 {units === "metric" ? "m² / L" : "ft² / Gal"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme(isLight ? "dark" : "light")}
+                className="flex min-h-[38px] cursor-pointer items-center justify-center rounded-xl border border-current/12 bg-current/[0.04] font-mono text-xs font-medium"
+              >
+                {isLight ? "☀ Siang" : "☾ Malam"}
+              </button>
+            </div>
+
+            {/* Bottom Row: Quick Launch & Judge Deck */}
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-12">
+              <div className="flex flex-col justify-between space-y-2.5 sm:col-span-5">
                 <div>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#aaa9ad]">
-                    META HACKATHON · LIVE NODE
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-60">
+                    META HACKATHON · SPATIAL OS
                   </span>
-                  <p className="mt-1 font-sans text-lg font-medium text-white">
-                    {geo.city} ({geo.countryCode} · {geo.koppen.code})
-                  </p>
-                  <p className="font-mono text-xs text-[#c6f432]">
-                    ${remainingCredit} / $150.00 Meta API Pool
+                  <p className="mt-0.5 font-sans text-sm font-semibold">
+                    {geo.city} District Twin
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Link
                     href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-                    className="flex min-h-[40px] flex-1 items-center justify-center rounded-full bg-[#c6f432] px-3 text-xs font-semibold text-[#080808]"
+                    className={`flex min-h-[42px] flex-1 items-center justify-center rounded-full px-4 text-xs font-semibold shadow-sm transition hover:opacity-90 ${
+                      isLight
+                        ? "bg-[#14532D] text-white"
+                        : "bg-[#A3E635] text-[#070D0A]"
+                    }`}
                   >
                     {isAuthenticated
                       ? isId
                         ? "Buka Studio →"
                         : "Open Studio →"
                       : isId
-                      ? "Login Juri (Lv.5)"
-                      : "Judge Sign-In (Lv.5)"}
+                      ? "Login Juri (Lv.5) →"
+                      : "Judge Sign-In (Lv.5) →"}
                   </Link>
                   <Link
                     href="/docs"
-                    className="flex min-h-[40px] items-center justify-center rounded-full bg-white/10 px-3 text-xs font-medium text-white"
+                    className="flex min-h-[42px] items-center justify-center rounded-full border border-current/15 px-3.5 text-xs font-medium transition hover:bg-current/10"
                   >
                     Docs
                   </Link>
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-[22px] bg-[#171717] p-4 shadow-[inset_0_0_0_1.5px_#2c2c2c] sm:col-span-7">
-                <div className="mb-2.5 flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#c6f432]">
-                    SLIDE 0{headerNotchSlide + 1}/03
+              {/* Judge Brief Mini Carousel */}
+              <div className="overflow-hidden rounded-2xl border border-current/10 bg-current/[0.03] p-3.5 sm:col-span-7">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#1e9e5a] dark:text-[#c6f432]">
+                    BRIEF 0{headerNotchSlide + 1}/03
                   </span>
                   <div className="flex items-center gap-1.5">
                     {[0, 1, 2].map((idx) => (
@@ -726,25 +814,25 @@ export default function LandingPage() {
                         key={idx}
                         type="button"
                         onClick={() => setHeaderNotchSlide(idx)}
-                        aria-label={`Notch slide ${idx + 1}`}
-                        className={`h-2 rounded-full transition-all ${
+                        aria-label={`Slide ${idx + 1}`}
+                        className={`h-1.5 rounded-full transition-all ${
                           headerNotchSlide === idx
-                            ? "w-5 bg-[#c6f432]"
-                            : "w-2 bg-white/25"
+                            ? "w-4 bg-[#1e9e5a] dark:bg-[#c6f432]"
+                            : "w-1.5 bg-current/25"
                         }`}
                       />
                     ))}
                     <button
                       type="button"
                       onClick={() => setHeaderNotchSlide((s) => (s + 2) % 3)}
-                      className="ml-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs"
+                      className="ml-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-current/10 font-mono text-[10px]"
                     >
                       ←
                     </button>
                     <button
                       type="button"
                       onClick={() => setHeaderNotchSlide((s) => (s + 1) % 3)}
-                      className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs"
+                      className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-current/10 font-mono text-[10px]"
                     >
                       →
                     </button>
@@ -758,21 +846,21 @@ export default function LandingPage() {
                       transform: `translate3d(-${headerNotchSlide * 100}%, 0, 0)`,
                     }}
                   >
-                    <div className="w-full shrink-0 space-y-1">
-                      <p className="text-xs font-semibold text-white">
+                    <div className="w-full shrink-0 space-y-0.5">
+                      <p className="text-xs font-semibold">
                         01 / Meta SAM 3.1 Camera Scanner
                       </p>
-                      <p className="text-[11px] leading-relaxed text-[#aaa9ad]">
+                      <p className="text-[11px] leading-relaxed opacity-75">
                         {isId
                           ? "Memindai foto atap, talang air, halaman, dan botol/kaleng daur ulang secara otomatis dengan masker poligon presisi."
                           : "Automatically outlines roof space for solar panels, gutters for rain tanks, and bottles/cans for recycling cash."}
                       </p>
                     </div>
-                    <div className="w-full shrink-0 space-y-1">
-                      <p className="text-xs font-semibold text-white">
+                    <div className="w-full shrink-0 space-y-0.5">
+                      <p className="text-xs font-semibold">
                         02 / Real Solar & Rainwater Math
                       </p>
-                      <p className="text-[11px] leading-relaxed text-[#aaa9ad]">
+                      <p className="text-[11px] leading-relaxed opacity-75">
                         {isId
                           ? `Menghitung ${housingCalc.solar.kwp} kWp listrik surya dan ${formatVolume(
                               housingCalc.rainwater.litersYear,
@@ -786,11 +874,11 @@ export default function LandingPage() {
                             )} rainwater harvest for ${geo.city}.`}
                       </p>
                     </div>
-                    <div className="w-full shrink-0 space-y-1">
-                      <p className="text-xs font-semibold text-white">
+                    <div className="w-full shrink-0 space-y-0.5">
+                      <p className="text-xs font-semibold">
                         03 / Meta Muse Spark 3-Expert Council
                       </p>
-                      <p className="text-[11px] leading-relaxed text-[#aaa9ad]">
+                      <p className="text-[11px] leading-relaxed opacity-75">
                         {isId
                           ? "Tiga pakar AI (Botani, Arsitek Surya, Ekonomi Sirkular) menyusun rencana aksi rumah Anda tanpa mengarang angka."
                           : "Three AI specialists (Botanist, Solar Architect, Circular Economist) build your home plan with zero fake numbers."}
@@ -1058,11 +1146,11 @@ export default function LandingPage() {
                 >
                   {townHudMinimized
                     ? isId
-                      ? "▴ Detail"
-                      : "▴ Expand"
+                      ? "^ Detail"
+                      : "^ Expand"
                     : isId
-                    ? "▾ Kecilkan"
-                    : "▾ Minimize"}
+                    ? "v Kecilkan"
+                    : "v Minimize"}
                 </button>
               </div>
             </div>
@@ -2397,7 +2485,7 @@ export default function LandingPage() {
                     className="gsap-scrub-bento-item gsap-batch-card rounded-[24px] bg-[#121316] p-5 sm:p-6 shadow-[inset_0_0_0_1px_#24262b] md:col-span-4"
                   >
                     <span className={`font-mono text-xs font-semibold ${item.color}`}>
-                      ● {item.badge}
+                      * {item.badge}
                     </span>
                     <h4 className="mt-2.5 text-lg font-medium text-white">
                       {isId ? item.titleId : item.titleEn}
@@ -2415,19 +2503,19 @@ export default function LandingPage() {
                   {[0, 1].map((loopIdx) => (
                     <div key={loopIdx} className="flex shrink-0 items-center gap-8">
                       <span className="text-[#c6f432]">
-                        ● VERDARA SPATIAL ECO-TWIN v3.2
+                        * VERDARA SPATIAL ECO-TWIN v3.2
                       </span>
                       <span>META SAM 3.1 VISION SEGMENTATION</span>
                       <span className="text-cyan-300">
-                        ● META MUSE SPARK 3-AGENT COUNCIL
+                        * META MUSE SPARK 3-AGENT COUNCIL
                       </span>
                       <span>NREL PVWATTS v8 SOLAR ENGINE</span>
                       <span className="text-[#10b981]">
-                        ● DIN 1989-1 HYDROLOGICAL CISTERN
+                        * DIN 1989-1 HYDROLOGICAL CISTERN
                       </span>
                       <span>195+ COUNTRIES · 60 FPS WEBGL</span>
                       <span className="text-amber-300">
-                        ● OWASP ASVS SECURITY GUARD
+                        * OWASP ASVS SECURITY GUARD
                       </span>
                     </div>
                   ))}
@@ -2501,8 +2589,8 @@ export default function LandingPage() {
               <ZeggoRollText
                 text={
                   isAuthenticated
-                    ? "Open Lv.5 Studio Town ↗"
-                    : "Sign In for Lv.5 Judge Town ↗"
+                    ? "Open Lv.5 Studio Town ->"
+                    : "Sign In for Lv.5 Judge Town ->"
                 }
               />
             </Link>

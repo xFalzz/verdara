@@ -715,88 +715,103 @@ export default function FaqPage() {
           __html: JSON.stringify(faqSchema),
         }}
       />
-      {/* CLEAN SINGLE-ROW TOP HEADER */}
-      <header className="sticky top-0 z-40 border-b border-current/10 bg-inherit/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
-          <div className="flex min-w-0 shrink-0 items-center gap-3">
-            <Link href="/" className="flex min-h-[44px] items-center gap-2.5">
-              <VerdaraLogo size={36} />
-              <div className="flex flex-col text-left">
-                <span className="dovv-wordmark text-xl sm:text-2xl tracking-tight">
+      {/* CLEAN ULTRA-MODERN STICKY TOP HEADER */}
+      <header className="sticky top-0 z-40 border-b border-current/8 bg-inherit/90 backdrop-blur-2xl transition-all duration-200">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3.5">
+            <Link href="/" className="flex min-h-[40px] items-center gap-2.5 select-none">
+              <VerdaraLogo size={32} />
+              <div className="flex flex-col text-left leading-none">
+                <span className="dovv-wordmark text-lg sm:text-xl font-black tracking-tight">
                   VERDARA
                 </span>
-                <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] opacity-60 sm:block">
-                  Knowledge Base &amp; FAQ
+                <span className="hidden font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.14em] opacity-60 sm:block">
+                  Knowledge &amp; FAQ
                 </span>
               </div>
             </Link>
 
-            <span className="hidden h-5 w-[1px] bg-current/15 sm:inline-block" />
+            <span className="hidden h-4 w-[1px] bg-current/15 sm:inline-block" />
 
-            <CompactWorldCityPicker
-              isLight={isLight}
-              isId={isId}
-              variant="hero"
-              align="left"
-            />
+            <div className="hidden sm:block">
+              <CompactWorldCityPicker
+                isLight={isLight}
+                isId={isId}
+                variant="hero"
+                align="left"
+              />
+            </div>
           </div>
 
-          <nav className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 lg:flex">
+          <nav className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 lg:flex shadow-2xs">
             <Link
               href="/"
-              className="rounded-full px-3.5 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
+              className="rounded-full px-3 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
               {isId ? "Beranda" : "Overview"}
             </Link>
             <Link
               href="/docs"
-              className="rounded-full px-3.5 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
+              className="rounded-full px-3 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
               {isId ? "Dokumen Teknis" : "Documentation"}
             </Link>
             <Link
               href="/faq"
-              className="rounded-full bg-[#08090c] px-3.5 py-1.5 text-xs font-semibold text-[#c6f432]"
+              className="rounded-full bg-[#08090c] px-3.5 py-1.5 text-xs font-semibold text-[#c6f432] shadow-xs"
             >
               FAQ
             </Link>
             <Link
               href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-              className="rounded-full px-3.5 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
+              className="rounded-full px-3 py-1.5 text-xs font-medium opacity-75 transition hover:opacity-100"
             >
               {isId ? "Studio 3D" : "3D Studio"}
             </Link>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setLocale(isId ? "en" : "id")}
-              className="min-h-[40px] cursor-pointer rounded-full border border-current/15 px-3 font-mono text-xs font-semibold"
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {/* Grouped Preferences Pill */}
+            <div
+              className={`inline-flex items-center rounded-full border p-0.5 ${
+                isLight
+                  ? "border-black/10 bg-white shadow-2xs"
+                  : "border-white/12 bg-[#14161b]"
+              }`}
             >
-              {locale.toUpperCase()}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setUnits(units === "metric" ? "imperial" : "metric")
-              }
-              className="hidden min-h-[40px] cursor-pointer items-center rounded-full border border-current/15 px-3 font-mono text-xs sm:inline-flex"
-            >
-              {units === "metric" ? "m² / L" : "ft² / gal"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme(isLight ? "dark" : "light")}
-              className="min-h-[40px] cursor-pointer rounded-full border border-current/15 px-3 font-mono text-xs"
-            >
-              {isLight ? "☀ Day" : "☾ Night"}
-            </button>
+              <button
+                type="button"
+                onClick={() => setLocale(isId ? "en" : "id")}
+                className="min-h-[32px] cursor-pointer rounded-full px-2 sm:px-2.5 font-mono text-[10px] sm:text-[11px] font-semibold transition hover:bg-current/10"
+              >
+                {locale.toUpperCase()}
+              </button>
+              <span className="h-3 w-[1px] bg-current/15" />
+              <button
+                type="button"
+                onClick={() =>
+                  setUnits(units === "metric" ? "imperial" : "metric")
+                }
+                className="hidden min-h-[32px] cursor-pointer items-center rounded-full px-2 sm:px-2.5 font-mono text-[10px] sm:text-[11px] sm:inline-flex transition hover:bg-current/10"
+              >
+                {units === "metric" ? "m²" : "ft²"}
+              </button>
+              <span className="hidden sm:inline-block h-3 w-[1px] bg-current/15" />
+              <button
+                type="button"
+                onClick={() => setTheme(isLight ? "dark" : "light")}
+                className="min-h-[32px] cursor-pointer rounded-full px-2 sm:px-2.5 font-mono text-[10px] sm:text-[11px] transition hover:bg-current/10"
+                title={isLight ? "Mode Terang" : "Mode Gelap"}
+              >
+                {isLight ? "☀" : "☾"}
+              </button>
+            </div>
+
             {isAuthenticated ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <Link
                   href="/dashboard"
-                  className="zeggo-btn flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#1e9e5a] px-4 text-xs font-semibold text-white"
+                  className="zeggo-btn flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#1e9e5a] px-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#178249]"
                 >
                   <ZeggoRollText
                     text={`Studio (${shortName}) ->`}
@@ -805,7 +820,7 @@ export default function FaqPage() {
                 <button
                   type="button"
                   onClick={logout}
-                  className="min-h-[40px] cursor-pointer rounded-full border border-current/15 px-3 text-xs font-medium"
+                  className="hidden md:inline-flex min-h-[36px] cursor-pointer items-center rounded-full border border-current/12 px-2.5 text-xs font-medium transition hover:bg-rose-500/10 hover:text-rose-500"
                 >
                   {isId ? "Keluar" : "Logout"}
                 </button>
@@ -813,7 +828,7 @@ export default function FaqPage() {
             ) : (
               <Link
                 href="/login?next=/dashboard"
-                className="zeggo-btn flex min-h-[40px] items-center gap-1.5 rounded-full bg-[#08090c] px-4 text-xs font-semibold text-[#c6f432]"
+                className="zeggo-btn flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#08090c] text-[#c6f432] px-3.5 text-xs font-semibold shadow-sm transition hover:opacity-90"
               >
                 <ZeggoRollText
                   text={isId ? "Login Studio →" : "Sign In →"}
