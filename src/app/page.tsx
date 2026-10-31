@@ -204,6 +204,7 @@ export default function LandingPage() {
 
   const [isNightPreview, setIsNightPreview] = useState(false);
   const [townSimMode, setTownSimMode] = useState<TownSimMode>("run");
+  const [townHudMinimized, setTownHudMinimized] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [headerNotchOpen, setHeaderNotchOpen] = useState(false);
   const [headerNotchSlide, setHeaderNotchSlide] = useState(0);
@@ -526,10 +527,10 @@ export default function LandingPage() {
           </div>
 
           {/* Right: Structured Utility Pill + Strict Auth Gate CTA */}
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            {/* Grouped Preferences Pill (Locale, Units, Theme) */}
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            {/* Grouped Preferences Pill (Locale, Units, Theme - 100% Visible on Mobile & Desktop) */}
             <div
-              className={`inline-flex items-center gap-0.5 rounded-full border p-1 ${
+              className={`inline-flex items-center gap-0.5 rounded-full border p-0.5 sm:p-1 ${
                 isLight
                   ? "border-black/10 bg-white"
                   : "border-white/12 bg-[#15171b]"
@@ -538,7 +539,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => setLocale(locale === "en" ? "id" : "en")}
-                className="min-h-[34px] cursor-pointer rounded-full px-2.5 text-xs font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+                className="min-h-[32px] sm:min-h-[34px] cursor-pointer rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
                 title={isId ? "Ganti Bahasa" : "Switch Language"}
               >
                 {locale === "id" ? "ID" : "EN"}
@@ -549,49 +550,57 @@ export default function LandingPage() {
                 onClick={() =>
                   setUnits(units === "metric" ? "imperial" : "metric")
                 }
-                className="hidden min-h-[34px] cursor-pointer items-center rounded-full px-2.5 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10 sm:inline-flex"
+                className="inline-flex min-h-[32px] sm:min-h-[34px] cursor-pointer items-center rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
                 title={isId ? "Ganti Satuan" : "Switch Units"}
               >
-                {units === "metric" ? "m² · L" : "ft² · gal"}
+                {units === "metric" ? "m²" : "ft²"}
               </button>
-              <span className="hidden h-3.5 w-px bg-current opacity-15 sm:inline-block" />
+              <span className="h-3.5 w-px bg-current opacity-15" />
               <button
                 type="button"
                 onClick={() => setTheme(isLight ? "dark" : "light")}
-                className="min-h-[34px] cursor-pointer rounded-full px-2.5 text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+                className="min-h-[32px] sm:min-h-[34px] cursor-pointer rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
                 title={isId ? "Mode Terang / Gelap" : "Light / Dark Mode"}
               >
-                {isLight ? "☀ Day" : "☾ Night"}
+                {isLight ? "☀" : "☾"}
+                <span className="hidden sm:inline">
+                  {isLight ? " Day" : " Night"}
+                </span>
               </button>
             </div>
 
-            {/* Judge Brief Quick Drawer Toggle */}
+            {/* Judge Brief & Mobile Quick Menu Drawer Toggle */}
             <button
               type="button"
               onClick={() => setHeaderNotchOpen(!headerNotchOpen)}
               aria-expanded={headerNotchOpen}
-              className="zeggo-btn hidden min-h-[42px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-3.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#2c2c2c] transition hover:bg-[#1a1a1a] md:flex"
+              className="zeggo-btn inline-flex min-h-[36px] sm:min-h-[42px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#080808] px-2.5 sm:px-3.5 text-[11px] sm:text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#2c2c2c] transition hover:bg-[#1a1a1a]"
             >
               <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
-              <ZeggoRollText
-                text={
-                  headerNotchOpen
-                    ? isId
-                      ? "Tutup Info"
-                      : "Close Brief"
-                    : isId
-                    ? "Info Juri"
-                    : "Judge Brief"
-                }
-              />
+              <span className="md:hidden">
+                {headerNotchOpen ? "✕" : "☰"}
+              </span>
+              <span className="hidden md:inline">
+                <ZeggoRollText
+                  text={
+                    headerNotchOpen
+                      ? isId
+                        ? "Tutup Info"
+                        : "Close Brief"
+                      : isId
+                      ? "Info Juri"
+                      : "Judge Brief"
+                  }
+                />
+              </span>
             </button>
 
             {/* Auth-Aware Primary Studio Button */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <Link
                   href="/dashboard"
-                  className="zeggo-btn group flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#1e9e5a] px-4 text-xs sm:text-sm font-semibold whitespace-nowrap text-white transition hover:bg-[#178249]"
+                  className="zeggo-btn group flex min-h-[36px] sm:min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#1e9e5a] px-3 sm:px-4 text-[11px] sm:text-sm font-semibold whitespace-nowrap text-white transition hover:bg-[#178249]"
                 >
                   <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
                   <ZeggoRollText
@@ -606,7 +615,7 @@ export default function LandingPage() {
                 <button
                   type="button"
                   onClick={logout}
-                  className={`min-h-[42px] cursor-pointer rounded-full border px-3 text-xs font-medium transition ${
+                  className={`min-h-[36px] sm:min-h-[42px] cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition ${
                     isLight
                       ? "border-black/15 bg-white text-[#111] hover:bg-black/5"
                       : "border-white/15 bg-[#16181c] text-white hover:bg-white/10"
@@ -618,11 +627,11 @@ export default function LandingPage() {
             ) : (
               <Link
                 href="/login?next=/dashboard"
-                className="zeggo-btn group flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#080808] px-4 text-xs sm:text-sm font-semibold whitespace-nowrap text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition hover:bg-[#222]"
+                className="zeggo-btn group flex min-h-[36px] sm:min-h-[42px] shrink-0 items-center gap-1.5 rounded-full bg-[#080808] px-3 sm:px-4 text-[11px] sm:text-sm font-semibold whitespace-nowrap text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] transition hover:bg-[#222]"
               >
                 <span className="h-2 w-2 rounded-full bg-[#c6f432]" />
                 <ZeggoRollText
-                  text={isId ? "Login / Buka Studio" : "Sign In / Studio"}
+                  text={isId ? "Login" : "Sign In"}
                 />
                 <span>→</span>
               </Link>
@@ -631,10 +640,46 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* EXPANDABLE JUDGE BRIEF DRAWER */}
+      {/* EXPANDABLE JUDGE BRIEF & MOBILE SECTION NAVIGATION DRAWER */}
       {headerNotchOpen && (
         <div className="mx-auto mt-3 max-w-[1440px] px-4 sm:px-8">
-          <div className="ml-auto max-w-[680px] rounded-[28px] bg-[#080808] p-5 text-white shadow-[inset_0_0_0_1.5px_#2c2c2c,0_24px_60px_-12px_rgba(0,0,0,0.65)]">
+          <div className="ml-auto max-w-[680px] rounded-[28px] bg-[#080808] p-4 sm:p-5 text-white shadow-[inset_0_0_0_1.5px_#2c2c2c,0_24px_60px_-12px_rgba(0,0,0,0.65)]">
+            {/* Mobile & Tablet Quick Section & Page Navigation Grid */}
+            <div className="mb-4 border-b border-white/10 pb-3.5 lg:hidden">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#c6f432]">
+                {isId ? "NAVIGASI CEPAT HALAMAN" : "QUICK SECTION & PAGE MENU"}
+              </span>
+              <div className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+                {[
+                  { href: "#chapter-town", label: isId ? "Distrik 3D" : "3D District" },
+                  { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
+                  { href: "#chapter-workflow", label: isId ? "Cara Kerja" : "How It Works" },
+                  { href: "#chapter-tools", label: isId ? "Fitur AI" : "AI Tools" },
+                  { href: "/docs", label: isId ? "Dokumen" : "Docs", isRoute: true },
+                  { href: "/faq", label: "FAQ", isRoute: true },
+                ].map((nav) =>
+                  nav.isRoute ? (
+                    <Link
+                      key={nav.href}
+                      href={nav.href}
+                      onClick={() => setHeaderNotchOpen(false)}
+                      className="flex min-h-[36px] items-center justify-center rounded-xl border border-[#c6f432]/35 bg-[#c6f432]/10 px-2 text-center font-mono text-[11px] font-semibold text-[#c6f432]"
+                    >
+                      {nav.label}
+                    </Link>
+                  ) : (
+                    <a
+                      key={nav.href}
+                      href={nav.href}
+                      onClick={() => setHeaderNotchOpen(false)}
+                      className="flex min-h-[36px] items-center justify-center rounded-xl border border-white/10 bg-[#14161a] px-2 text-center font-mono text-[11px] font-medium text-white"
+                    >
+                      {nav.label}
+                    </a>
+                  )
+                )}
+              </div>
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
               <div className="flex flex-col justify-between space-y-3 sm:col-span-5">
                 <div>
@@ -820,8 +865,27 @@ export default function LandingPage() {
                 ? ["LIHAT KOTA HIJAU", "HIDUP MILIK ANDA"]
                 : ["SEE INSIDE YOUR", "LIVING ECO-TOWN"]
             }
-            className="text-center text-[clamp(42px,12.2vw,178px)] tracking-tight"
+            className="text-center text-[clamp(30px,10.2vw,174px)] tracking-tight"
           />
+
+          {/* Mobile-Visible Sticker Highlights Strip (100% Visible on Small Screens) */}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 md:hidden">
+            <span className="rounded-full bg-[#e9a23b]/20 px-2.5 py-1 font-mono text-[10px] font-semibold text-[#d97706] dark:text-[#fbbf24]">
+              Meta SAM 3.1 + Muse Spark
+            </span>
+            <span className="rounded-full bg-[#c6f432]/25 px-2.5 py-1 font-mono text-[10px] font-semibold text-[#14733f] dark:text-[#c6f432]">
+              {housingCalc.solar.kwp} kWp ·{" "}
+              {formatCurrency(
+                housingCalc.solar.savingsYear,
+                housingCalc.solar.currency,
+                locale
+              )}
+              /yr
+            </span>
+            <span className="rounded-full bg-current/10 px-2.5 py-1 font-mono text-[10px] font-medium opacity-80">
+              195+ Countries · NREL PVWatts
+            </span>
+          </div>
         </div>
 
         {/* Plain-Language Subtitle & Character-Roll Pill Buttons */}
@@ -950,30 +1014,30 @@ export default function LandingPage() {
             })}
           </div>
 
-          {/* Top-Right Compact Jurisdiction & Day/Night Toggle */}
-          <div className="absolute top-4 right-4 z-10 hidden items-center gap-1.5 lg:flex">
-            <span className="rounded-full border border-white/12 bg-[#08090c]/88 px-3.5 py-1.5 font-mono text-[11px] font-medium text-white backdrop-blur-xl">
+          {/* Top-Right Compact Jurisdiction & Day/Night Toggle (Visible on Mobile & Desktop) */}
+          <div className="absolute top-14 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-1.5">
+            <span className="hidden rounded-full border border-white/12 bg-[#08090c]/88 px-3.5 py-1.5 font-mono text-[11px] font-medium text-white backdrop-blur-xl xl:inline-block">
               {geo.city} ({geo.countryCode}) · {geo.koppen.code} (
               {geo.biome.toUpperCase()})
             </span>
             <button
               type="button"
               onClick={() => setIsNightPreview(!isNightPreview)}
-              className="min-h-[34px] cursor-pointer rounded-full border border-black/10 bg-white/95 px-3.5 py-1.5 font-mono text-[11px] font-semibold text-[#111] shadow-md transition hover:bg-white"
+              className="min-h-[32px] sm:min-h-[34px] cursor-pointer rounded-full border border-black/10 bg-white/95 px-3 sm:px-3.5 py-1 font-mono text-[10px] sm:text-[11px] font-semibold text-[#111] shadow-md transition hover:bg-white"
             >
               {isNightPreview ? "☀ Daylight" : "☾ Night Glow"}
             </button>
           </div>
 
-          {/* BOTTOM-LEFT MINIMALIST TELEMETRY & SIMULATION DELTA CARD */}
+          {/* BOTTOM-LEFT MINIMALIST TELEMETRY & SIMULATION DELTA CARD (COLLAPSIBLE ON MOBILE) */}
           <div
-            className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[20px] border p-3.5 shadow-2xl backdrop-blur-xl transition-all duration-300 sm:right-auto sm:left-4 sm:w-[350px] sm:p-4 xl:bottom-4 xl:w-[360px] ${
+            className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[20px] border p-3 sm:p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 sm:right-auto sm:left-4 sm:w-[350px] xl:bottom-4 xl:w-[360px] ${
               isLight
                 ? "border-black/10 bg-white/92 text-[#151515]"
                 : "border-white/12 bg-[#0d0f13]/92 text-[#f2f1ec]"
             }`}
           >
-            {/* Compact Status Header */}
+            {/* Compact Status Header + Minimize Toggle */}
             <div className="flex items-center justify-between gap-2 font-mono text-[10px]">
               <span
                 className={`inline-flex items-center gap-1.5 font-semibold ${simConfig.badge1.text}`}
@@ -983,105 +1047,124 @@ export default function LandingPage() {
                 />
                 {simConfig.badge1.label}
               </span>
-              <span className="rounded-full bg-current/8 px-2 py-0.5 font-mono text-[10px] opacity-75">
-                {formatArea(housingCalc.footprintM2, units, locale)}
-              </span>
-            </div>
-
-            <h2 className="townhouse-title mt-1.5 text-base sm:text-lg font-semibold leading-snug">
-              {simConfig.title}
-            </h2>
-
-            {/* 3-Column Live Mode Delta Comparison Bar (Clearly Shows 3D Mode Changes) */}
-            <div
-              className={`mt-2.5 grid grid-cols-3 gap-1.5 rounded-xl border p-2 font-mono text-[10px] ${
-                isLight
-                  ? "border-black/8 bg-[#f5f5f2]"
-                  : "border-white/10 bg-white/5"
-              }`}
-            >
-              <div>
-                <span className="block text-[9px] uppercase opacity-60">
-                  {isId ? "SURYA" : "SOLAR"}
+              <div className="flex items-center gap-1.5">
+                <span className="rounded-full bg-current/8 px-2 py-0.5 font-mono text-[10px] opacity-75">
+                  {formatArea(housingCalc.footprintM2, units, locale)}
                 </span>
-                <span
-                  className={`font-bold ${
-                    townSimMode === "heal"
-                      ? "text-[#14733f] dark:text-[#c6f432]"
-                      : townSimMode === "break"
-                      ? "text-[#b8252a] dark:text-[#f87171]"
-                      : ""
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => setTownHudMinimized(!townHudMinimized)}
+                  className="cursor-pointer rounded-full bg-current/10 px-2 py-0.5 font-mono text-[9px] font-semibold transition hover:bg-current/20"
                 >
-                  {townSimMode === "heal"
-                    ? `${(housingCalc.solar.kwp * 1.25).toFixed(1)} kWp ↑`
-                    : townSimMode === "break"
-                    ? `-32% Cloud`
-                    : `${housingCalc.solar.kwp} kWp`}
-                </span>
-              </div>
-              <div className="border-x border-current/10 px-2">
-                <span className="block text-[9px] uppercase opacity-60">
-                  {isId ? "AIR & KANAL" : "HYDRO"}
-                </span>
-                <span
-                  className={`font-bold ${
-                    townSimMode === "break"
-                      ? "text-[#b8252a] dark:text-[#f87171]"
-                      : "text-[#146f8a] dark:text-[#38bdf8]"
-                  }`}
-                >
-                  {townSimMode === "break"
-                    ? "+18cm Flood"
-                    : townSimMode === "heal"
-                    ? "0cm · Drained"
-                    : `${Math.round(housingCalc.rainwater.litersYear / 1000)}k L/yr`}
-                </span>
-              </div>
-              <div className="pl-1">
-                <span className="block text-[9px] uppercase opacity-60">
-                  {isId ? "SUHU ATAP" : "THERMAL"}
-                </span>
-                <span
-                  className={`font-bold ${
-                    townSimMode === "break"
-                      ? "text-[#b8252a] dark:text-[#f87171]"
-                      : "text-[#14733f] dark:text-[#5ce69b]"
-                  }`}
-                >
-                  {townSimMode === "break"
-                    ? "+4.2°C Spike"
-                    : townSimMode === "heal"
-                    ? `-2.8°C Cool`
-                    : `${housingCalc.thermal.tciScore}/100 OK`}
-                </span>
+                  {townHudMinimized
+                    ? isId
+                      ? "▴ Detail"
+                      : "▴ Expand"
+                    : isId
+                    ? "▾ Kecilkan"
+                    : "▾ Minimize"}
+                </button>
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2">
-              <Link
-                href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
-                className={`zeggo-btn inline-flex min-h-[38px] flex-1 items-center justify-center rounded-lg px-3 text-xs font-semibold transition ${
-                  isLight
-                    ? "bg-[#151515] text-[#f6f6f3] hover:bg-[#2a2a2a]"
-                    : "bg-[#c6f432] text-[#080808] hover:bg-[#d4f759]"
-                }`}
-              >
-                {isAuthenticated
-                  ? isId
-                    ? "Buka Studio 3D →"
-                    : "Open 3D Studio →"
-                  : isId
-                  ? "Login & Buka Studio →"
-                  : "Sign In & Inspect →"}
-              </Link>
-              <Link
-                href={isAuthenticated ? "/radar" : "/login?next=/radar"}
-                className="inline-flex min-h-[38px] items-center justify-center rounded-lg border border-current/20 px-3 text-xs font-medium transition hover:bg-current/5"
-              >
-                {isId ? "Atur Atap" : "Roof Size"}
-              </Link>
-            </div>
+            {!townHudMinimized && (
+              <>
+                <h2 className="townhouse-title mt-1.5 text-sm sm:text-lg font-semibold leading-snug">
+                  {simConfig.title}
+                </h2>
+
+                {/* 3-Column Live Mode Delta Comparison Bar (Clearly Shows 3D Mode Changes) */}
+                <div
+                  className={`mt-2.5 grid grid-cols-3 gap-1.5 rounded-xl border p-2 font-mono text-[10px] ${
+                    isLight
+                      ? "border-black/8 bg-[#f5f5f2]"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+                  <div>
+                    <span className="block text-[9px] uppercase opacity-60">
+                      {isId ? "SURYA" : "SOLAR"}
+                    </span>
+                    <span
+                      className={`font-bold ${
+                        townSimMode === "heal"
+                          ? "text-[#14733f] dark:text-[#c6f432]"
+                          : townSimMode === "break"
+                          ? "text-[#b8252a] dark:text-[#f87171]"
+                          : ""
+                      }`}
+                    >
+                      {townSimMode === "heal"
+                        ? `${(housingCalc.solar.kwp * 1.25).toFixed(1)} kWp ↑`
+                        : townSimMode === "break"
+                        ? `-32% Cloud`
+                        : `${housingCalc.solar.kwp} kWp`}
+                    </span>
+                  </div>
+                  <div className="border-x border-current/10 px-2">
+                    <span className="block text-[9px] uppercase opacity-60">
+                      {isId ? "AIR & KANAL" : "HYDRO"}
+                    </span>
+                    <span
+                      className={`font-bold ${
+                        townSimMode === "break"
+                          ? "text-[#b8252a] dark:text-[#f87171]"
+                          : "text-[#146f8a] dark:text-[#38bdf8]"
+                      }`}
+                    >
+                      {townSimMode === "break"
+                        ? "+18cm Flood"
+                        : townSimMode === "heal"
+                        ? "0cm · Drained"
+                        : `${Math.round(housingCalc.rainwater.litersYear / 1000)}k L/yr`}
+                    </span>
+                  </div>
+                  <div className="pl-1">
+                    <span className="block text-[9px] uppercase opacity-60">
+                      {isId ? "SUHU ATAP" : "THERMAL"}
+                    </span>
+                    <span
+                      className={`font-bold ${
+                        townSimMode === "break"
+                          ? "text-[#b8252a] dark:text-[#f87171]"
+                          : "text-[#14733f] dark:text-[#5ce69b]"
+                      }`}
+                    >
+                      {townSimMode === "break"
+                        ? "+4.2°C Spike"
+                        : townSimMode === "heal"
+                        ? `-2.8°C Cool`
+                        : `${housingCalc.thermal.tciScore}/100 OK`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <Link
+                    href={isAuthenticated ? "/dashboard" : "/login?next=/dashboard"}
+                    className={`zeggo-btn inline-flex min-h-[38px] flex-1 items-center justify-center rounded-lg px-3 text-xs font-semibold transition ${
+                      isLight
+                        ? "bg-[#151515] text-[#f6f6f3] hover:bg-[#2a2a2a]"
+                        : "bg-[#c6f432] text-[#080808] hover:bg-[#d4f759]"
+                    }`}
+                  >
+                    {isAuthenticated
+                      ? isId
+                        ? "Buka Studio 3D →"
+                        : "Open 3D Studio →"
+                      : isId
+                      ? "Login & Buka Studio →"
+                      : "Sign In & Inspect →"}
+                  </Link>
+                  <Link
+                    href={isAuthenticated ? "/radar" : "/login?next=/radar"}
+                    className="inline-flex min-h-[38px] items-center justify-center rounded-lg border border-current/20 px-3 text-xs font-medium transition hover:bg-current/5"
+                  >
+                    {isId ? "Atur Atap" : "Roof Size"}
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -2002,7 +2085,7 @@ export default function LandingPage() {
                   </span>
                 </div>
 
-                <div className="grid min-w-[460px] grid-cols-12 items-end gap-1.5 sm:gap-2 h-52 pt-6">
+                <div className="grid w-full grid-cols-12 items-end gap-1 sm:gap-2 h-48 sm:h-52 pt-4 sm:pt-6">
                   {geo.monthlyPrecipMm.map((precipMm: number, idx: number) => {
                     const tempC = geo.monthlyTempC[idx] ?? 20;
                     const barHeightPct = Math.max(
@@ -2012,21 +2095,21 @@ export default function LandingPage() {
                     return (
                       <div
                         key={MONTHS_SHORT[idx]}
-                        className="flex h-full flex-col items-center justify-end gap-1.5"
+                        className="flex h-full flex-col items-center justify-end gap-1 sm:gap-1.5"
                       >
-                        <span className="font-mono text-[9px] sm:text-[10px] text-[#c9c7c0] tabular-nums">
+                        <span className="font-mono text-[8px] sm:text-[10px] text-[#c9c7c0] tabular-nums">
                           {formatTemp(tempC, units)}
                         </span>
-                        <div className="relative flex w-full flex-1 items-end justify-center rounded-lg bg-[#1c1c1c] p-0.5">
+                        <div className="relative flex w-full flex-1 items-end justify-center rounded-md sm:rounded-lg bg-[#1c1c1c] p-0.5">
                           <div
                             style={{ height: `${barHeightPct}%` }}
-                            className="gsap-era5-bar w-full rounded-md bg-[#c6f432]"
+                            className="gsap-era5-bar w-full rounded-sm sm:rounded-md bg-[#c6f432]"
                           />
                         </div>
-                        <span className="font-mono text-[9px] sm:text-[10px] text-[#aaa9ad] tabular-nums">
+                        <span className="font-mono text-[8px] sm:text-[10px] text-[#aaa9ad] tabular-nums">
                           {precipMm}
                         </span>
-                        <span className="font-mono text-[9px] sm:text-[10px] font-bold text-white">
+                        <span className="font-mono text-[8px] sm:text-[10px] font-bold text-white">
                           {MONTHS_SHORT[idx]}
                         </span>
                       </div>

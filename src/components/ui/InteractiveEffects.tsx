@@ -202,7 +202,7 @@ export function DovvInteractiveWordmark({
     let isPointerActive = false;
 
     const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType === "mouse") {
+      if (e.pointerType === "mouse" || e.pointerType === "touch") {
         mouseX = e.clientX;
         mouseY = e.clientY;
         isPointerActive = true;
@@ -907,10 +907,10 @@ export function CompactWorldCityPicker({
 
   const alignClass =
     align === "center"
-      ? "left-1/2 -translate-x-1/2"
+      ? "sm:left-1/2 sm:-translate-x-1/2"
       : align === "right"
-      ? "right-0"
-      : "left-0";
+      ? "sm:right-0"
+      : "sm:left-0";
 
   return (
     <div ref={wrapperRef} className="relative inline-block text-left">
@@ -919,7 +919,7 @@ export function CompactWorldCityPicker({
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className={`zeggo-btn group inline-flex min-h-[42px] cursor-pointer items-center gap-2.5 rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition hover:-translate-y-0.5 ${
+          className={`zeggo-btn group inline-flex min-h-[38px] sm:min-h-[42px] max-w-[92vw] cursor-pointer items-center gap-2 rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition hover:-translate-y-0.5 ${
             isLight
               ? "bg-white text-[#111] shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_6px_20px_-8px_rgba(0,0,0,0.22)]"
               : "bg-[#15171b] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_6px_20px_-8px_rgba(0,0,0,0.6)]"
@@ -928,15 +928,15 @@ export function CompactWorldCityPicker({
           <span className="dovv-pill-dot">
             <span />
           </span>
-          <span className="font-semibold">
+          <span className="truncate font-semibold">
             {geo.city} ({geo.countryCode} · {geo.koppen.code})
           </span>
-          <span className="font-mono text-xs text-[#1e9e5a]">
+          <span className="shrink-0 font-mono text-[11px] sm:text-xs text-[#1e9e5a]">
             {housingCalc.solar.kwp} kWp
           </span>
           <span className="hidden h-3.5 w-[1px] bg-current opacity-20 sm:inline-block" />
-          <span className="hidden text-xs opacity-75 sm:inline">
-            {isId ? "Pilih Negara / Kota ▾" : "Switch Country / City ▾"}
+          <span className="text-[11px] sm:text-xs opacity-75">
+            ▾
           </span>
         </button>
       ) : (
@@ -953,7 +953,7 @@ export function CompactWorldCityPicker({
 
       {open && (
         <div
-          className={`absolute top-full z-50 mt-2 w-[min(92vw,380px)] rounded-2xl border p-3.5 shadow-2xl backdrop-blur-xl ${alignClass} ${
+          className={`fixed inset-x-3 top-16 z-50 rounded-2xl border p-3.5 shadow-2xl backdrop-blur-xl sm:absolute sm:inset-x-auto sm:top-full sm:mt-2 sm:w-[380px] ${alignClass} ${
             isLight
               ? "border-black/12 bg-white/98 text-[#111]"
               : "border-white/15 bg-[#111318]/98 text-white"

@@ -26,9 +26,17 @@ export interface UserScanRecord {
   createdAt: string;
 }
 
+export type AuthProviderType =
+  | "email"
+  | "google"
+  | "facebook"
+  | "judge"
+  | "starter";
+
 export interface VerdaraState {
   isAuthenticated: boolean;
   isJudgeDemo: boolean;
+  authProvider: AuthProviderType;
   displayName: string;
   email: string;
 
@@ -70,6 +78,10 @@ export interface VerdaraState {
   loginAsJudgeDemo: () => void;
   resetToStarterPlot: () => void;
   loginWithEmail: (email: string, name?: string) => void;
+  loginWithOAuth: (
+    provider: "google" | "facebook",
+    profile?: { email?: string; displayName?: string }
+  ) => void;
   logout: () => void;
   setLocale: (locale: AppLocale) => void;
   setUnits: (units: UnitSystem) => void;
@@ -115,6 +127,7 @@ const initialCalc = calculateHousingFootprint({
 export const useVerdaraStore = create<VerdaraState>((set, get) => ({
   isAuthenticated: false,
   isJudgeDemo: false,
+  authProvider: "email",
   displayName: "Guest Visitor",
   email: "",
 
@@ -193,6 +206,7 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
     set({
       isAuthenticated: true,
       isJudgeDemo: true,
+      authProvider: "judge",
       displayName: "Demo Specimen: Menlo Park (Judge)",
       email: "judge+menlopark@verdara.app",
       activePresetId: "menlo_park",
@@ -222,6 +236,7 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
           JSON.stringify({
             isAuthenticated: true,
             isJudgeDemo: false,
+            authProvider: "starter",
             displayName: "Starter Plot (Level 1)",
             email: "starter@verdara.app",
           })
@@ -234,6 +249,7 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
     set({
       isAuthenticated: true,
       isJudgeDemo: false,
+      authProvider: "starter",
       displayName: "Starter Plot (Level 1)",
       email: "starter@verdara.app",
       xp: 0,
@@ -258,6 +274,7 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
           JSON.stringify({
             isAuthenticated: true,
             isJudgeDemo: false,
+            authProvider: "email",
             displayName: cleanName,
             email,
           })
@@ -269,8 +286,46 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
     set({
       isAuthenticated: true,
       isJudgeDemo: false,
+      authProvider: "email",
       displayName: cleanName,
       email,
+    });
+  },
+
+  loginWithOAuth: (provider, profile) => {
+    const defaultEmail =
+      provider === "google"
+        ? "resident.google@verdara.app"
+        : "resident.facebook@verdara.app";
+    const defaultName =
+      provider === "google"
+        ? "Google Verified Resident"
+        : "Facebook Verified Resident";
+    const resolvedEmail = profile?.email?.trim() || defaultEmail;
+    const resolvedName = profile?.displayName?.trim() || defaultName;
+
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(
+          "verdara_auth_session_v3",
+          JSON.stringify({
+            isAuthenticated: true,
+            isJudgeDemo: false,
+            authProvider: provider,
+            displayName: resolvedName,
+            email: resolvedEmail,
+          })
+        );
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
+    set({
+      isAuthenticated: true,
+      isJudgeDemo: false,
+      authProvider: provider,
+      displayName: resolvedName,
+      email: resolvedEmail,
     });
   },
 
@@ -285,6 +340,7 @@ export const useVerdaraStore = create<VerdaraState>((set, get) => ({
     set({
       isAuthenticated: false,
       isJudgeDemo: false,
+      authProvider: "email",
       displayName: "Guest Visitor",
       email: "",
     });

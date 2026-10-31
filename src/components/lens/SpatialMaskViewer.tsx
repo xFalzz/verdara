@@ -69,7 +69,7 @@ export default function SpatialMaskViewer({
   const isId = locale === "id";
 
   return (
-    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-[#1D3328] bg-[#070D0A] select-none">
+    <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full overflow-hidden rounded-2xl border border-[#1D3328] bg-[#070D0A] select-none">
       {customImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -219,25 +219,25 @@ export default function SpatialMaskViewer({
               type="button"
               onClick={() => onSelectObject(obj)}
               style={{
-                left: `${Math.min(82, Math.max(4, bx * 100))}%`,
-                top: `${Math.min(88, Math.max(6, by * 100))}%`,
+                left: `${Math.min(76, Math.max(3, bx * 100))}%`,
+                top: `${Math.min(86, Math.max(12, by * 100))}%`,
               }}
-              className={`pointer-events-auto absolute flex items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-[11px] font-semibold shadow-lg backdrop-blur-md transition-transform ${
+              className={`pointer-events-auto absolute flex max-w-[140px] sm:max-w-none items-center gap-1 sm:gap-1.5 rounded-lg border px-1.5 sm:px-2 py-0.5 sm:py-1 font-mono text-[9px] sm:text-[11px] font-semibold shadow-lg backdrop-blur-md transition-transform ${
                 isSelected
                   ? "scale-105 border-[#A3E635] bg-[#070D0A]/95 text-[#A3E635] ring-2 ring-[#A3E635]/50"
                   : "border-white/20 bg-[#070D0A]/85 text-[#F2F7F4] hover:scale-105"
               }`}
             >
-              <span className={`rounded px-1 py-0.2 text-[10px] font-bold ${colors.badgeBg}`}>
+              <span className={`shrink-0 rounded px-1 py-0.2 text-[8px] sm:text-[10px] font-bold ${colors.badgeBg}`}>
                 #{idx + 1} {obj.materialCode}
               </span>
-              <span className="max-w-[130px] truncate">{obj.concept}</span>
+              <span className="max-w-[75px] sm:max-w-[130px] truncate">{obj.concept}</span>
               {val && val.valueMax > 0 && (
-                <span className="text-amber-300">
+                <span className="hidden text-amber-300 sm:inline">
                   +{formatCurrency(val.valueMax, val.currency, locale)}
                 </span>
               )}
-              <span className="text-[10px] text-[#A3BEB0]">
+              <span className="hidden text-[10px] text-[#A3BEB0] md:inline">
                 {(obj.score * 100).toFixed(0)}%
               </span>
             </button>
@@ -245,13 +245,13 @@ export default function SpatialMaskViewer({
         })}
       </div>
 
-      <div className="pointer-events-none absolute top-3 left-3 z-20 flex flex-wrap items-center gap-2">
-        <span className="rounded-lg border border-[#1D3328] bg-[#070D0A]/85 px-2.5 py-1 font-mono text-xs font-semibold text-[#A3E635] backdrop-blur-md">
-          Meta SAM 3.1 Concept Masks ({sample.objects.length} {isId ? "Poligon" : "Polygons"})
+      <div className="pointer-events-none absolute top-2 left-2 sm:top-3 sm:left-3 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <span className="rounded-lg border border-[#1D3328] bg-[#070D0A]/85 px-2 sm:px-2.5 py-0.5 sm:py-1 font-mono text-[10px] sm:text-xs font-semibold text-[#A3E635] backdrop-blur-md">
+          SAM 3.1 ({sample.objects.length} {isId ? "Poligon" : "Polygons"})
         </span>
         {xrayLevel > 0 && (
-          <span className="rounded-lg border border-[#1D3328] bg-[#070D0A]/85 px-2.5 py-1 font-mono text-xs text-cyan-300 backdrop-blur-md">
-            X-RAY MESH: {xrayLevel}%
+          <span className="rounded-lg border border-[#1D3328] bg-[#070D0A]/85 px-2 sm:px-2.5 py-0.5 sm:py-1 font-mono text-[10px] sm:text-xs text-cyan-300 backdrop-blur-md">
+            X-RAY: {xrayLevel}%
           </span>
         )}
       </div>

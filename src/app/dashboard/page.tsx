@@ -30,6 +30,7 @@ export default function DashboardPage() {
   } = useVerdaraStore();
 
   const [isNight, setIsNight] = useState(false);
+  const [hudMinimized, setHudMinimized] = useState(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -142,48 +143,67 @@ export default function DashboardPage() {
             locale={locale}
           />
 
-          {/* Townhouse Bottom-Left Floating Summary Card */}
+          {/* Townhouse Bottom-Left Floating Summary Card (Collapsible on Mobile) */}
           <div
-            className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[18px] border p-3.5 shadow-2xl backdrop-blur-xl sm:right-auto sm:left-4 sm:w-[355px] sm:p-4 xl:bottom-4 ${
+            className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[18px] border p-3 sm:p-4 shadow-2xl backdrop-blur-xl sm:right-auto sm:left-4 sm:w-[355px] xl:bottom-4 ${
               isLight
                 ? "border-[#151515]/10 bg-white/92 text-[#151515]"
                 : "border-white/10 bg-[#16171a]/92 text-[#f2f1ec]"
             }`}
           >
-            <div className="flex items-center justify-between font-mono text-[11px]">
+            <div className="flex items-center justify-between gap-2 font-mono text-[10px] sm:text-[11px]">
               <span className="inline-flex items-center gap-1.5 font-semibold text-[#1e9e5a]">
                 <span className="h-2 w-2 rounded-full bg-[#1e9e5a]" />
                 TOWN LEVEL {level} ({xp} XP · {progressPct}%)
               </span>
-              <span className="opacity-65">
-                {unlockedItems.length} Modules
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="opacity-65">
+                  {unlockedItems.length} Modules
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setHudMinimized(!hudMinimized)}
+                  className="cursor-pointer rounded-full bg-current/10 px-2 py-0.5 font-mono text-[9px] font-semibold transition hover:bg-current/20"
+                >
+                  {hudMinimized
+                    ? isId
+                      ? "▴ Detail"
+                      : "▴ Expand"
+                    : isId
+                    ? "▾ Kecilkan"
+                    : "▾ Minimize"}
+                </button>
+              </div>
             </div>
 
-            <p className="townhouse-title mt-1.5 text-lg sm:text-xl font-semibold">
-              {formatArea(housingCalc.footprintM2, units, locale)} roof ·{" "}
-              {housingCalc.solar.kwp} kWp solar
-            </p>
-            <p className="mt-1 text-[11px] sm:text-xs leading-relaxed opacity-75">
-              {isId
-                ? "Putar 360 derajat atau scroll untuk memeriksa panel surya atap, pipa tembaga, tangki air hujan, dan sumur biopori."
-                : "Drag 360 degrees or scroll to inspect rooftop solar panels, copper rainwater conduits, cistern tank, and biopore shafts."}
-            </p>
+            {!hudMinimized && (
+              <>
+                <p className="townhouse-title mt-1.5 text-base sm:text-xl font-semibold">
+                  {formatArea(housingCalc.footprintM2, units, locale)} roof ·{" "}
+                  {housingCalc.solar.kwp} kWp solar
+                </p>
+                <p className="mt-1 text-[11px] sm:text-xs leading-relaxed opacity-75">
+                  {isId
+                    ? "Putar 360 derajat atau scroll untuk memeriksa panel surya atap, pipa tembaga, tangki air hujan, dan sumur biopori."
+                    : "Drag 360 degrees or scroll to inspect rooftop solar panels, copper rainwater conduits, cistern tank, and biopore shafts."}
+                </p>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link
-                href="/lens"
-                className="inline-flex min-h-[38px] items-center rounded-lg bg-[#080808] px-3.5 text-xs font-medium text-white"
-              >
-                {isId ? "Pindai dengan SAM 3.1" : "Scan with SAM 3.1"}
-              </Link>
-              <Link
-                href="/council"
-                className="inline-flex min-h-[38px] items-center rounded-lg border border-current/20 px-3.5 text-xs font-medium"
-              >
-                {isId ? "Sidang Dewan AI" : "Convene Council"}
-              </Link>
-            </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href="/lens"
+                    className="inline-flex min-h-[38px] items-center rounded-lg bg-[#080808] px-3.5 text-xs font-medium text-white"
+                  >
+                    {isId ? "Pindai dengan SAM 3.1" : "Scan with SAM 3.1"}
+                  </Link>
+                  <Link
+                    href="/council"
+                    className="inline-flex min-h-[38px] items-center rounded-lg border border-current/20 px-3.5 text-xs font-medium"
+                  >
+                    {isId ? "Sidang Dewan AI" : "Convene Council"}
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

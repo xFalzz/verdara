@@ -37,6 +37,7 @@ export default function StudioShell({
     setCustomCoordinates,
     loginAsJudgeDemo,
     loginWithEmail,
+    loginWithOAuth,
     logout,
   } = useVerdaraStore();
 
@@ -66,6 +67,14 @@ export default function StudioShell({
         if (parsed?.isAuthenticated) {
           if (parsed.isJudgeDemo) {
             loginAsJudgeDemo();
+          } else if (
+            parsed.authProvider === "google" ||
+            parsed.authProvider === "facebook"
+          ) {
+            loginWithOAuth(parsed.authProvider, {
+              email: parsed.email,
+              displayName: parsed.displayName,
+            });
           } else {
             loginWithEmail(
               parsed.email || "resident@verdara.app",
@@ -81,7 +90,14 @@ export default function StudioShell({
     }
     setAuthChecked(true);
     router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
-  }, [isAuthenticated, pathname, router, loginAsJudgeDemo, loginWithEmail]);
+  }, [
+    isAuthenticated,
+    pathname,
+    router,
+    loginAsJudgeDemo,
+    loginWithEmail,
+    loginWithOAuth,
+  ]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -250,10 +266,10 @@ export default function StudioShell({
             })}
           </nav>
 
-          {/* Right: Compact Preferences, Studio Notch & Logout */}
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {/* Right: Compact Preferences, Studio Notch & Logout (100% Usable on Mobile & Desktop) */}
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <div
-              className={`hidden items-center rounded-full border p-0.5 md:flex ${
+              className={`inline-flex items-center rounded-full border p-0.5 ${
                 isLight
                   ? "border-black/10 bg-white"
                   : "border-white/12 bg-[#14161b]"
@@ -262,7 +278,7 @@ export default function StudioShell({
               <button
                 type="button"
                 onClick={() => setLocale(locale === "en" ? "id" : "en")}
-                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] font-semibold transition hover:bg-current/10"
+                className="min-h-[32px] cursor-pointer rounded-full px-2 sm:px-2.5 font-mono text-[10px] sm:text-[11px] font-semibold transition hover:bg-current/10"
               >
                 {locale.toUpperCase()}
               </button>
@@ -272,7 +288,7 @@ export default function StudioShell({
                 onClick={() =>
                   setUnits(units === "metric" ? "imperial" : "metric")
                 }
-                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+                className="min-h-[32px] cursor-pointer rounded-full px-2 sm:px-2.5 font-mono text-[10px] sm:text-[11px] transition hover:bg-current/10"
               >
                 {units === "metric" ? "m²" : "ft²"}
               </button>
@@ -280,9 +296,10 @@ export default function StudioShell({
               <button
                 type="button"
                 onClick={() => setTheme(isLight ? "dark" : "light")}
-                className="min-h-[32px] cursor-pointer rounded-full px-2.5 font-mono text-[11px] transition hover:bg-current/10"
+                className="min-h-[32px] cursor-pointer rounded-full px-2 sm:px-2.5 font-mono text-[10px] sm:text-[11px] transition hover:bg-current/10"
+                title={isLight ? "Day Mode" : "Night Mode"}
               >
-                {isLight ? "Day" : "Night"}
+                {isLight ? "☀" : "☾"}
               </button>
             </div>
 
@@ -290,9 +307,9 @@ export default function StudioShell({
               type="button"
               onClick={() => setNotchOpen(!notchOpen)}
               aria-expanded={notchOpen}
-              className="zeggo-btn flex min-h-[38px] shrink-0 cursor-pointer items-center gap-2 rounded-full bg-[#08090c] px-3.5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#262932] transition hover:bg-[#16181f]"
+              className="zeggo-btn flex min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 sm:gap-2 rounded-full bg-[#08090c] px-2.5 sm:px-3.5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-[inset_0_0_0_1.5px_#262932] transition hover:bg-[#16181f]"
             >
-              <span className="font-mono text-[11px] text-[#c6f432]">
+              <span className="font-mono text-[10px] sm:text-[11px] text-[#c6f432]">
                 {xp} XP
               </span>
               <span className="hidden sm:inline">
@@ -309,7 +326,7 @@ export default function StudioShell({
                 />
               </span>
               <span className="font-mono text-sm leading-none">
-                {notchOpen ? "×" : "+"}
+                {notchOpen ? "×" : "☰"}
               </span>
             </button>
 
@@ -320,7 +337,7 @@ export default function StudioShell({
                 router.push("/login");
               }}
               title={displayName}
-              className={`min-h-[38px] shrink-0 cursor-pointer rounded-full border px-3 text-xs font-medium whitespace-nowrap transition ${
+              className={`min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium whitespace-nowrap transition ${
                 isLight
                   ? "border-black/15 bg-white text-[#111] hover:bg-rose-50 hover:text-rose-700"
                   : "border-white/15 bg-[#14161b] text-[#e2e1dc] hover:bg-rose-950/40 hover:text-rose-300"
@@ -332,10 +349,35 @@ export default function StudioShell({
         </div>
       </header>
 
-      {/* EXPANDABLE STUDIO PANEL WITH MINI SLIDE CAROUSEL */}
+      {/* EXPANDABLE STUDIO PANEL WITH FULL MOBILE/DESKTOP NAVIGATION & MINI SLIDE CAROUSEL */}
       {notchOpen && (
         <div className="mx-auto mt-3 mb-4 max-w-[1440px] px-4 sm:px-8">
-          <div className="rounded-[28px] bg-[#08090c] p-5 sm:p-6 text-white shadow-[inset_0_0_0_1.5px_#262932,0_20px_50px_-12px_rgba(0,0,0,0.65)]">
+          <div className="rounded-[24px] sm:rounded-[28px] bg-[#08090c] p-4 sm:p-6 text-white shadow-[inset_0_0_0_1.5px_#262932,0_20px_50px_-12px_rgba(0,0,0,0.65)]">
+            {/* Quick Workspace Navigation Grid for Mobile/Tablet (< 1280px) */}
+            <div className="mb-5 border-b border-white/10 pb-4 xl:hidden">
+              <p className="mb-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#c6f432]">
+                {isId ? "00 / Navigasi Ruang Kerja Studio" : "00 / Studio Workspaces"}
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                {topLinks.map((item) => {
+                  const active = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setNotchOpen(false)}
+                      className={`flex min-h-[38px] items-center justify-center rounded-xl px-3 py-1.5 text-center text-xs font-medium transition ${
+                        active
+                          ? "bg-[#c6f432] font-bold text-[#08090c]"
+                          : "bg-[#15171d] text-[#c9c7c0] shadow-[inset_0_0_0_1px_#262932] hover:text-white"
+                      }`}
+                    >
+                      {isId ? item.labelId : item.labelEn}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
               <div className="space-y-3 lg:col-span-5">
                 <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#aaa9ad]">

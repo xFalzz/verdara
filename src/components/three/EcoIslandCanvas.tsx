@@ -2671,6 +2671,17 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
   const isId = props.locale === "id";
   const activePresetMeta = CAMERA_PRESET_CONFIG[camPreset];
 
+  const handleStepZoom = (factor: number) => {
+    const ctrl = controlsRef.current;
+    if (!ctrl) return;
+    const offset = ctrl.object.position.clone().sub(ctrl.target);
+    const curDist = offset.length();
+    const nextDist = THREE.MathUtils.clamp(curDist * factor, 3.0, 13.5);
+    offset.setLength(nextDist);
+    ctrl.object.position.copy(ctrl.target).add(offset);
+    ctrl.update();
+  };
+
   const modeFeedback = useMemo(() => {
     if (simMode === "break") {
       return {
@@ -2793,6 +2804,10 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
           maxPolarAngle={Math.PI / 2.18}
           autoRotate={autoOrbit}
           autoRotateSpeed={isBreak ? 0.75 : 0.42}
+          touches={{
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_ROTATE,
+          }}
         />
 
         <CameraRigController preset={camPreset} controlsRef={controlsRef} />
@@ -2868,6 +2883,24 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
               }`}
             >
               {autoOrbit ? "Orbit: ON" : "Orbit: OFF"}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStepZoom(0.8)}
+              aria-label="Zoom In 3D"
+              title="Zoom In"
+              className="flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs font-bold text-white transition hover:bg-[#c6f432] hover:text-[#080808]"
+            >
+              +
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStepZoom(1.25)}
+              aria-label="Zoom Out 3D"
+              title="Zoom Out"
+              className="flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/10 font-mono text-xs font-bold text-white transition hover:bg-[#c6f432] hover:text-[#080808]"
+            >
+              -
             </button>
           </div>
         </div>
