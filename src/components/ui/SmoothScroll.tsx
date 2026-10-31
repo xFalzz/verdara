@@ -86,7 +86,13 @@ export default function SmoothScroll() {
       anchors: { offset: -76 },
       prevent: (node: HTMLElement) => {
         if (!node) return false;
-        if (node.closest?.("[data-lenis-prevent]")) return true;
+        if (
+          node.tagName === "CANVAS" ||
+          node.closest?.("canvas") ||
+          node.closest?.("[data-lenis-prevent]")
+        ) {
+          return true;
+        }
         return false;
       },
     });
@@ -104,6 +110,13 @@ export default function SmoothScroll() {
       if (e.ctrlKey || e.metaKey || e.defaultPrevented) return;
       const target = e.target as HTMLElement | null;
       if (!target) return;
+      if (
+        target.tagName === "CANVAS" ||
+        target.closest?.("canvas") ||
+        target.closest?.("[data-lenis-prevent]")
+      ) {
+        return;
+      }
 
       const scrollable = findScrollableAncestor(target, e.deltaX, e.deltaY);
       if (!scrollable) return;

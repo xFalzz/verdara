@@ -47,7 +47,7 @@ export default function Radar3DMap({
       pitch: 55,
       bearing: -18,
       maxPitch: 65,
-      scrollZoom: false,
+      scrollZoom: true,
     });
 
     map.addControl(
@@ -141,7 +141,10 @@ export default function Radar3DMap({
   }, [hubs, lat, lng, city, selectedHubId, onSelectHub, mapLoaded]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#1D3328] bg-[#070D0A]">
+    <div
+      data-lenis-prevent
+      className="relative h-full w-full overflow-hidden rounded-2xl border border-[#1D3328] bg-[#070D0A]"
+    >
       <div ref={containerRef} className="h-full w-full" />
 
       <div className="pointer-events-none absolute top-3 left-3 flex flex-wrap items-center gap-2">

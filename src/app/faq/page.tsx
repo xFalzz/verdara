@@ -145,25 +145,25 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     id: 'three-d-camera-and-scroll',
     category: 'three-d',
-    badgeEn: '05 · CAMERA PRESETS & SMOOTH SCROLL',
-    badgeId: '05 · PRESET KAMERA & SMOOTH SCROLL',
-    questionEn: 'How do I inspect specific parts of the 3D town without getting stuck while scrolling the page?',
-    questionId: 'Bagaimana cara memeriksa bagian tertentu di kota 3D tanpa membuat scroll halaman tersangkut?',
+    badgeEn: '05 · 3D SCROLL ZOOM & CAMERA PRESETS',
+    badgeId: '05 · SCROLL ZOOM 3D & PRESET KAMERA',
+    questionEn: 'How do I zoom in/out and inspect specific parts of the 3D town alongside Smooth Scroll?',
+    questionId: 'Bagaimana cara zoom in/out dan memeriksa bagian tertentu di kota 3D bersama Smooth Scroll?',
     answerEn:
-      'We engineered the 3D canvas and the global inertial Smooth Scroll engine to work in harmony. Wheel-zoom capture inside the 3D canvas is intentionally disabled so scrolling your mouse wheel or trackpad anywhere on the screen smoothly glides down the page. To inspect the 3D architecture up close, click-and-drag to orbit 360 degrees or use the bottom-right Camera Focus pills (Overview, Solar Hub, Hydro Canal, EV Street, and Orbit ON/OFF).',
+      'We engineered the 3D canvas and the global inertial Smooth Scroll engine to work seamlessly together. When your cursor is over the 3D Eco-District stage, scrolling your mouse wheel or trackpad zooms the 3D camera smoothly in and out (from 3.2m close-up inspection out to 13.5m district overview), and click-and-drag orbits 360 degrees. When your cursor is outside the 3D box, the global inertial Smooth Scroll glides down the page.',
     answerId:
-      'Kami merancang kanvas 3D dan mesin Smooth Scroll inersia global agar bekerja selaras. Tangkap wheel-zoom di dalam kanvas 3D sengaja dinonaktifkan sehingga saat Anda menggulir roda mouse atau trackpad di bagian mana pun, halaman tetap bergerak mulus ke atas atau bawah. Untuk memeriksa arsitektur 3D dari dekat, klik-dan-geser untuk memutar 360 derajat atau gunakan tombol Fokus Kamera di kanan bawah (Overview, Solar Hub, Hydro Canal, EV Street, dan Orbit ON/OFF).',
+      'Kami merancang kanvas 3D dan mesin Smooth Scroll inersia global agar bekerja selaras. Saat kursor Anda berada di atas panggung Distrik Ekologi 3D, menggulir roda mouse atau trackpad akan melakukan zoom in/out kamera 3D secara mulus (dari jarak dekat 3,2m hingga tampilan distrik utuh 13,5m), dan klik-geser memutar sudut pandang 360 derajat. Saat kursor berada di luar kotak 3D, Smooth Scroll akan menggulir halaman dengan halus.',
     highlightsEn: [
+      'Direct 3D Scroll Zoom: Hover over any 3D stage or 3D Radar map and scroll to zoom in/out with damped orbital physics.',
       '4 Targeted Camera Presets smoothly interpolate the camera position and look-at target toward the CLT Solar Hub, Hydro Canal, or EV Street.',
-      'Universal Inertial Smooth Scroll (60fps critically damped lerp) works both on main pages and inside nested workspace panels.',
-      'Interactive 3D Callout Pills allow direct clicking on the Solar Array, Cistern, or Biopores to synchronize the telemetry inspector.',
+      'Universal Inertial Smooth Scroll (60fps critically damped lerp) automatically yields when your cursor is inside a 3D canvas so page scroll and 3D zoom never clash.',
     ],
     highlightsId: [
+      'Scroll Zoom 3D Langsung: Arahkan kursor ke panggung 3D atau peta Radar 3D lalu scroll untuk zoom in/out dengan fisika kamera yang halus.',
       '4 Preset Kamera Terfokus menggerakkan posisi dan titik pandang kamera secara halus menuju Solar Hub CLT, Kanal Hidro, atau Jalan EV.',
-      'Universal Inertial Smooth Scroll (interpolasi lerp 60fps) bekerja baik di halaman utama maupun di dalam panel ruang kerja bersarang.',
-      'Lencana 3D Interaktif memungkinkan klik langsung pada Panel Surya, Tangki Air, atau Biopori untuk menyinkronkan inspektur telemetri.',
+      'Universal Inertial Smooth Scroll (interpolasi lerp 60fps) otomatis memberi ruang saat kursor berada di dalam kanvas 3D sehingga zoom 3D dan scroll halaman tidak bentrok.',
     ],
-    specCode: 'SCROLL_ENGINE :: Universal RAF Lerp (0.135 Damping) + OrbitControls (enableZoom: false, enableDamping: true)',
+    specCode: 'SCROLL_ENGINE :: 3D Canvas Scroll-Zoom (enableZoom: true, 3.2m-13.5m) + Lenis Smooth Scroll Boundary Isolation',
   },
   {
     id: 'meta-sam-vision-lens',
@@ -309,12 +309,12 @@ const FAQ_ITEMS: FaqItem[] = [
     highlightsEn: [
       'Interactive 12-Month ERA5 Rainfall & Solar GHI Bar Charts synchronized with the active radar viewport.',
       'Category filtering across Circular Waste Hubs, Solar Microgrids, Hydro Retention Basins, and Urban Cooling Corridors.',
-      'Scroll-safe 3D viewport (scrollZoom disabled by default) so you can pan/rotate the 3D map without hijacking page scroll.',
+      'Interactive 3D Scroll-Zoom & Pitch: Scroll inside the 3D map viewport to zoom in/out on individual building footprints and drag to orbit.',
     ],
     highlightsId: [
       'Grafik Batang Curah Hujan ERA5 & Radiasi Surya GHI 12-Bulan interaktif yang tersinkronisasi dengan area pandang radar aktif.',
       'Filter kategori mencakup Titik Daur Ulang Sirkular, Mikrogrid Surya, Kolam Retensi Hidro, dan Koridor Pendingin Kota.',
-      'Viewport 3D ramah-scroll (scrollZoom dinonaktifkan secara default) sehingga Anda dapat menggeser peta 3D tanpa mengganggu scroll halaman.',
+      'Scroll-Zoom & Rotasi 3D Interaktif: Gulir di dalam peta 3D untuk memperbesar/memperkecil bangunan hingga tingkat tapak dan geser untuk memutar sudut pandang.',
     ],
     specCode: 'RADAR_GIS :: MapLibre GL 3D Extrusions + Haversine Geodesic Distance + 12-Month ERA5 Telemetry',
     relatedLink: {

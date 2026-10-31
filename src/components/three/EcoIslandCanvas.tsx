@@ -1242,6 +1242,7 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
 
   return (
     <div
+      data-lenis-prevent
       className="relative h-full w-full overflow-hidden select-none transition-colors duration-500"
       style={{ backgroundColor: bgHex }}
     >
@@ -1300,9 +1301,12 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
-          enableZoom={false}
-          minDistance={3.8}
-          maxDistance={12.5}
+          enableZoom={true}
+          zoomSpeed={0.95}
+          enableDamping={true}
+          dampingFactor={0.08}
+          minDistance={3.2}
+          maxDistance={13.5}
           minPolarAngle={Math.PI / 6.5}
           maxPolarAngle={Math.PI / 2.22}
           autoRotate={autoOrbit}
