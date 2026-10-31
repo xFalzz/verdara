@@ -105,8 +105,7 @@ export default function RadarPage() {
                 isLight ? "text-[#14532D]" : "text-[#A3E635]"
               }`}
             >
-              // 03 · 3D URBAN RADAR & ROOF PHYSICS ({geo.lat.toFixed(2)}°,{" "}
-              {geo.lng.toFixed(2)}°)
+              {`// 03 · 3D URBAN RADAR & ROOF PHYSICS (${geo.lat.toFixed(2)}°, ${geo.lng.toFixed(2)}°)`}
             </p>
             <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
               {isId
@@ -180,9 +179,9 @@ export default function RadarPage() {
             >
               <div className="mb-2.5 flex items-center justify-between px-1 font-mono text-xs">
                 <span>
-                  // {isId
-                    ? "MAPLIBRE GL 3D TERRAIN · KEMIRINGAN 55° · KLIK GEDUNG MANA PUN"
-                    : "MAPLIBRE GL 3D TERRAIN · PITCH 55° · CLICK ANY BUILDING"}
+                  {isId
+                    ? "// MAPLIBRE GL 3D TERRAIN · KEMIRINGAN 55° · KLIK GEDUNG MANA PUN"
+                    : "// MAPLIBRE GL 3D TERRAIN · PITCH 55° · CLICK ANY BUILDING"}
                 </span>
                 <span>{filteredHubs.length} {isId ? "hub OSM" : "OSM hubs"}</span>
               </div>
@@ -215,7 +214,7 @@ export default function RadarPage() {
                       isLight ? "text-[#14532D]" : "text-[#A3E635]"
                     }`}
                   >
-                    // VERIFIED OPENSTREETMAP CIRCULAR HUBS
+                    {"// VERIFIED OPENSTREETMAP CIRCULAR HUBS"}
                   </p>
                   <h2 className="mt-0.5 font-serif text-lg font-bold">
                     {isId
@@ -344,7 +343,7 @@ export default function RadarPage() {
                     isLight ? "text-[#14532D]" : "text-[#A3E635]"
                   }`}
                 >
-                  // NREL PVWATTS v8 + HYDROLOGY ENGINE
+                  {"// NREL PVWATTS v8 + HYDROLOGY ENGINE"}
                 </p>
                 <h2 className="mt-0.5 font-serif text-xl font-bold">
                   {isId

@@ -301,7 +301,7 @@ export default function LensPage() {
                   isLight ? "text-[#14532D]" : "text-[#A3E635]"
                 }`}
               >
-                // 02 · OMNI-SPATIAL LENS (META SAM 3.1 + MUSE SPARK + MUSE IMAGE)
+                {"// 02 · OMNI-SPATIAL LENS (META SAM 3.1 + MUSE SPARK + MUSE IMAGE)"}
               </p>
               <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
                 {isId
@@ -406,7 +406,7 @@ export default function LensPage() {
                 >
                   <div className="flex items-center justify-between font-mono text-[10px]">
                     <span>
-                      // SPECIMEN 0{idx + 1} · {sample.mode.toUpperCase()}
+                      {`// SPECIMEN 0${idx + 1} · ${sample.mode.toUpperCase()}`}
                     </span>
                     <span>$0.00 CACHE</span>
                   </div>
@@ -439,7 +439,7 @@ export default function LensPage() {
                         : "font-bold text-[#A3E635]"
                     }
                   >
-                    // {isId ? "VISOR POLIGON SAM 3.1" : "SAM 3.1 POLYGON VISOR"}
+                    {isId ? "// VISOR POLIGON SAM 3.1" : "// SAM 3.1 POLYGON VISOR"}
                   </span>{" "}
                   <span>
                     ({activeSample.objects.length} {isId ? "objek" : "instances"} · IoU &lt; 0.85)
@@ -559,7 +559,7 @@ export default function LensPage() {
                   isLight ? "text-[#14532D]" : "text-[#A3E635]"
                 }`}
               >
-                // {isId ? "OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "DETECTED INSTANCES (CLICK TO INSPECT)"}
+                {isId ? "// OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "// DETECTED INSTANCES (CLICK TO INSPECT)"}
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {activeSample.objects.map((obj) => {
@@ -621,7 +621,7 @@ export default function LensPage() {
                       : "font-bold text-[#A3E635]"
                   }
                 >
-                  // {isId ? "VALUASI YURISDIKSI" : "JURISDICTION VALUATION"} ({geo.policy.code})
+                  {isId ? "// VALUASI YURISDIKSI" : "// JURISDICTION VALUATION"} ({geo.policy.code})
                 </span>
                 <span>{geo.city}</span>
               </div>
@@ -697,7 +697,7 @@ export default function LensPage() {
                       isLight ? "text-[#14532D]" : "text-[#A3E635]"
                     }`}
                   >
-                    // {isId ? "DOSIR OBJEK TERPILIH" : "SELECTED INSTANCE DOSSIER"}
+                    {isId ? "// DOSIR OBJEK TERPILIH" : "// SELECTED INSTANCE DOSSIER"}
                   </p>
                   <h2 className="mt-0.5 font-serif text-xl font-bold capitalize">
                     {selectedObj.concept} ({selectedObj.materialCode})
@@ -731,8 +731,7 @@ export default function LensPage() {
                 }`}
               >
                 <p className="font-mono text-xs font-bold">
-                  //{" "}
-                  {isId
+                  {"// "}{isId
                     ? selectedObj.upcyclingRecipe.titleId
                     : selectedObj.upcyclingRecipe.titleEn}
                 </p>
@@ -767,8 +766,7 @@ export default function LensPage() {
                   }`}
                 >
                   <p className="font-bold">
-                    // SAM 3.1 LEAF VS. LESION AREA RATIO:{" "}
-                    {plantLesionStats.infectedPct}% ({plantLesionStats.severity})
+                    {`// SAM 3.1 LEAF VS. LESION AREA RATIO: ${plantLesionStats.infectedPct}% (${plantLesionStats.severity})`}
                   </p>
                   <p className="mt-1 text-[11px] opacity-80">
                     Leaf mask: {(activeSample.plantDiagnostics.leafAreaRatio * 100).toFixed(1)}% ·
@@ -787,13 +785,7 @@ export default function LensPage() {
                   }`}
                 >
                   <p className="font-bold">
-                    // RETROFIT PROJECTION: +
-                    {activeSample.retrofitSpec.projectedSolarKwp} kWp Solar · +
-                    {formatVolume(
-                      activeSample.retrofitSpec.projectedRainLitersYr,
-                      units
-                    )}
-                    /yr · {activeSample.retrofitSpec.coolingDeltaC}°C ΔT
+                    {"// RETROFIT PROJECTION: +"}{activeSample.retrofitSpec.projectedSolarKwp} kWp Solar · +{formatVolume(activeSample.retrofitSpec.projectedRainLitersYr, units)}/yr · {activeSample.retrofitSpec.coolingDeltaC}°C ΔT
                   </p>
                 </div>
               )}
@@ -858,7 +850,7 @@ export default function LensPage() {
                 }`}
               >
                 <p className="font-bold">
-                  // {activeSample.titleEn} ({geo.city})
+                  {`// ${activeSample.titleEn} (${geo.city})`}
                 </p>
                 <p className="mt-1">
                   SAM 3.1 Polygons: {activeSample.objects.length} · Value:{" "}
