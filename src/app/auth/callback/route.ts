@@ -43,13 +43,24 @@ export async function GET(request: Request) {
           setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
             try {
               cookiesToSet.forEach(({ name, value, options }) => {
-                cookieStore.set(name, value, options);
-                response.cookies.set(name, value, options);
+                const cookieOpts = {
+                  ...options,
+                  path: "/",
+                  sameSite: "lax" as const,
+                  secure: process.env.NODE_ENV === "production",
+                };
+                cookieStore.set(name, value, cookieOpts);
+                response.cookies.set(name, value, cookieOpts);
               });
             } catch {
               // Ignore cookie mutations from read-only contexts
             }
           },
+        },
+        cookieOptions: {
+          path: "/",
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
         },
       });
 

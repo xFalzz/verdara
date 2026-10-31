@@ -639,13 +639,27 @@ export default function LoginPage() {
                         ? isId
                           ? "Supabase tidak dapat menukar kode otorisasi eksternal dengan Google atau Meta. Hal ini terjadi bila Kunci Rahasia Aplikasi (Client Secret) di Supabase Dashboard belum sesuai dengan yang ada di Google Cloud Console atau Meta for Developers, atau produk Masuk Facebook belum diaktifkan."
                           : "Supabase was unable to exchange external code with Google or Meta. This happens when the Client Secret in Supabase Dashboard (Auth > Providers) does not match Google Cloud Console or Meta for Developers, or when Facebook Login is still in pending setup."
+                        : oauthError.description.toLowerCase().includes("user email")
+                        ? isId
+                          ? "Akun Facebook Anda berhasil terhubung, tetapi Facebook tidak mengirimkan alamat email ke Supabase. Hal ini biasanya terjadi jika akun Facebook dibuat hanya dengan nomor telepon atau izin email belum dicentang di dashboard Facebook App."
+                          : "Your Facebook account connected, but Facebook did not return an email address. This typically happens if the Facebook account was registered with a phone number only, or if the email permission is not enabled in Meta for Developers."
                         : oauthError.description}
                     </p>
                     <div className="rounded-lg bg-black/40 p-2.5 text-[10px] text-amber-300 space-y-1">
-                      <p className="font-semibold">{isId ? "Langkah Verifikasi:" : "Resolution Steps:"}</p>
-                      <p>1. {isId ? "Buka Supabase Dashboard > Authentication > Providers" : "Open Supabase Dashboard > Authentication > Providers"}</p>
-                      <p>2. {isId ? "Pastikan Client ID & Client Secret di-paste tanpa spasi" : "Ensure Client ID & Client Secret are pasted without trailing spaces"}</p>
-                      <p>3. {isId ? "Di Meta for Developers, klik 'Siapkan' pada Masuk Facebook" : "In Meta for Developers, click 'Set up' on Facebook Login"}</p>
+                      <p className="font-semibold">{isId ? "Langkah Solusi:" : "Resolution Steps:"}</p>
+                      {oauthError.description.toLowerCase().includes("user email") ? (
+                        <>
+                          <p>1. {isId ? "Di Meta for Developers > App 'Verdara-Town' > Use Cases > Authentication, pastikan izin 'email' aktif" : "In Meta for Developers > App 'Verdara-Town' > Use Cases > Authentication, verify 'email' permission is enabled"}</p>
+                          <p>2. {isId ? "Pastikan akun Facebook Anda memiliki Email Utama terverifikasi di Pengaturan Facebook" : "Ensure your Facebook account has a verified Primary Email in Facebook Settings"}</p>
+                          <p>3. {isId ? "Atau klik tombol 'Masuk Langsung dengan Akun Ini' di bawah untuk masuk seketika" : "Or click 'Sign In Directly With This Account' below to enter immediately"}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p>1. {isId ? "Buka Supabase Dashboard > Authentication > Providers" : "Open Supabase Dashboard > Authentication > Providers"}</p>
+                          <p>2. {isId ? "Pastikan Client ID & Client Secret di-paste tanpa spasi" : "Ensure Client ID & Client Secret are pasted without trailing spaces"}</p>
+                          <p>3. {isId ? "Di Meta for Developers, klik 'Siapkan' pada Masuk Facebook" : "In Meta for Developers, click 'Set up' on Facebook Login"}</p>
+                        </>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-2">
