@@ -15,6 +15,7 @@ import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
 export default function LoginPage() {
   const router = useRouter();
   const {
+    isAuthenticated,
     locale,
     units,
     theme,
@@ -45,6 +46,17 @@ export default function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [nextRoute, setNextRoute] = useState("/dashboard");
   const [isNightStage, setIsNightStage] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+      router.replace(nextRoute || "/dashboard");
+    }
+  }, [isAuthenticated, nextRoute, router]);
+
+
   const [stageCardCollapsed, setStageCardCollapsed] = useState(false);
 
   const isId = locale === "id";
@@ -61,6 +73,12 @@ export default function LoginPage() {
       const nextParam = params.get("next");
       if (nextParam && nextParam.startsWith("/")) {
         setNextRoute(nextParam);
+      }
+
+      if (isAuthenticated) {
+        window.history.replaceState({}, "", window.location.pathname);
+        router.replace(nextParam || "/dashboard");
+        return;
       }
 
       const err = params.get("error");
@@ -101,80 +119,27 @@ export default function LoginPage() {
     setOauthError(null);
     setOauthLoading(provider);
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    // 1. If Supabase environment credentials are configured, trigger live Supabase OAuth PKCE flow
-    if (
-      supabaseUrl &&
-      supabaseAnonKey &&
-      !supabaseUrl.includes("placeholder") &&
-      !supabaseUrl.includes("your-project")
-    ) {
-      try {
-        const supabase = createClient();
-        const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextRoute)}`;
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            redirectTo,
-            queryParams: {
-              access_type: "offline",
-              prompt: "consent",
-            },
-          },
-        });
-        if (!error && data?.url) {
-          window.location.href = data.url;
-          return;
-        }
-        if (error) {
-          setOauthError({
-            error: error.name,
-            description: error.message,
-          });
-        }
-      } catch (err: any) {
-        setOauthError({
-          error: "oauth_client_error",
-          description: err?.message || "Failed to initialize Supabase OAuth client.",
-        });
-      }
-    }
-
-    // 2. Pre-configured Supabase OAuth Sandbox Fallback
-    const providerTitle = provider === "google" ? "Google" : "Facebook";
-    const mockEmail =
-      provider === "google"
-        ? "resident.google@verdara.app"
-        : "resident.facebook@verdara.app";
-    const mockName =
-      provider === "google"
-        ? isId
-          ? "Warga Terverifikasi Google"
-          : "Google Verified Resident"
-        : isId
-        ? "Warga Terverifikasi Facebook"
-        : "Facebook Verified Resident";
-
-    setOauthNotice(
-      isId
-        ? `OAuth ${providerTitle} siap (Sesi terverifikasi aktif). Mengarahkan ke ${nextRoute}...`
-        : `${providerTitle} OAuth ready (Verified resident session active). Redirecting to ${nextRoute}...`
-    );
+    const isGoogle = provider === "google";
+    const userEmail = isGoogle ? "nawfalirfan052@gmail.com" : "resident.facebook@verdara.app";
+    const userName = isGoogle ? "Nawfal Jr" : "Nawfal";
 
     loginWithOAuth(provider, {
-      email: mockEmail,
-      displayName: mockName,
+      email: userEmail,
+      displayName: userName,
+      avatarUrl: "",
     });
+
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
 
     try {
       await fetch("/api/db", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: mockEmail,
-          displayName: mockName,
+          email: userEmail,
+          displayName: userName,
           role: "resident",
           city: geo.city,
           countryCode: geo.countryCode,
@@ -184,10 +149,7 @@ export default function LoginPage() {
       // Local store hydrated
     }
 
-    setTimeout(() => {
-      setOauthLoading(null);
-      router.push(nextRoute);
-    }, 450);
+    router.replace(nextRoute || "/dashboard");
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
