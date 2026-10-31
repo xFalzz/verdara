@@ -1036,7 +1036,7 @@ TCI_Score    = clamp(round(100 - max(0, T_warm_C - 22) * 2.4 + |Delta_T| * 6), 3
               <span className="th-map-bar bg-[#c6f432]" />
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-xs font-bold text-[#1e9e5a]">
-                  DATABASE ENGINE · {dbStats?.engine ?? "Verdara Spatial Store v3.2 (Prisma + PostgreSQL / Edge JSON)"}
+                  DATA PLATFORM · {dbStats?.engine ?? "Verdara Spatial Cloud Store v3.2"}
                 </span>
                 <span className="rounded-full bg-[#08090c] px-3 py-1 font-mono text-xs text-[#c6f432]">
                   Schema {dbStats?.schemaVersion ?? "3.2.0-enterprise"}

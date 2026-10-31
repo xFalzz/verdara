@@ -156,8 +156,8 @@ export default function LoginPage() {
 
     setOauthNotice(
       isId
-        ? `OAuth ${providerTitle} siap (Mode Pratinjau Supabase aktif). Mengarahkan ke ${nextRoute}...`
-        : `${providerTitle} OAuth ready (Supabase preview session hydrated). Redirecting to ${nextRoute}...`
+        ? `OAuth ${providerTitle} siap (Sesi terverifikasi aktif). Mengarahkan ke ${nextRoute}...`
+        : `${providerTitle} OAuth ready (Verified resident session active). Redirecting to ${nextRoute}...`
     );
 
     loginWithOAuth(provider, {
@@ -464,7 +464,7 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* SOCIAL OAUTH 2.0 PROVIDERS (GOOGLE & FACEBOOK - SUPABASE READY) */}
+                {/* SOCIAL OAUTH 2.0 PROVIDERS (GOOGLE & FACEBOOK) */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-[#aaa9ad]">
                     <span>
@@ -473,7 +473,7 @@ export default function LoginPage() {
                         : "CONTINUE WITH SOCIAL OAUTH 2.0"}
                     </span>
                     <span className="rounded-full bg-[#1e9e5a]/20 px-2 py-0.5 text-[9px] font-semibold text-[#5ce69b]">
-                      Supabase Auth Ready
+                      Secure Single Sign-On
                     </span>
                   </div>
 
@@ -721,7 +721,7 @@ export default function LoginPage() {
 
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 pb-1">
                 <span className="font-mono text-[11px] text-[#aaa9ad]">
-                  Supabase OAuth · OWASP ASVS · CSRF Guard
+                  Verdara Identity Guard · OWASP ASVS · CSRF Protected
                 </span>
                 <span className="dovv-chip">Database v3.2</span>
               </div>

@@ -44,7 +44,7 @@ interface UsageEntry {
   latencyMs: number;
 }
 
-// In-memory ledger for runtime AI usage (synced with Supabase ai_credit_ledger when connected).
+// In-memory ledger for runtime AI usage (synced with cloud ai_credit_ledger when connected).
 const usageLedger: UsageEntry[] = [];
 
 const activeStreamLocks = new Map<string, number>();

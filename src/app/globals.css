@@ -189,14 +189,11 @@
   }
 }
 
-/* DOVV Die-Cut Sticker with Instant Render & Spring Hover */
+/* Verdara Spatial HUD Telemetry Chip */
 .dovv-sticker {
   user-select: none;
-  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.2));
-  transition: transform 0.35s var(--spring-bounce), filter 0.25s ease;
-}
-.dovv-sticker:hover {
-  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.28));
+  touch-action: none;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
 }
 
 /* DOVV Slide Carousel Track (.track) */

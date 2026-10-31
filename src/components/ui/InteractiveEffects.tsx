@@ -280,134 +280,70 @@ export function DovvInteractiveWordmark({
 }
 
 /**
- * 3. DOVVSTUDIO.COM HOLOGRAPHIC FOIL + MOVING SHINE DRAGGABLE STICKER
+ * 3. VERDARA SPATIAL HUD TELEMETRY CHIP (DRAGGABLE ARCHITECTURAL BADGE)
+ * High-performance, hardware-accelerated spatial pin with zero idle CPU overhead.
  */
+export interface DovvHoloStickerProps {
+  label: string;
+  sublabel?: string;
+  categoryTag?: string;
+  variant?: "orange" | "lime" | "gold";
+  rotationDeg?: number;
+  className?: string;
+}
+
 export function DovvHoloSticker({
   label,
   sublabel,
-  variant,
-  rotationDeg,
+  categoryTag,
+  variant = "lime",
+  rotationDeg = 0,
   className = "",
-}: {
-  label: string;
-  sublabel?: string;
-  variant: "orange" | "lime" | "gold";
-  rotationDeg: number;
-  className?: string;
-}) {
-  const stickerRef = useRef<HTMLDivElement>(null);
-  const foilRef = useRef<SVGLinearGradientElement>(null);
-  const shineRef = useRef<SVGRadialGradientElement>(null);
+}: DovvHoloStickerProps) {
+  const chipRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0, origX: 0, origY: 0 });
 
-  const gradId = React.useId().replace(/:/g, "");
+  const variantStyles = {
+    orange: {
+      beacon: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.7)]",
+      tagText: "text-amber-600 dark:text-amber-400",
+      accentBorder: "hover:border-amber-500/50 dark:hover:border-amber-400/40",
+      accentGlow: "group-hover:shadow-[0_12px_28px_-6px_rgba(245,158,11,0.25)]",
+    },
+    lime: {
+      beacon: "bg-[#c6f432] shadow-[0_0_8px_rgba(198,244,50,0.8)]",
+      tagText: "text-[#15803d] dark:text-[#c6f432]",
+      accentBorder: "hover:border-[#c6f432]/60 dark:hover:border-[#c6f432]/50",
+      accentGlow: "group-hover:shadow-[0_12px_28px_-6px_rgba(198,244,50,0.25)]",
+    },
+    gold: {
+      beacon: "bg-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]",
+      tagText: "text-cyan-600 dark:text-cyan-300",
+      accentBorder: "hover:border-cyan-400/50 dark:hover:border-cyan-400/40",
+      accentGlow: "group-hover:shadow-[0_12px_28px_-6px_rgba(56,189,248,0.25)]",
+    },
+  }[variant];
 
-  useEffect(() => {
-    const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (prefersReduced) return;
-
-    let rafId = 0;
-    let pointerX = -1;
-    let pointerY = -1;
-    let pointerActive = false;
-    let curX = 0.5;
-    let curY = 0.5;
-
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType === "mouse") {
-        pointerX = e.clientX;
-        pointerY = e.clientY;
-        pointerActive = true;
-      }
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-
-    const w = 240;
-    const h = 68;
-
-    const loop = (t: number) => {
-      const el = stickerRef.current;
-      if (el && foilRef.current && shineRef.current) {
-        const rect = el.getBoundingClientRect();
-        let targetX: number;
-        let targetY: number;
-        if (pointerActive) {
-          targetX = Math.min(
-            1.5,
-            Math.max(-0.5, (pointerX - rect.left) / Math.max(1, rect.width))
-          );
-          targetY = Math.min(
-            1.5,
-            Math.max(-0.5, (pointerY - rect.top) / Math.max(1, rect.height))
-          );
-        } else {
-          targetX = 0.5 + Math.sin(t / 1600 + rect.left / 200) * 0.6;
-          targetY = 0.5 + Math.cos(t / 2100 + rect.top / 200) * 0.6;
-        }
-        curX += (targetX - curX) * 0.08;
-        curY += (targetY - curY) * 0.08;
-
-        const sx = (curX - 0.5) * w * 0.9;
-        const sy = (curY - 0.5) * h * 0.9;
-        foilRef.current.setAttribute("x1", String(-sx));
-        foilRef.current.setAttribute("y1", String(-sy));
-        foilRef.current.setAttribute("x2", String(w * 0.6 - sx));
-        foilRef.current.setAttribute("y2", String(h * 0.6 - sy));
-        shineRef.current.setAttribute("cx", String(curX * w));
-        shineRef.current.setAttribute("cy", String(curY * h));
-      }
-      rafId = requestAnimationFrame(loop);
-    };
-
-    rafId = requestAnimationFrame(loop);
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("pointermove", onMove);
-    };
-  }, []);
-
-  const stops =
-    variant === "orange"
-      ? [
-          "#ed4a1c",
-          "#ff6a3d",
-          "#ff8f5e",
-          "#ff4f7a",
-          "#ed4a1c",
-          "#ff7a3d",
-          "#ed4a1c",
-        ]
+  const resolvedTag =
+    categoryTag ??
+    (variant === "orange"
+      ? "AI SPATIAL CORE"
       : variant === "lime"
-      ? [
-          "#c6f432",
-          "#e5ff78",
-          "#9be82b",
-          "#c6f432",
-          "#f0ffab",
-          "#a8eb28",
-          "#c6f432",
-        ]
-      : [
-          "#ffd23f",
-          "#fff0a0",
-          "#ffb347",
-          "#ffd23f",
-          "#fff6c8",
-          "#ffc21a",
-          "#ffd23f",
-        ];
-
-  const textColor = variant === "orange" ? "#ffffff" : "#111111";
+      ? "SOLAR TELEMETRY"
+      : "ERA5 CLIMATE MESH");
 
   return (
     <div
-      ref={stickerRef}
+      ref={chipRef}
       onPointerDown={(e) => {
-        e.currentTarget.setPointerCapture(e.pointerId);
+        if (e.button !== 0 && e.pointerType === "mouse") return;
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          // pointer capture unsupported or blocked
+        }
         setIsDragging(true);
         dragStartRef.current = {
           x: e.clientX,
@@ -423,112 +359,77 @@ export function DovvHoloSticker({
           y: dragStartRef.current.origY + (e.clientY - dragStartRef.current.y),
         });
       }}
-      onPointerUp={() => setIsDragging(false)}
-      style={
-        {
-          "--rot": `${rotationDeg}deg`,
-          transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${rotationDeg}deg)`,
-        } as React.CSSProperties
-      }
-      title="Drag sticker around"
-      className={`dovv-sticker cursor-grab active:cursor-grabbing ${className}`}
+      onPointerUp={(e) => {
+        setIsDragging(false);
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch {}
+      }}
+      onPointerCancel={(e) => {
+        setIsDragging(false);
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch {}
+      }}
+      style={{
+        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${rotationDeg}deg)`,
+        willChange: "transform",
+      }}
+      className={`group select-none cursor-grab active:cursor-grabbing transition-[box-shadow,border-color,transform] duration-200 ${
+        isDragging ? "scale-[1.04] shadow-2xl z-50 !cursor-grabbing" : ""
+      } ${className}`}
     >
-      <svg
-        viewBox="0 0 240 68"
-        width="236"
-        height="66"
-        className="block overflow-visible"
-        aria-hidden="true"
+      <div
+        className={`relative flex items-center gap-3 rounded-2xl border px-4 py-2.5 backdrop-blur-xl transition-all duration-300 ${variantStyles.accentBorder} ${variantStyles.accentGlow} bg-white/95 text-neutral-900 border-black/10 shadow-[0_10px_28px_-6px_rgba(0,0,0,0.12)] dark:bg-[#0c0d12]/92 dark:text-white dark:border-white/15 dark:shadow-[0_14px_35px_-8px_rgba(0,0,0,0.7)]`}
       >
-        <defs>
-          <linearGradient
-            ref={foilRef}
-            id={`foil-${gradId}`}
-            gradientUnits="userSpaceOnUse"
-            x1="0"
-            y1="0"
-            x2="144"
-            y2="42"
-            spreadMethod="reflect"
-          >
-            {stops.map((c, i) => (
-              <stop
-                key={i}
-                offset={i / (stops.length - 1)}
-                stopColor={c}
-              />
-            ))}
-          </linearGradient>
-          <radialGradient
-            ref={shineRef}
-            id={`shine-${gradId}`}
-            gradientUnits="userSpaceOnUse"
-            cx="120"
-            cy="34"
-            r="110"
-          >
-            <stop offset="0" stopColor="#ffffff" stopOpacity="0.82" />
-            <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
-          </radialGradient>
-          <rect
-            id={`shape-${gradId}`}
-            x="6"
-            y="6"
-            width="228"
-            height="56"
-            rx="28"
-          />
-        </defs>
-
-        <use
-          href={`#shape-${gradId}`}
-          fill="#ffffff"
-          stroke="#ffffff"
-          strokeWidth="10"
-          strokeLinejoin="round"
-        />
-        <use href={`#shape-${gradId}`} fill={`url(#foil-${gradId})`} />
-        <use
-          href={`#shape-${gradId}`}
-          fill={`url(#shine-${gradId})`}
-          style={{ mixBlendMode: "soft-light", opacity: 0.9 }}
-        />
-
-        <text
-          x="120"
-          y={sublabel ? "31" : "39"}
-          textAnchor="middle"
-          fill={textColor}
-          style={{
-            fontFamily: "var(--font-sans), sans-serif",
-            fontWeight: 800,
-            fontSize: "15px",
-            letterSpacing: "-0.03em",
-          }}
+        {/* Subtle Grip Handle (6 Dots) */}
+        <div
+          aria-hidden="true"
+          className="flex flex-col gap-1 py-0.5 opacity-40 group-hover:opacity-85 transition-opacity"
         >
-          {label}
-        </text>
-        {sublabel && (
-          <text
-            x="120"
-            y="48"
-            textAnchor="middle"
-            fill={textColor}
-            style={{
-              fontFamily: "var(--font-mono), monospace",
-              fontWeight: 600,
-              fontSize: "10.5px",
-              letterSpacing: "0.04em",
-              opacity: 0.85,
-            }}
-          >
-            {sublabel}
-          </text>
-        )}
-      </svg>
+          <div className="flex gap-1">
+            <span className="h-1 w-1 rounded-full bg-current" />
+            <span className="h-1 w-1 rounded-full bg-current" />
+          </div>
+          <div className="flex gap-1">
+            <span className="h-1 w-1 rounded-full bg-current" />
+            <span className="h-1 w-1 rounded-full bg-current" />
+          </div>
+          <div className="flex gap-1">
+            <span className="h-1 w-1 rounded-full bg-current" />
+            <span className="h-1 w-1 rounded-full bg-current" />
+          </div>
+        </div>
+
+        {/* Content Column */}
+        <div className="flex flex-col text-left">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${variantStyles.beacon}`}
+            />
+            <span
+              className={`font-mono text-[9px] font-bold tracking-wider uppercase ${variantStyles.tagText}`}
+            >
+              {resolvedTag}
+            </span>
+          </div>
+
+          <span className="mt-0.5 font-sans text-xs sm:text-[13px] font-bold tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+            {label}
+          </span>
+
+          {sublabel && (
+            <span className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+              {sublabel}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
+export const SpatialHudChip = DovvHoloSticker;
 
 /**
  * 4. TOWNHOUSE.DEV ANIMATED CHAPTER SCROLL RAIL (`data-testid="scene-rail"`)

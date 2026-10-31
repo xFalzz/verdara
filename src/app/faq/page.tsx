@@ -406,8 +406,8 @@ const FAQ_ITEMS: FaqItem[] = [
     badge: "DATABASE V3.2",
     qEn: "How is Verdara's Enterprise Database v3.2 structured and can I export live snapshots?",
     qId: "Bagaimana struktur Database Enterprise v3.2 Verdara dan bisakah saya mengekspor datanya?",
-    aEn: "Verdara operates an Enterprise Relational Database Engine v3.2 (src/lib/db/verdaraDatabase.ts & /api/db) featuring normalized tables with foreign-key integrity and dual-layer persistence (IndexedDB / LocalStorage client state synced with server-side JSON-WAL snapshots). You can inspect live records and export full JSON snapshots from /docs or /settings.",
-    aId: "Verdara menjalankan Mesin Database Relasional Enterprise v3.2 (src/lib/db/verdaraDatabase.ts & /api/db) dengan tabel ternormalisasi, integritas foreign-key, serta persistensi lapis ganda (state klien IndexedDB / LocalStorage yang disinkronkan dengan snapshot JSON-WAL server). Anda dapat memeriksa baris tabel dan mengekspor bundel JSON langsung di /docs atau /settings.",
+    aEn: "Verdara operates an Enterprise Spatial Cloud Store v3.2 (/api/db) featuring normalized schemas with relational integrity and dual-layer persistence (IndexedDB / LocalStorage client state synced with server-side JSON-WAL snapshots). You can inspect live records and export full JSON snapshots from /docs or /settings.",
+    aId: "Verdara menjalankan Penyimpanan Data Spasial Cloud Enterprise v3.2 (/api/db) dengan skema ternormalisasi, integritas relasional, serta persistensi lapis ganda (state klien IndexedDB / LocalStorage yang disinkronkan dengan snapshot JSON-WAL server). Anda dapat memeriksa baris tabel dan mengekspor bundel JSON langsung di /docs atau /settings.",
     points: [
       {
         titleEn: "Normalized Relational Tables",
@@ -905,7 +905,7 @@ export default function FaqPage() {
                 sub: "ERA5 + NASA POWER GHI",
               },
               {
-                code: "02 · 3D ENGINE",
+                code: "02 · 3D DIGITAL TWIN",
                 val: isId ? "Kembar Digital 3D" : "Real-Time 3D Twin",
                 sub: isId ? "Scroll-Zoom + 3 Mode" : "Scroll-Zoom + 3 Modes",
               },

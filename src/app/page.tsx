@@ -1010,17 +1010,19 @@ export default function LandingPage() {
               : "Verdara: Turn your home and neighborhood into a 3D living eco-town. Measure rooftop solar, rainwater harvest, and recycling value in any city on Earth with Meta SAM 3.1 and Muse Spark."}
           </h1>
 
-          {/* Draggable Holo Sticker 1: Top-Left Orange */}
+          {/* Draggable Spatial HUD Chip 1: Top-Left Orange */}
           <DovvHoloSticker
+            categoryTag="AI SPATIAL CORE"
             label="Meta SAM 3.1 + Muse Spark"
-            sublabel="Drag Sticker"
+            sublabel={isId ? "Segmentasi Spasial AI" : "Autonomous Spatial AI"}
             variant="orange"
-            rotationDeg={-8}
+            rotationDeg={-3}
             className="absolute -top-7 left-2 z-20 hidden md:block lg:left-6"
           />
 
-          {/* Draggable Holo Sticker 2: Top-Right Lime */}
+          {/* Draggable Spatial HUD Chip 2: Top-Right Lime */}
           <DovvHoloSticker
+            categoryTag="SOLAR TELEMETRY"
             label={`${housingCalc.solar.kwp} kWp · ${formatCurrency(
               housingCalc.solar.savingsYear,
               housingCalc.solar.currency,
@@ -1028,16 +1030,17 @@ export default function LandingPage() {
             )}/yr`}
             sublabel={`${geo.city} (${geo.countryCode})`}
             variant="lime"
-            rotationDeg={9}
+            rotationDeg={3}
             className="absolute -top-6 right-2 z-20 hidden md:block lg:right-8"
           />
 
-          {/* Draggable Holo Sticker 3: Bottom-Right Gold */}
+          {/* Draggable Spatial HUD Chip 3: Bottom-Right Gold */}
           <DovvHoloSticker
-            label="195+ Countries · Real Physics"
-            sublabel="NREL PVWatts · ERA5 Weather"
+            categoryTag="ERA5 CLIMATE MESH"
+            label={isId ? "195+ Negara · Fisika Riil" : "195+ Countries · Real Physics"}
+            sublabel="NREL PVWatts · NASA POWER"
             variant="gold"
-            rotationDeg={-6}
+            rotationDeg={-2}
             className="absolute -bottom-6 right-6 z-20 hidden lg:block"
           />
 
@@ -2575,8 +2578,8 @@ export default function LandingPage() {
                     }`}
                   >
                     {isId
-                      ? "Detail mesin kalkulasi ilmiah, keamanan siber, dan kesiapan skala global."
-                      : "Deep-dive into the deterministic physics engine, security guardrails, and global scale."}
+                      ? "Detail model kalkulasi ilmiah, keamanan siber, dan kesiapan skala global."
+                      : "Deep-dive into deterministic physics models, security guardrails, and global scale."}
                   </h3>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -2943,7 +2946,7 @@ export default function LandingPage() {
                       >
                         * META MUSE SPARK 3-AGENT COUNCIL
                       </span>
-                      <span>NREL PVWATTS v8 SOLAR ENGINE</span>
+                      <span>NREL PVWATTS v8 SOLAR MODEL</span>
                       <span
                         className={isSectionLight ? "text-[#16a34a]" : "text-[#10b981]"}
                       >

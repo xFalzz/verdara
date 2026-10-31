@@ -266,7 +266,7 @@ class VerdaraDatabaseEngine {
     return {
       schemaVersion: this.schemaVersion,
       updatedAt: this.updatedAt,
-      engine: "Verdara Spatial Store v3.2 (SQLite/Edge WAL Compatible)",
+      engine: "Verdara Spatial Cloud Store v3.2",
       counts: {
         supportedCountries: 195,
         curatedBenchmarkCities: benchmarks.length,
