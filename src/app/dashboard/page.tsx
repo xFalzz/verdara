@@ -17,7 +17,6 @@ export default function DashboardPage() {
     locale,
     units,
     theme,
-    isJudgeDemo,
     displayName,
     geo,
     housingCalc,
@@ -26,7 +25,7 @@ export default function DashboardPage() {
     progressPct,
     unlockedItems,
     scanHistory,
-    loginAsJudgeDemo,
+    loadVerifiedSpecimenPlot,
     resetToStarterPlot,
   } = useVerdaraStore();
 
@@ -140,17 +139,17 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={
-                isJudgeDemo ? resetToStarterPlot : loginAsJudgeDemo
+                level > 1 ? resetToStarterPlot : loadVerifiedSpecimenPlot
               }
               className="min-h-[44px] cursor-pointer rounded-full bg-[#c6f432] px-4 text-xs font-semibold text-[#080808] transition hover:bg-[#d4f759]"
             >
-              {isJudgeDemo
+              {level > 1
                 ? isId
                   ? "Reset ke Plot Awal (Lv.1)"
                   : "Switch to Starter Plot (Lv.1)"
                 : isId
-                ? "Muat Kota Demo Juri (Lv.5)"
-                : "Load Lv.5 Judge Demo Town"}
+                ? "Muat Spesimen Lengkap (Lv.5)"
+                : "Load Full Town Specimen (Lv.5)"}
             </button>
           </div>
         </div>

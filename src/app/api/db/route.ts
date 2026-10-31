@@ -32,10 +32,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const email = sanitizeInputText(body.email, 120);
     const displayName = sanitizeInputText(body.displayName, 80);
+    const avatarUrl = sanitizeInputText(body.avatarUrl, 300);
     const city = sanitizeInputText(body.city, 80);
     const countryCode = sanitizeInputText(body.countryCode, 8);
     const role =
-      body.role === "judge" || body.role === "researcher"
+      body.role === "researcher" || body.role === "admin"
         ? body.role
         : "resident";
 
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     const userRecord = verdaraDb.upsertUserLogin({
       email,
       displayName,
+      avatarUrl,
       role,
       city,
       countryCode,

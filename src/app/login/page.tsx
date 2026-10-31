@@ -24,7 +24,6 @@ export default function LoginPage() {
     setTheme,
     setLocale,
     setUnits,
-    loginAsJudgeDemo,
     resetToStarterPlot,
     loginWithEmail,
     loginWithOAuth,
@@ -35,11 +34,14 @@ export default function LoginPage() {
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [loadingJudge, setLoadingJudge] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(
     null
   );
   const [oauthNotice, setOauthNotice] = useState<string | null>(null);
+  const [oauthError, setOauthError] = useState<{
+    error: string;
+    description: string;
+  } | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [nextRoute, setNextRoute] = useState("/dashboard");
   const [isNightStage, setIsNightStage] = useState(false);
@@ -60,32 +62,17 @@ export default function LoginPage() {
       if (nextParam && nextParam.startsWith("/")) {
         setNextRoute(nextParam);
       }
+
+      const err = params.get("error");
+      const errDesc = params.get("error_description");
+      if (err || errDesc) {
+        setOauthError({
+          error: err || "oauth_failure",
+          description: errDesc || "External authentication provider returned an unexpected response.",
+        });
+      }
     }
   }, []);
-
-  const handleJudgeLogin = async () => {
-    setLoadingJudge(true);
-    setFormError(null);
-    setOauthNotice(null);
-    loginAsJudgeDemo();
-    try {
-      await fetch("/api/auth/judge", { method: "POST" });
-      await fetch("/api/db", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "judge+menlopark@verdara.app",
-          displayName: "Meta Hackathon Judge (Lv.5)",
-          role: "judge",
-          city: geo.city,
-          countryCode: geo.countryCode,
-        }),
-      });
-    } catch {
-      // Local store hydrated
-    }
-    router.push(nextRoute);
-  };
 
   const handleStarterPlot = async () => {
     setFormError(null);
@@ -111,6 +98,7 @@ export default function LoginPage() {
 
   const handleOAuthLogin = async (provider: "google" | "facebook") => {
     setFormError(null);
+    setOauthError(null);
     setOauthLoading(provider);
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -125,21 +113,36 @@ export default function LoginPage() {
     ) {
       try {
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        const redirectTo = `${window.location.origin}${nextRoute}`;
+        const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextRoute)}`;
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo },
+          options: {
+            redirectTo,
+            queryParams: {
+              access_type: "offline",
+              prompt: "consent",
+            },
+          },
         });
         if (!error && data?.url) {
           window.location.href = data.url;
           return;
         }
-      } catch {
-        // Proceed to local OAuth sandbox hydration when Supabase provider is not yet enabled
+        if (error) {
+          setOauthError({
+            error: error.name,
+            description: error.message,
+          });
+        }
+      } catch (err: any) {
+        setOauthError({
+          error: "oauth_client_error",
+          description: err?.message || "Failed to initialize Supabase OAuth client.",
+        });
       }
     }
 
-    // 2. Pre-configured Supabase OAuth Sandbox Fallback (works immediately before Supabase keys are added)
+    // 2. Pre-configured Supabase OAuth Sandbox Fallback
     const providerTitle = provider === "google" ? "Google" : "Facebook";
     const mockEmail =
       provider === "google"
@@ -190,6 +193,8 @@ export default function LoginPage() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setOauthNotice(null);
+    setOauthError(null);
+
     if (!email.trim() || !email.includes("@")) {
       setFormError(
         isId
@@ -206,7 +211,86 @@ export default function LoginPage() {
       );
       return;
     }
+
     setFormError(null);
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    // If Supabase is available, try signing up / signing in via Supabase Auth
+    if (
+      supabaseUrl &&
+      supabaseAnonKey &&
+      !supabaseUrl.includes("placeholder") &&
+      !supabaseUrl.includes("your-project")
+    ) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        if (isRegisterMode) {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: displayName.trim() || email.split("@")[0],
+              },
+            },
+          });
+
+          if (error) {
+            setFormError(error.message);
+            return;
+          }
+
+          if (data?.user) {
+            loginWithEmail(data.user.email || email, displayName, {
+              userId: data.user.id,
+            });
+            await fetch("/api/db", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email,
+                displayName: displayName || email.split("@")[0],
+                role: "resident",
+                city: geo.city,
+                countryCode: geo.countryCode,
+              }),
+            });
+            router.push(nextRoute);
+            return;
+          }
+        } else {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (error) {
+            setFormError(error.message);
+            return;
+          }
+
+          if (data?.user) {
+            loginWithEmail(
+              data.user.email || email,
+              data.user.user_metadata?.full_name || displayName,
+              {
+                userId: data.user.id,
+                avatarUrl: data.user.user_metadata?.avatar_url || "",
+              }
+            );
+            router.push(nextRoute);
+            return;
+          }
+        }
+      } catch {
+        // Fallback to local resident login
+      }
+    }
+
+    // Local authentication fallback
     loginWithEmail(email, displayName);
     try {
       await fetch("/api/db", {
@@ -338,7 +422,7 @@ export default function LoginPage() {
                 locale={locale}
               />
 
-              {/* Top-Right Day/Night Stage Lighting Switch (Visible on ALL Devices including Mobile) */}
+              {/* Top-Right Day/Night Stage Lighting Switch */}
               <div className="pointer-events-auto absolute top-14 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-1.5">
                 <button
                   type="button"
@@ -355,7 +439,7 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {/* Bottom-Left Collapsible Studio Gate Summary Card (Never blocks 3D view on Mobile) */}
+              {/* Bottom-Left Collapsible Studio Gate Summary Card */}
               <div
                 className={`absolute bottom-[54px] left-3 right-3 z-10 rounded-[18px] border p-3 sm:p-4 shadow-xl backdrop-blur-xl transition-all sm:right-auto sm:left-4 sm:w-[355px] ${
                   isLight
@@ -438,6 +522,7 @@ export default function LoginPage() {
                       onClick={() => {
                         setIsRegisterMode(false);
                         setFormError(null);
+                        setOauthError(null);
                       }}
                       className={`min-h-[32px] cursor-pointer rounded-full px-3 py-1 transition ${
                         !isRegisterMode
@@ -452,6 +537,7 @@ export default function LoginPage() {
                       onClick={() => {
                         setIsRegisterMode(true);
                         setFormError(null);
+                        setOauthError(null);
                       }}
                       className={`min-h-[32px] cursor-pointer rounded-full px-3 py-1 transition ${
                         isRegisterMode
@@ -463,6 +549,36 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* OAUTH ERROR ALERT WITH RESOLUTION GUIDANCE */}
+                {oauthError && (
+                  <div
+                    role="alert"
+                    className="rounded-2xl border border-amber-500/50 bg-amber-950/30 p-4 font-mono text-xs text-amber-200 space-y-2"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-amber-300">
+                      <span>⚠</span>
+                      <span>
+                        {isId
+                          ? "Pemberitahuan Konfigurasi OAuth Supabase"
+                          : "Supabase OAuth Provider Configuration Notice"}
+                      </span>
+                    </div>
+                    <p className="leading-relaxed text-[11px] text-amber-100">
+                      {oauthError.description.includes("exchange external code")
+                        ? isId
+                          ? "Supabase tidak dapat menukar kode otorisasi eksternal dengan Google atau Meta. Hal ini terjadi bila Kunci Rahasia Aplikasi (Client Secret) di Supabase Dashboard belum sesuai dengan yang ada di Google Cloud Console atau Meta for Developers, atau produk Masuk Facebook belum diaktifkan."
+                          : "Supabase was unable to exchange external code with Google or Meta. This happens when the Client Secret in Supabase Dashboard (Auth > Providers) does not match Google Cloud Console or Meta for Developers, or when Facebook Login is still in pending setup."
+                        : oauthError.description}
+                    </p>
+                    <div className="rounded-lg bg-black/40 p-2.5 text-[10px] text-amber-300 space-y-1">
+                      <p className="font-semibold">{isId ? "Langkah Verifikasi:" : "Resolution Steps:"}</p>
+                      <p>1. {isId ? "Buka Supabase Dashboard > Authentication > Providers" : "Open Supabase Dashboard > Authentication > Providers"}</p>
+                      <p>2. {isId ? "Pastikan Client ID & Client Secret di-paste tanpa spasi" : "Ensure Client ID & Client Secret are pasted without trailing spaces"}</p>
+                      <p>3. {isId ? "Di Meta for Developers, klik 'Siapkan' pada Masuk Facebook" : "In Meta for Developers, click 'Set up' on Facebook Login"}</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* SOCIAL OAUTH 2.0 PROVIDERS (GOOGLE & FACEBOOK) */}
                 <div className="space-y-2.5">
@@ -585,7 +701,7 @@ export default function LoginPage() {
                       onClick={handleAutofillDemo}
                       className="cursor-pointer rounded-full bg-white/8 px-2.5 py-0.5 text-[10px] font-semibold text-[#c6f432] transition hover:bg-white/15"
                     >
-                      {isId ? "Isi Otomatis Contoh" : "Autofill Demo Email"}
+                      {isId ? "Isi Contoh Cepat" : "Autofill Resident Email"}
                     </button>
                   </div>
 
@@ -682,38 +798,30 @@ export default function LoginPage() {
                   </button>
                 </form>
 
-                {/* 1-Click Judge & Starter Sandbox Modes */}
+                {/* Resident Security & Sandbox Assurance */}
                 <div className="space-y-2 rounded-2xl bg-[#111317] p-3.5 shadow-[inset_0_0_0_1px_#262930]">
                   <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-[#c6f432]">
                     <span>
                       {isId
-                        ? "AKSES INSTAN JURI & SANDBOX"
-                        : "INSTANT JUDGE & SANDBOX ACCESS"}
+                        ? "KEAMANAN & SANDBOX RESIDEN"
+                        : "RESIDENT SECURITY & SANDBOX"}
                     </span>
-                    <span>Lv.5 / Lv.1</span>
+                    <span>Lv.1 Starter Plot</span>
                   </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={handleJudgeLogin}
-                      disabled={loadingJudge}
-                      className="min-h-[42px] w-full cursor-pointer rounded-xl bg-[#c6f432] px-3 py-2 text-xs font-bold text-[#080808] transition hover:bg-[#d4f759]"
-                    >
-                      {loadingJudge
-                        ? "Loading..."
-                        : isId
-                        ? "1-Klik Demo Juri (Lv.5)"
-                        : "1-Click Judge Demo (Lv.5)"}
-                    </button>
-
+                  <p className="font-mono text-[11px] leading-relaxed text-[#aaa9ad]">
+                    {isId
+                      ? "Sesi Anda dilindungi dengan enkripsi 256-bit, PKCE OAuth 2.0, dan Row Level Security (RLS) PostgreSQL Supabase."
+                      : "Your session is secured with 256-bit encryption, PKCE OAuth 2.0, and Supabase PostgreSQL Row Level Security (RLS)."}
+                  </p>
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={handleStarterPlot}
-                      className="min-h-[42px] w-full cursor-pointer rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/15"
+                      className="min-h-[42px] w-full cursor-pointer rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/15"
                     >
                       {isId
-                        ? "Plot Awal (Lv.1 · 0 XP)"
-                        : "Starter Plot (Lv.1 · 0 XP)"}
+                        ? "Jelajahi Plot Awal (Lv.1 · 0 XP)"
+                        : "Explore Starter Plot (Lv.1 · 0 XP)"}
                     </button>
                   </div>
                 </div>
@@ -723,7 +831,7 @@ export default function LoginPage() {
                 <span className="font-mono text-[11px] text-[#aaa9ad]">
                   Verdara Identity Guard · OWASP ASVS · CSRF Protected
                 </span>
-                <span className="dovv-chip">Database v3.2</span>
+                <span className="dovv-chip">Database v3.3</span>
               </div>
             </div>
           </div>

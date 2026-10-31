@@ -1,6 +1,6 @@
 -- ============================================================================
--- VERDARA — Spatial Intelligence for Sustainable Living & Resilient Homes
--- Meta Global AI Developer Hackathon (Oct 27 – Nov 4, 2026)
+-- VERDARA: Spatial Intelligence for Sustainable Living & Resilient Homes
+-- Meta Global AI Developer Hackathon (Oct 27 to Nov 4, 2026)
 -- Full PostgreSQL 15 + PostGIS + Row Level Security (RLS) Migration
 -- ============================================================================
 

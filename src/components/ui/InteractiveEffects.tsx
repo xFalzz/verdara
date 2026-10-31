@@ -1227,7 +1227,7 @@ export function WorldCityExplorer({
 export function VerdaraBottomDock() {
   const pathname = usePathname();
   const router = useRouter();
-  const { locale, isAuthenticated, isJudgeDemo, displayName, level } = useVerdaraStore();
+  const { locale, isAuthenticated, displayName, level } = useVerdaraStore();
   const [minimized, setMinimized] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const isId = locale === "id";
@@ -1391,9 +1391,7 @@ export function VerdaraBottomDock() {
             </span>
             <span className="font-bold text-[#c6f432]">Lv.{level}</span>
             <span className="hidden sm:inline max-w-[90px] truncate text-[#d4d4d8] group-hover:text-white">
-              {isJudgeDemo
-                ? "Judge Demo"
-                : displayName?.split(" ")[0] || "Resident"}
+              {displayName?.split(" ")[0] || "Resident"}
             </span>
           </Link>
           <span className="mx-0.5 h-4 w-[1px] shrink-0 bg-white/15" />

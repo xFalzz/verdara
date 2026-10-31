@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import { WORLD_CITY_CATALOG } from "@/lib/science/presets";
+import { createClient } from "@/lib/supabase/client";
 import {
   VerdaraLogo,
   ZeggoRollText,
@@ -35,9 +36,9 @@ export default function StudioShell({
     setTheme,
     teleportToCity,
     setCustomCoordinates,
-    loginAsJudgeDemo,
     loginWithEmail,
     loginWithOAuth,
+    updateUserProfile,
     logout,
   } = useVerdaraStore();
 
@@ -54,49 +55,144 @@ export default function StudioShell({
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // Restore session from sessionStorage if present; otherwise enforce login redirect
+  // Synchronize active Supabase session or restore session from sessionStorage
   useEffect(() => {
-    if (isAuthenticated) {
-      setAuthChecked(true);
-      return;
-    }
+    let active = true;
+
+    // 1. Try checking live Supabase session
     try {
-      const raw = window.sessionStorage.getItem("verdara_auth_session_v3");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.isAuthenticated) {
-          if (parsed.isJudgeDemo) {
-            loginAsJudgeDemo();
-          } else if (
-            parsed.authProvider === "google" ||
-            parsed.authProvider === "facebook"
-          ) {
-            loginWithOAuth(parsed.authProvider, {
-              email: parsed.email,
-              displayName: parsed.displayName,
-            });
-          } else {
+      const supabase = createClient();
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!active) return;
+        if (session?.user) {
+          const userMeta = session.user.user_metadata || {};
+          const provider =
+            (session.user.app_metadata?.provider as "google" | "facebook") ||
+            "email";
+          const userEmail = session.user.email || "";
+          const name =
+            userMeta.full_name ||
+            userMeta.name ||
+            userEmail.split("@")[0] ||
+            "Verdara Resident";
+          const avatar = userMeta.avatar_url || userMeta.picture || "";
+
+          loginWithOAuth(provider, {
+            email: userEmail,
+            displayName: name,
+            avatarUrl: avatar,
+            userId: session.user.id,
+          });
+          setAuthChecked(true);
+          return;
+        }
+
+        // 2. Fallback to session storage if already authenticated
+        if (isAuthenticated) {
+          setAuthChecked(true);
+          return;
+        }
+        try {
+          const raw = window.sessionStorage.getItem("verdara_auth_session_v3");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.isAuthenticated) {
+              if (
+                parsed.authProvider === "google" ||
+                parsed.authProvider === "facebook"
+              ) {
+                loginWithOAuth(parsed.authProvider, {
+                  email: parsed.email,
+                  displayName: parsed.displayName,
+                  avatarUrl: parsed.avatarUrl,
+                  userId: parsed.userId,
+                });
+              } else {
+                loginWithEmail(
+                  parsed.email || "resident@verdara.app",
+                  parsed.displayName || "Verdara Resident",
+                  { avatarUrl: parsed.avatarUrl, userId: parsed.userId }
+                );
+              }
+              setAuthChecked(true);
+              return;
+            }
+          }
+        } catch {
+          // Proceed to login redirect
+        }
+
+        setAuthChecked(true);
+        router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
+      });
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        if (!active) return;
+        if (session?.user && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+          const userMeta = session.user.user_metadata || {};
+          const provider =
+            (session.user.app_metadata?.provider as "google" | "facebook") ||
+            "email";
+          const userEmail = session.user.email || "";
+          const name =
+            userMeta.full_name ||
+            userMeta.name ||
+            userEmail.split("@")[0] ||
+            "Verdara Resident";
+          const avatar = userMeta.avatar_url || userMeta.picture || "";
+
+          loginWithOAuth(provider, {
+            email: userEmail,
+            displayName: name,
+            avatarUrl: avatar,
+            userId: session.user.id,
+          });
+          setAuthChecked(true);
+        } else if (event === "SIGNED_OUT") {
+          logout();
+          router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
+        }
+      });
+
+      return () => {
+        active = false;
+        subscription.unsubscribe();
+      };
+    } catch {
+      // Offline fallback: check local sessionStorage
+      if (isAuthenticated) {
+        setAuthChecked(true);
+        return;
+      }
+      try {
+        const raw = window.sessionStorage.getItem("verdara_auth_session_v3");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.isAuthenticated) {
             loginWithEmail(
               parsed.email || "resident@verdara.app",
               parsed.displayName || "Verdara Resident"
             );
+            setAuthChecked(true);
+            return;
           }
-          setAuthChecked(true);
-          return;
         }
+      } catch {
+        // Proceed
       }
-    } catch {
-      // Proceed to login redirect
+      setAuthChecked(true);
+      router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
     }
-    setAuthChecked(true);
-    router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
   }, [
     isAuthenticated,
     pathname,
     router,
-    loginAsJudgeDemo,
     loginWithEmail,
     loginWithOAuth,
+    updateUserProfile,
+    logout,
   ]);
 
   useEffect(() => {
@@ -176,8 +272,8 @@ export default function StudioShell({
           </h1>
           <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
             {isId
-              ? "Mengalihkan Anda ke Portal Login Verdara. Anda dapat masuk dengan akun email atau menggunakan 1-Click Judge Demo (Lv.5)."
-              : "Redirecting to the Verdara Session Portal. You can sign in with your resident email or launch the 1-Click Judge Demo (Lv.5)."}
+              ? "Mengalihkan Anda ke Portal Login Verdara. Silakan masuk dengan akun terverifikasi Google, Facebook, atau email warga Anda."
+              : "Redirecting to the Verdara Session Portal. Please sign in with your verified Google, Facebook, or resident email account."}
           </p>
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
@@ -582,14 +678,14 @@ export default function StudioShell({
                           </span>
                         </div>
                         <p className="text-xs text-[#c9c7c0]">
-                          $35 Judge Reserve locked · 6 Golden Specimens cached
+                          $35 Verified Reserve locked · 6 Golden Specimens cached
                           at $0.00 (&lt;50ms).
                         </p>
                       </div>
 
                       <div className="w-full shrink-0 space-y-1.5 pr-1">
                         <p className="font-sans text-sm font-semibold text-white">
-                          Enterprise Database v3.2 Active
+                          Enterprise Database v3.3 Active
                         </p>
                         <p className="text-xs text-[#aaa9ad]">
                           195 Countries · 28 Benchmark Cities · OWASP Security

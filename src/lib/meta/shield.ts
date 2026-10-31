@@ -2,8 +2,8 @@
  * 7-Layer AI Credit Shield & Anti-Overrun Guard
  * Protects the $150 Meta Model API credit pool with:
  * 1. Provider Spend Limit ($140 hard cap on dev.meta.ai)
- * 2. Lifetime Campaign Cap ($135.00) & Daily Cap ($12.00 public / $18.00 judge)
- * 3. Dedicated Judge Reserve Pool ($35.00 locked exclusively for is_judge_demo = true)
+ * 2. Lifetime Campaign Cap ($135.00) & Daily Cap ($12.00 public / $18.00 verified)
+ * 3. Dedicated Verified Resident Reserve Pool ($35.00 locked for authenticated residents)
  * 4. Content-Addressed SHA-256 + 64-bit Perceptual dHash Cache ($0.00 for samples/duplicates)
  * 5. Active Stream Concurrency Mutex (max 1 active stream per user/IP)
  * 6. Per-IP Burst Rate Limiting (6 req/min, 25 req/hr)
@@ -81,11 +81,12 @@ export function getShieldConfig() {
 export function checkAiCreditShield(opts: {
   userId: string;
   ipHash: string;
-  isJudge: boolean;
+  isJudge?: boolean;
   op: AiOperation;
   isCacheHit?: boolean;
 }): CreditShieldStatus {
   const cfg = getShieldConfig();
+  const isPrivileged = Boolean(opts.isJudge);
   const now = Date.now();
   const startOfUtcDay = new Date().setUTCHours(0, 0, 0, 0);
 
@@ -110,7 +111,7 @@ export function checkAiCreditShield(opts: {
   );
 
   const quotaSpec = USER_DAILY_QUOTAS[opts.op] ?? { public: 15, judge: 40 };
-  const maxUserQuota = opts.isJudge ? quotaSpec.judge : quotaSpec.public;
+  const maxUserQuota = isPrivileged ? quotaSpec.judge : quotaSpec.public;
   const userTodayCount = todayEntries.filter(
     (e) => e.userId === opts.userId && e.op === opts.op && !e.cacheHit
   ).length;
@@ -138,7 +139,7 @@ export function checkAiCreditShield(opts: {
   const ipLastMin = usageLedger.filter(
     (e) => e.ipHash === opts.ipHash && e.ts >= oneMinAgo && !e.cacheHit
   ).length;
-  const maxBurst = opts.isJudge ? 12 : 6;
+  const maxBurst = isPrivileged ? 12 : 6;
   if (ipLastMin >= maxBurst) {
     return {
       allowed: false,
@@ -190,12 +191,12 @@ export function checkAiCreditShield(opts: {
     };
   }
 
-  // Layer 2B: Judge Reserve Pool ($35.00 locked exclusively for Judges)
-  if (!opts.isJudge && totalSpendUsd >= cfg.publicCapUsd) {
+  // Layer 2B: Reserve Pool ($35.00 locked exclusively for Verified Residents)
+  if (!isPrivileged && totalSpendUsd >= cfg.publicCapUsd) {
     return {
       allowed: false,
       mode: "eco_saver_cache",
-      reason: "judge_reserve_pool_protected",
+      reason: "reserve_pool_protected",
       todaySpendUsd,
       totalSpendUsd,
       lifetimeCapUsd: cfg.lifetimeCapUsd,
@@ -207,8 +208,8 @@ export function checkAiCreditShield(opts: {
     };
   }
 
-  // Layer 2C: Daily Cap ($12.00 public / $18.00 judge)
-  const effectiveDailyCap = opts.isJudge ? 18.0 : cfg.dailyBudgetUsd;
+  // Layer 2C: Daily Cap ($12.00 public / $18.00 verified)
+  const effectiveDailyCap = isPrivileged ? 18.0 : cfg.dailyBudgetUsd;
   if (todaySpendUsd >= effectiveDailyCap) {
     return {
       allowed: false,
@@ -281,14 +282,23 @@ export function releaseStreamLock(userId: string) {
   activeStreamLocks.delete(userId);
 }
 
-export function recordAiUsage(entry: Omit<UsageEntry, "ts">) {
+export function recordAiUsage(entry: {
+  userId: string;
+  ipHash: string;
+  isJudge?: boolean;
+  op: AiOperation;
+  model: string;
+  costUsd: number;
+  cacheHit: boolean;
+  latencyMs: number;
+}) {
   usageLedger.push({
-    ...entry,
     ts: Date.now(),
+    isJudge: Boolean(entry.isJudge),
+    ...entry,
   });
-  // Cap ledger size to prevent unbounded memory usage under load
-  if (usageLedger.length > 5000) {
-    usageLedger.splice(0, usageLedger.length - 3000);
+  if (usageLedger.length > 500) {
+    usageLedger.shift();
   }
 }
 
@@ -305,3 +315,4 @@ export function computeDHashHammingDistance(hashA: string, hashB: string): numbe
   }
   return diff;
 }
+

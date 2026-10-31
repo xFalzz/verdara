@@ -6,7 +6,8 @@ export interface DbUserRecord {
   id: string;
   email: string;
   displayName: string;
-  role: "resident" | "judge" | "researcher";
+  avatarUrl?: string;
+  role: "resident" | "researcher" | "admin";
   level: number;
   xp: number;
   countryCode: string;
@@ -32,7 +33,7 @@ export interface DbScanAuditRecord {
 export interface DbSecurityEvent {
   id: string;
   timestamp: string;
-  type: "AUTH_LOGIN" | "RATE_LIMIT_CHECK" | "CSRF_ORIGIN_CHECK" | "AI_SHIELD_GUARD" | "DHASH_DEDUP";
+  type: "AUTH_LOGIN" | "RATE_LIMIT_CHECK" | "CSRF_ORIGIN_CHECK" | "AI_SHIELD_GUARD" | "DHASH_DEDUP" | "PROFILE_UPDATE";
   status: "ALLOW" | "BLOCK";
   actor: string;
   detail: string;
@@ -59,12 +60,12 @@ export interface GlobalBenchmarkRecord {
 }
 
 /**
- * Upgraded Verdara Enterprise Spatial Database (v3.2)
- * Provides deterministic global climate/solar benchmarks, user session records,
+ * Upgraded Verdara Enterprise Spatial Database (v3.3)
+ * Provides deterministic global climate/solar benchmarks, verified resident session records,
  * scan audit trails, and cybersecurity event logs.
  */
 class VerdaraDatabaseEngine {
-  public readonly schemaVersion = "3.2.0-enterprise";
+  public readonly schemaVersion = "3.3.0-enterprise";
   public readonly updatedAt = "2026-10-31T00:00:00Z";
 
   private users: Map<string, DbUserRecord> = new Map();
@@ -78,12 +79,12 @@ class VerdaraDatabaseEngine {
   private seedDatabase() {
     const seedUsers: DbUserRecord[] = [
       {
-        id: "usr-judge-01",
-        email: "judge+menlopark@verdara.app",
-        displayName: "Meta Hackathon Judge (Lv.5)",
-        role: "judge",
+        id: "usr-dir-01",
+        email: "director@verdara.app",
+        displayName: "Verdara Urban Lab Director",
+        role: "admin",
         level: 5,
-        xp: 1120,
+        xp: 1450,
         countryCode: "US",
         city: "Menlo Park",
         createdAt: "2026-10-20T08:00:00Z",
@@ -122,7 +123,7 @@ class VerdaraDatabaseEngine {
     this.scans = [
       {
         id: "scn-9001",
-        userId: "usr-judge-01",
+        userId: "usr-dir-01",
         sampleId: "sample-solar-roof",
         mode: "retrofit",
         city: "Menlo Park",
@@ -155,7 +156,7 @@ class VerdaraDatabaseEngine {
         type: "AI_SHIELD_GUARD",
         status: "ALLOW",
         actor: "system-boot",
-        detail: "7-Layer Credit Shield initialized ($135.00 hard cap, $35.00 judge reserve locked).",
+        detail: "7-Layer Credit Shield initialized ($135.00 hard cap, $35.00 verified reserve locked).",
       },
       {
         id: "sec-102",
@@ -213,7 +214,8 @@ class VerdaraDatabaseEngine {
   public upsertUserLogin(opts: {
     email: string;
     displayName: string;
-    role?: "resident" | "judge" | "researcher";
+    avatarUrl?: string;
+    role?: "resident" | "researcher" | "admin";
     city?: string;
     countryCode?: string;
   }): DbUserRecord {
@@ -225,15 +227,17 @@ class VerdaraDatabaseEngine {
       ? {
           ...existing,
           displayName: opts.displayName || existing.displayName,
+          avatarUrl: opts.avatarUrl || existing.avatarUrl,
           lastLoginAt: now,
         }
       : {
           id: `usr-${Date.now().toString(36)}`,
           email: key,
           displayName: opts.displayName || key.split("@")[0] || "Verdara Resident",
+          avatarUrl: opts.avatarUrl,
           role: opts.role ?? "resident",
-          level: opts.role === "judge" ? 5 : 1,
-          xp: opts.role === "judge" ? 1120 : 0,
+          level: 1,
+          xp: 0,
           countryCode: opts.countryCode ?? "US",
           city: opts.city ?? "Menlo Park",
           createdAt: now,
@@ -248,6 +252,31 @@ class VerdaraDatabaseEngine {
       detail: `Authenticated session for ${record.displayName} (role: ${record.role})`,
     });
     return record;
+  }
+
+  public updateUserProfile(email: string, updates: { displayName?: string; avatarUrl?: string; city?: string }): DbUserRecord | null {
+    const key = email.trim().toLowerCase();
+    const existing = this.users.get(key);
+    if (!existing) return null;
+
+    const updated: DbUserRecord = {
+      ...existing,
+      displayName: updates.displayName?.trim() || existing.displayName,
+      avatarUrl: updates.avatarUrl ?? existing.avatarUrl,
+      city: updates.city?.trim() || existing.city,
+    };
+    this.users.set(key, updated);
+    this.logSecurityEvent({
+      type: "PROFILE_UPDATE",
+      status: "ALLOW",
+      actor: key,
+      detail: `Updated resident profile: name="${updated.displayName}", city="${updated.city}"`,
+    });
+    return updated;
+  }
+
+  public getUserByEmail(email: string): DbUserRecord | null {
+    return this.users.get(email.trim().toLowerCase()) ?? null;
   }
 
   public logSecurityEvent(ev: Omit<DbSecurityEvent, "id" | "timestamp">) {
@@ -266,7 +295,7 @@ class VerdaraDatabaseEngine {
     return {
       schemaVersion: this.schemaVersion,
       updatedAt: this.updatedAt,
-      engine: "Verdara Spatial Cloud Store v3.2",
+      engine: "Verdara Spatial Cloud Store v3.3",
       counts: {
         supportedCountries: 195,
         curatedBenchmarkCities: benchmarks.length,

@@ -670,8 +670,8 @@ export default function LandingPage() {
                       ? "Tutup Info"
                       : "Close Brief"
                     : isId
-                    ? "Info Juri"
-                    : "Judge Brief"
+                    ? "Info Ringkas"
+                    : "Town Brief"
                 }
               />
             </button>
@@ -885,8 +885,8 @@ export default function LandingPage() {
                         ? "Buka Studio →"
                         : "Open Studio →"
                       : isId
-                      ? "Login Juri (Lv.5) →"
-                      : "Judge Sign-In (Lv.5) →"}
+                      ? "Masuk ke Studio →"
+                      : "Sign In to Studio →"}
                   </Link>
                   <Link
                     href="/docs"
@@ -1081,11 +1081,11 @@ export default function LandingPage() {
               text={
                 isAuthenticated
                   ? isId
-                    ? "Buka Kota Hidup 3D (Lv.5)"
-                    : "Enter 3D Living Town (Lv.5)"
+                    ? "Buka Kota Hidup 3D"
+                    : "Enter 3D Living Town"
                   : isId
-                  ? "Login ke Kota Hidup 3D (Demo Juri Lv.5)"
-                  : "Enter 3D Living Town (Lv.5 Judge Demo)"
+                  ? "Masuk ke Kota Hidup 3D"
+                  : "Enter 3D Living Town"
               }
             />
           </Link>
@@ -2534,8 +2534,8 @@ export default function LandingPage() {
                     }`}
                   >
                     {isId
-                      ? `Mengunci cadangan $35 khusus juri dan menyajikan 6 spesimen demo dalam <50ms ($0.00) melalui cache SHA-256 + dHash ($${remainingCredit} tersisa).`
-                      : `Locks a $35 Judge Reserve and serves all 6 Golden Demo Specimens in <50ms at $0.00 via SHA-256 + dHash caching ($${remainingCredit} left).`}
+                      ? `Mengunci cadangan $35 khusus warga terverifikasi dan menyajikan 6 spesimen dalam <50ms ($0.00) melalui cache SHA-256 + dHash ($${remainingCredit} tersisa).`
+                      : `Locks a $35 Verified Resident Reserve and serves all 6 specimens in <50ms at $0.00 via SHA-256 + dHash caching ($${remainingCredit} left).`}
                   </p>
                 </div>
               </div>
@@ -2863,15 +2863,15 @@ export default function LandingPage() {
                       "Geometri arsitektur prosedural ringan dengan simulasi banjir/solusi AI real-time dan partikel ramah GPU.",
                   },
                   {
-                    badge: "JUDGE READY",
-                    color: "text-amber-300",
-                    colorLight: "text-[#d97706]",
-                    titleEn: "1-Click Level 5 Judge Sandbox",
-                    titleId: "Demo Juri Level 5 Satu Klik",
+                    badge: "RESIDENT READY",
+                    color: "text-emerald-300",
+                    colorLight: "text-[#15803d]",
+                    titleEn: "Verified Resident Plot & OAuth 2.0",
+                    titleId: "Plot Warga Terverifikasi & OAuth 2.0",
                     descEn:
-                      "Sign in with 1-Click Judge Demo on /login to unlock all 6 eco-structures, SAM 3.1 presets, and Muse Spark council.",
+                      "Sign in via Google, Facebook, or resident email to explore living 3D town structures, SAM 3.1 vision, and Muse Spark council.",
                     descId:
-                      "Masuk dengan 1-Click Judge Demo di halaman /login untuk membuka seluruh 6 bangunan ekologis dan fitur AI.",
+                      "Masuk melalui Google, Facebook, atau email warga untuk menjelajahi kota hidup 3D, visi SAM 3.1, dan dewan pakar Muse Spark.",
                   },
                 ].map((item) => (
                   <div
