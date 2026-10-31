@@ -220,6 +220,8 @@ export default function LandingPage() {
 
   const isId = locale === "id";
   const isLight = theme === "light";
+  // Cross-theme inversion: When main page is Light, section is Dark. When main page is Dark, section is Light!
+  const isSectionLight = !isLight;
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -2119,50 +2121,100 @@ export default function LandingPage() {
             transform: "translateY(1px)",
             transformOrigin: "bottom center",
           }}
-          className="block h-[36px] w-full fill-[#080808] sm:h-[72px]"
+          className={`block h-[36px] w-full transition-colors duration-300 sm:h-[72px] ${
+            isSectionLight ? "fill-[#f4f3ee]" : "fill-[#080808]"
+          }`}
         >
           <path d="M0 100 Q50 -95 100 100 Z" />
         </svg>
 
-        <div className="bg-[#080808] px-4 pt-14 pb-28 text-white sm:px-10 sm:pt-22">
+        <div
+          className={`px-4 pt-14 pb-28 transition-colors duration-300 sm:px-10 sm:pt-22 ${
+            isSectionLight
+              ? "bg-[#f4f3ee] text-[#111113]"
+              : "bg-[#080808] text-white"
+          }`}
+        >
           <div className="mx-auto max-w-[1440px] space-y-20">
             {/* Part A: ERA5 10-Year Monthly Climatology Bar Chart */}
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
               <div className="gsap-section-heading space-y-4 lg:col-span-5">
-                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
+                <p
+                  className={`font-mono text-xs uppercase tracking-[0.12em] ${
+                    isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"
+                  }`}
+                >
                   05 / {isId ? "Data Cuaca 12 Bulan" : "12-Month Weather Data"} ·{" "}
                   {geo.city} ({geo.lat.toFixed(2)}°, {geo.lng.toFixed(2)}°)
                 </p>
-                <h2 className="text-2xl font-normal leading-[1.1] tracking-[-0.04em] sm:text-5xl">
+                <h2
+                  className={`text-2xl font-normal leading-[1.1] tracking-[-0.04em] sm:text-5xl ${
+                    isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                  }`}
+                >
                   {isId
                     ? `Bagaimana hujan dan panas di ${geo.city} menentukan ukuran tangki air & panel surya Anda?`
                     : `How rainfall and sunshine in ${geo.city} size your water tank & solar roof.`}
                 </h2>
-                <p className="text-xs sm:text-sm leading-relaxed text-[#aaa9ad]">
+                <p
+                  className={`text-xs sm:text-sm leading-relaxed ${
+                    isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                  }`}
+                >
                   {isId ? geo.koppen.descriptionId : geo.koppen.descriptionEn}
                 </p>
                 <div className="grid grid-cols-2 gap-3 pt-2 font-mono text-xs">
-                  <div className="rounded-2xl bg-[#141414] p-4 shadow-[inset_0_0_0_1px_#242424]">
-                    <span className="text-[#aaa9ad]">
+                  <div
+                    className={`rounded-2xl p-4 transition-colors ${
+                      isSectionLight
+                        ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_2px_8px_rgba(0,0,0,0.03)]"
+                        : "bg-[#141414] shadow-[inset_0_0_0_1px_#242424]"
+                    }`}
+                  >
+                    <span className={isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"}>
                       {isId ? "TOTAL HUJAN / TAHUN" : "ANNUAL RAINFALL"}
                     </span>
-                    <p className="mt-1 text-xl font-bold text-white">
+                    <p
+                      className={`mt-1 text-xl font-bold ${
+                        isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                      }`}
+                    >
                       {geo.koppen.pAnnMm} mm/yr
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#141414] p-4 shadow-[inset_0_0_0_1px_#242424]">
-                    <span className="text-[#aaa9ad]">
+                  <div
+                    className={`rounded-2xl p-4 transition-colors ${
+                      isSectionLight
+                        ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_2px_8px_rgba(0,0,0,0.03)]"
+                        : "bg-[#141414] shadow-[inset_0_0_0_1px_#242424]"
+                    }`}
+                  >
+                    <span className={isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"}>
                       {isId ? "SINAR MATAHARI HARIAN" : "DAILY SUNSHINE (GHI)"}
                     </span>
-                    <p className="mt-1 text-xl font-bold text-[#c6f432]">
+                    <p
+                      className={`mt-1 text-xl font-bold ${
+                        isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"
+                      }`}
+                    >
                       {geo.ghiKwhM2Day} kWh/m²/d
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="gsap-era5-chart overflow-x-auto rounded-[28px] bg-[#121212] p-4 sm:p-6 shadow-[inset_0_0_0_1px_#242424] lg:col-span-7">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-6 font-mono text-[11px] sm:text-xs text-[#aaa9ad]">
+              <div
+                className={`gsap-era5-chart overflow-x-auto rounded-[28px] p-4 sm:p-6 transition-colors lg:col-span-7 ${
+                  isSectionLight
+                    ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.04)]"
+                    : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
+                }`}
+              >
+                <div
+                  className={`flex flex-wrap items-center justify-between gap-2 pb-6 font-mono text-[11px] sm:text-xs ${
+                    isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                  }`}
+                >
                   <span>
                     12-MONTH ERA5 WEATHER · {geo.city.toUpperCase()} (
                     {geo.countryCode} · {geo.koppen.code})
@@ -2186,19 +2238,37 @@ export default function LandingPage() {
                         key={MONTHS_SHORT[idx]}
                         className="flex h-full flex-col items-center justify-end gap-1 sm:gap-1.5"
                       >
-                        <span className="font-mono text-[8px] sm:text-[10px] text-[#c9c7c0] tabular-nums">
+                        <span
+                          className={`font-mono text-[8px] sm:text-[10px] tabular-nums ${
+                            isSectionLight ? "text-[#52525b]" : "text-[#c9c7c0]"
+                          }`}
+                        >
                           {formatTemp(tempC, units)}
                         </span>
-                        <div className="relative flex w-full flex-1 items-end justify-center rounded-md sm:rounded-lg bg-[#1c1c1c] p-0.5">
+                        <div
+                          className={`relative flex w-full flex-1 items-end justify-center rounded-md sm:rounded-lg p-0.5 ${
+                            isSectionLight ? "bg-[#eeece6]" : "bg-[#1c1c1c]"
+                          }`}
+                        >
                           <div
                             style={{ height: `${barHeightPct}%` }}
-                            className="gsap-era5-bar w-full rounded-sm sm:rounded-md bg-[#c6f432]"
+                            className={`gsap-era5-bar w-full rounded-sm sm:rounded-md ${
+                              isSectionLight ? "bg-[#16a34a]" : "bg-[#c6f432]"
+                            }`}
                           />
                         </div>
-                        <span className="font-mono text-[8px] sm:text-[10px] text-[#aaa9ad] tabular-nums">
+                        <span
+                          className={`font-mono text-[8px] sm:text-[10px] tabular-nums ${
+                            isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"
+                          }`}
+                        >
                           {precipMm}
                         </span>
-                        <span className="font-mono text-[8px] sm:text-[10px] font-bold text-white">
+                        <span
+                          className={`font-mono text-[8px] sm:text-[10px] font-bold ${
+                            isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                          }`}
+                        >
                           {MONTHS_SHORT[idx]}
                         </span>
                       </div>
@@ -2209,16 +2279,28 @@ export default function LandingPage() {
             </div>
 
             {/* Part B: Meta Hackathon Judging & AI Stack Alignment */}
-            <div className="border-t border-[#222222] pt-16">
+            <div
+              className={`border-t pt-16 transition-colors ${
+                isSectionLight ? "border-black/10" : "border-[#222222]"
+              }`}
+            >
               <div className="gsap-section-heading flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
+                  <p
+                    className={`font-mono text-xs uppercase tracking-[0.12em] ${
+                      isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"
+                    }`}
+                  >
                     06 /{" "}
                     {isId
                       ? "Arsitektur Meta AI & Kriteria Penjurian Hackathon"
                       : "Meta AI Stack & Hackathon Judging Alignment"}
                   </p>
-                  <h3 className="mt-2 text-2xl sm:text-4xl font-normal tracking-[-0.03em]">
+                  <h3
+                    className={`mt-2 text-2xl sm:text-4xl font-normal tracking-[-0.03em] ${
+                      isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                    }`}
+                  >
                     {isId
                       ? "Mengapa Verdara menggabungkan Meta SAM 3.1, Muse Spark, dan Fisika Nyata."
                       : "How Verdara combines Meta SAM 3.1, Muse Spark, and real-world impact."}
@@ -2226,7 +2308,11 @@ export default function LandingPage() {
                 </div>
                 <Link
                   href="/settings"
-                  className="zeggo-btn inline-flex min-h-[42px] items-center rounded-full bg-white/10 px-4 font-mono text-xs text-[#c6f432] hover:bg-white/20"
+                  className={`zeggo-btn inline-flex min-h-[42px] items-center rounded-full px-4 font-mono text-xs transition ${
+                    isSectionLight
+                      ? "bg-black/5 text-[#15803d] hover:bg-black/10"
+                      : "bg-white/10 text-[#c6f432] hover:bg-white/20"
+                  }`}
                 >
                   <ZeggoRollText
                     text={`$150 Meta API Shield ($${remainingCredit} Ready) →`}
@@ -2235,72 +2321,136 @@ export default function LandingPage() {
               </div>
 
               <div className="gsap-judge-grid mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div
+                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                    isSectionLight
+                      ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
+                      : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
+                  }`}
+                >
                   <span className="th-map-bar bg-[#1e9e5a]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#1e9e5a]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#1e9e5a]" />
                     <span>01 · META SAM 3.1 VISION</span>
                   </div>
-                  <h4 className="mt-3 text-lg font-medium">
+                  <h4
+                    className={`mt-3 text-lg font-medium ${
+                      isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                    }`}
+                  >
                     {isId
                       ? "Segmentasi Objek & Bukti Aksi"
                       : "Zero-Shot Spatial Segmentation"}
                   </h4>
-                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+                  <p
+                    className={`mt-2 text-xs leading-relaxed ${
+                      isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                    }`}
+                  >
                     {isId
                       ? "Memetakan poligon atap surya, talang air, dan barang daur ulang dari foto kamera serta memverifikasi bukti foto misi lapangan."
                       : "Segments solar roof slabs, rainwater pipes, and recyclable items from user photos and verifies real-world field proofs."}
                   </p>
                 </div>
 
-                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div
+                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                    isSectionLight
+                      ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
+                      : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
+                  }`}
+                >
                   <span className="th-map-bar bg-[#2a9dbd]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#2a9dbd]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#2a9dbd]" />
                     <span>02 · META MUSE SPARK</span>
                   </div>
-                  <h4 className="mt-3 text-lg font-medium">
+                  <h4
+                    className={`mt-3 text-lg font-medium ${
+                      isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                    }`}
+                  >
                     {isId
                       ? "Dewan 3 Pakar AI + Open-Weight"
                       : "3-Agent Council + Open-Weight"}
                   </h4>
-                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+                  <p
+                    className={`mt-2 text-xs leading-relaxed ${
+                      isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                    }`}
+                  >
                     {isId
                       ? "Menjalankan 3 agen spesialis (Dr. Flora, Ir. Arka, Sirkula) dengan pengawas fakta ±3% terhadap SITE_BRIEF serta dukungan muse-spark-open."
                       : "Orchestrates 3 specialist agents (Dr. Flora, Ir. Arka, Sirkula) with a ±3% fact validator against SITE_BRIEF and muse-spark-open support."}
                   </p>
                 </div>
 
-                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div
+                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                    isSectionLight
+                      ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
+                      : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
+                  }`}
+                >
                   <span className="th-map-bar bg-[#c6f432]" />
-                  <div className="flex items-center gap-2 font-mono text-xs text-[#c6f432]">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#c6f432]" />
+                  <div
+                    className={`flex items-center gap-2 font-mono text-xs ${
+                      isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"
+                    }`}
+                  >
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${
+                        isSectionLight ? "bg-[#15803d]" : "bg-[#c6f432]"
+                      }`}
+                    />
                     <span>03 · META MUSE IMAGE</span>
                   </div>
-                  <h4 className="mt-3 text-lg font-medium">
+                  <h4
+                    className={`mt-3 text-lg font-medium ${
+                      isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                    }`}
+                  >
                     {isId
                       ? "Visualisasi Sebelum / Sesudah"
                       : "Before / After Eco-Retrofit"}
                   </h4>
-                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+                  <p
+                    className={`mt-2 text-xs leading-relaxed ${
+                      isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                    }`}
+                  >
                     {isId
                       ? "Menampilkan perbandingan interaktif sebelum dan sesudah pemasangan panel surya, tangki air hujan, dan taman resapan."
                       : "Renders interactive Before/After architectural retrofits showing solar arrays, rainwater cisterns, and native rain gardens."}
                   </p>
                 </div>
 
-                <div className="gsap-judge-card th-node-card rounded-[24px] bg-[#121212] p-6 pl-7 shadow-[inset_0_0_0_1px_#242424]">
+                <div
+                  className={`gsap-judge-card th-node-card rounded-[24px] p-6 pl-7 transition-colors ${
+                    isSectionLight
+                      ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
+                      : "bg-[#121212] shadow-[inset_0_0_0_1px_#242424]"
+                  }`}
+                >
                   <span className="th-map-bar bg-[#e9a23b]" />
                   <div className="flex items-center gap-2 font-mono text-xs text-[#e9a23b]">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#e9a23b]" />
                     <span>04 · 7-LAYER CREDIT SHIELD</span>
                   </div>
-                  <h4 className="mt-3 text-lg font-medium">
+                  <h4
+                    className={`mt-3 text-lg font-medium ${
+                      isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                    }`}
+                  >
                     {isId
                       ? "Perisai Kredit $150 & Demo Instan"
                       : "$150 API Shield & <50ms Demo"}
                   </h4>
-                  <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
+                  <p
+                    className={`mt-2 text-xs leading-relaxed ${
+                      isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                    }`}
+                  >
                     {isId
                       ? `Mengunci cadangan $35 khusus juri dan menyajikan 6 spesimen demo dalam <50ms ($0.00) melalui cache SHA-256 + dHash ($${remainingCredit} tersisa).`
                       : `Locks a $35 Judge Reserve and serves all 6 Golden Demo Specimens in <50ms at $0.00 via SHA-256 + dHash caching ($${remainingCredit} left).`}
@@ -2309,17 +2459,29 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Part C: 07 / SEAMLESS BLACK CONTINUATION - GSAP SCRUBBED BENTO GALLERY & LIVE SYSTEM MATRIX */}
-            <div className="border-t border-[#222222] pt-16">
+            {/* Part C: 07 / INVERTED THEME BENTO GALLERY & LIVE SYSTEM MATRIX */}
+            <div
+              className={`border-t pt-16 transition-colors ${
+                isSectionLight ? "border-black/10" : "border-[#222222]"
+              }`}
+            >
               <div className="gsap-section-heading flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#c6f432]">
+                  <p
+                    className={`font-mono text-xs uppercase tracking-[0.12em] ${
+                      isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"
+                    }`}
+                  >
                     07 /{" "}
                     {isId
                       ? "Matriks Telemetri Global & Spesifikasi Fisika Real-Time"
                       : "Global Telemetry Matrix & Live Engineering Specifications"}
                   </p>
-                  <h3 className="mt-2 text-2xl sm:text-4xl font-normal tracking-[-0.03em] text-white">
+                  <h3
+                    className={`mt-2 text-2xl sm:text-4xl font-normal tracking-[-0.03em] ${
+                      isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                    }`}
+                  >
                     {isId
                       ? "Detail mesin kalkulasi ilmiah, keamanan siber, dan kesiapan skala global."
                       : "Deep-dive into the deterministic physics engine, security guardrails, and global scale."}
@@ -2328,13 +2490,21 @@ export default function LandingPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href="/docs"
-                    className="inline-flex min-h-[40px] items-center rounded-full border border-white/20 bg-white/5 px-4 font-mono text-xs text-white transition hover:bg-white/15"
+                    className={`inline-flex min-h-[40px] items-center rounded-full border px-4 font-mono text-xs transition ${
+                      isSectionLight
+                        ? "border-black/15 bg-black/5 text-[#0a0a0c] hover:bg-black/10"
+                        : "border-white/20 bg-white/5 text-white hover:bg-white/15"
+                    }`}
                   >
                     {isId ? "Buka Dokumen Teknis (/docs) →" : "Technical Docs (/docs) →"}
                   </Link>
                   <Link
                     href="/faq"
-                    className="inline-flex min-h-[40px] items-center rounded-full border border-[#c6f432]/40 bg-[#c6f432]/10 px-4 font-mono text-xs text-[#c6f432] transition hover:bg-[#c6f432]/20"
+                    className={`inline-flex min-h-[40px] items-center rounded-full border px-4 font-mono text-xs transition ${
+                      isSectionLight
+                        ? "border-[#16a34a]/30 bg-[#16a34a]/10 text-[#15803d] hover:bg-[#16a34a]/20"
+                        : "border-[#c6f432]/40 bg-[#c6f432]/10 text-[#c6f432] hover:bg-[#c6f432]/20"
+                    }`}
                   >
                     {isId ? "Pusat Bantuan (/faq) →" : "Platform FAQ (/faq) →"}
                   </Link>
@@ -2344,22 +2514,46 @@ export default function LandingPage() {
               {/* GSAP Scrubbed Bento Gallery (Inspired by demos.gsap.com/plugin/scrolltrigger/) */}
               <div className="gsap-scrub-bento-grid mt-8 grid grid-cols-1 gap-4 md:grid-cols-12">
                 {/* Bento Cell 1 (7 Cols): NREL PVWatts v8 + DIN 1989-1 Live Formula Ledger */}
-                <div className="gsap-scrub-bento-item gsap-skew flex flex-col justify-between rounded-[26px] bg-gradient-to-br from-[#141815] via-[#101214] to-[#0c0e10] p-6 sm:p-7 shadow-[inset_0_0_0_1px_#262b28] md:col-span-7">
+                <div
+                  className={`gsap-scrub-bento-item gsap-skew flex flex-col justify-between rounded-[26px] p-6 sm:p-7 md:col-span-7 transition-colors ${
+                    isSectionLight
+                      ? "bg-gradient-to-br from-[#ffffff] via-[#faf8f4] to-[#f4f1ea] shadow-[inset_0_0_0_1px_#e2e0d8,0_6px_20px_rgba(0,0,0,0.04)]"
+                      : "bg-gradient-to-br from-[#141815] via-[#101214] to-[#0c0e10] shadow-[inset_0_0_0_1px_#262b28]"
+                  }`}
+                >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="rounded-full bg-[#c6f432]/15 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432]">
+                      <span
+                        className={`rounded-full px-3 py-1 font-mono text-[11px] font-semibold ${
+                          isSectionLight
+                            ? "bg-[#16a34a]/12 text-[#15803d]"
+                            : "bg-[#c6f432]/15 text-[#c6f432]"
+                        }`}
+                      >
                         NREL PVWATTS v8 · DIN 1989-1
                       </span>
-                      <span className="font-mono text-xs text-[#aaa9ad]">
+                      <span
+                        className={`font-mono text-xs ${
+                          isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"
+                        }`}
+                      >
                         {geo.city} ({geo.countryCode})
                       </span>
                     </div>
-                    <h4 className="mt-4 text-xl sm:text-2xl font-medium text-white">
+                    <h4
+                      className={`mt-4 text-xl sm:text-2xl font-medium ${
+                        isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                      }`}
+                    >
                       {isId
                         ? "Kalkulasi Fisika Deterministik Tanpa Angka Halusinasi AI"
                         : "Zero-Hallucination Deterministic Solar & Rainwater Physics"}
                     </h4>
-                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#aaa9ad]">
+                    <p
+                      className={`mt-2 text-xs sm:text-sm leading-relaxed ${
+                        isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                      }`}
+                    >
                       {isId
                         ? "Seluruh estimasi kWh surya, ukuran tangki air hujan, dan jumlah sumur resapan biopori dihitung dari persamaan fisika standar internasional yang disesuaikan dengan lintang dan suhu lokal."
                         : "Every solar kWh yield, cistern volume, and biopore well count is computed from peer-reviewed engineering formulas calibrated to local latitude and temperature derating."}
@@ -2367,40 +2561,96 @@ export default function LandingPage() {
                   </div>
 
                   <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 font-mono">
-                    <div className="rounded-2xl bg-black/50 p-3.5 border border-white/8">
-                      <span className="text-[10px] text-[#aaa9ad]">
+                    <div
+                      className={`rounded-2xl p-3.5 border transition-colors ${
+                        isSectionLight
+                          ? "bg-black/[0.03] border-black/[0.08]"
+                          : "bg-black/50 border-white/8"
+                      }`}
+                    >
+                      <span
+                        className={`text-[10px] ${
+                          isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"
+                        }`}
+                      >
                         ANNUAL SOLAR YIELD
                       </span>
-                      <p className="mt-1 text-lg font-bold text-[#c6f432]" suppressHydrationWarning>
+                      <p
+                        className={`mt-1 text-lg font-bold ${
+                          isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"
+                        }`}
+                        suppressHydrationWarning
+                      >
                         {formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh
                       </p>
-                      <span className="text-[10px] text-[#10b981]">
+                      <span
+                        className={`text-[10px] ${
+                          isSectionLight ? "text-[#16a34a]" : "text-[#10b981]"
+                        }`}
+                      >
                         {housingCalc.solar.panelCountEst} Bifacial Modules
                       </span>
                     </div>
-                    <div className="rounded-2xl bg-black/50 p-3.5 border border-white/8">
-                      <span className="text-[10px] text-[#aaa9ad]">
+                    <div
+                      className={`rounded-2xl p-3.5 border transition-colors ${
+                        isSectionLight
+                          ? "bg-black/[0.03] border-black/[0.08]"
+                          : "bg-black/50 border-white/8"
+                      }`}
+                    >
+                      <span
+                        className={`text-[10px] ${
+                          isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"
+                        }`}
+                      >
                         RAIN HARVEST / YR
                       </span>
-                      <p className="mt-1 text-lg font-bold text-cyan-300">
+                      <p
+                        className={`mt-1 text-lg font-bold ${
+                          isSectionLight ? "text-[#0e7490]" : "text-cyan-300"
+                        }`}
+                      >
                         {formatVolume(
                           housingCalc.rainwater.litersYear,
                           units,
                           locale
                         )}
                       </p>
-                      <span className="text-[10px] text-cyan-400/80">
+                      <span
+                        className={`text-[10px] ${
+                          isSectionLight ? "text-[#0e7490]/80" : "text-cyan-400/80"
+                        }`}
+                      >
                         Cistern {housingCalc.rainwater.recommendedCisternLiters}L
                       </span>
                     </div>
-                    <div className="rounded-2xl bg-black/50 p-3.5 border border-white/8">
-                      <span className="text-[10px] text-[#aaa9ad]">
+                    <div
+                      className={`rounded-2xl p-3.5 border transition-colors ${
+                        isSectionLight
+                          ? "bg-black/[0.03] border-black/[0.08]"
+                          : "bg-black/50 border-white/8"
+                      }`}
+                    >
+                      <span
+                        className={`text-[10px] ${
+                          isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"
+                        }`}
+                      >
                         CO₂e AVOIDED / YR
                       </span>
-                      <p className="mt-1 text-lg font-bold text-white" suppressHydrationWarning>
+                      <p
+                        className={`mt-1 text-lg font-bold ${
+                          isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                        }`}
+                        suppressHydrationWarning
+                      >
                         {formatNumber(housingCalc.solar.co2eKgYear, { maximumFractionDigits: 1 }, locale)} kg
                       </p>
-                      <span className="text-[10px] text-amber-300">
+                      <span
+                        className={`text-[10px] ${
+                          isSectionLight ? "text-[#d97706]" : "text-amber-300"
+                        }`}
+                      >
                         +{housingCalc.infiltration.bioporeUnits} Biopore Wells
                       </span>
                     </div>
@@ -2408,20 +2658,40 @@ export default function LandingPage() {
                 </div>
 
                 {/* Bento Cell 2 (5 Cols): Enterprise Database v3.2 & OWASP Security Shield */}
-                <div className="gsap-scrub-bento-item gsap-skew flex flex-col justify-between rounded-[26px] bg-[#121316] p-6 sm:p-7 shadow-[inset_0_0_0_1px_#25272c] md:col-span-5">
+                <div
+                  className={`gsap-scrub-bento-item gsap-skew flex flex-col justify-between rounded-[26px] p-6 sm:p-7 md:col-span-5 transition-colors ${
+                    isSectionLight
+                      ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_6px_20px_rgba(0,0,0,0.04)]"
+                      : "bg-[#121316] shadow-[inset_0_0_0_1px_#25272c]"
+                  }`}
+                >
                   <div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="rounded-full bg-[#2a9dbd]/20 px-3 py-1 font-mono text-[11px] font-semibold text-cyan-300">
+                      <span
+                        className={`rounded-full px-3 py-1 font-mono text-[11px] font-semibold ${
+                          isSectionLight
+                            ? "bg-[#0e7490]/12 text-[#0e7490]"
+                            : "bg-[#2a9dbd]/20 text-cyan-300"
+                        }`}
+                      >
                         DATABASE v3.2 + OWASP ASVS
                       </span>
                       <span className="h-2.5 w-2.5 rounded-full bg-[#10b981]" />
                     </div>
-                    <h4 className="mt-4 text-xl sm:text-2xl font-medium text-white">
+                    <h4
+                      className={`mt-4 text-xl sm:text-2xl font-medium ${
+                        isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                      }`}
+                    >
                       {isId
                         ? "Gerbang Login Ketat, Rate Limiter, & Audit Keamanan"
                         : "Strict Auth Gate, Sliding-Window Rate Limiter & Audit Ledger"}
                     </h4>
-                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#aaa9ad]">
+                    <p
+                      className={`mt-2 text-xs sm:text-sm leading-relaxed ${
+                        isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                      }`}
+                    >
                       {isId
                         ? "Dilengkapi middleware keamanan HTTP Edge (CSP nosniff, X-Frame-Options DENY, proteksi CSRF) serta autentikasi wajib sebelum mengakses ruang kerja Studio."
                         : "Protected by Edge HTTP security headers (nosniff, X-Frame-Options DENY, CSRF origin verification) and mandatory sign-in before entering Studio workspaces."}
@@ -2429,19 +2699,57 @@ export default function LandingPage() {
                   </div>
 
                   <div className="mt-6 space-y-2 font-mono text-xs">
-                    <div className="flex items-center justify-between rounded-xl bg-black/45 px-3.5 py-2.5 border border-white/8">
-                      <span className="text-[#aaa9ad]">AUTH SESSION GATE</span>
-                      <span className="text-[#c6f432]">
+                    <div
+                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 border transition-colors ${
+                        isSectionLight
+                          ? "bg-black/[0.03] border-black/[0.08]"
+                          : "bg-black/45 border-white/8"
+                      }`}
+                    >
+                      <span
+                        className={isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"}
+                      >
+                        AUTH SESSION GATE
+                      </span>
+                      <span
+                        className={isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"}
+                      >
                         {isAuthenticated ? "UNLOCKED (ACTIVE)" : "PROTECTED (/LOGIN)"}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between rounded-xl bg-black/45 px-3.5 py-2.5 border border-white/8">
-                      <span className="text-[#aaa9ad]">EDGE RATE LIMITER</span>
-                      <span className="text-cyan-300">30 REQ/MIN · IP GUARD</span>
+                    <div
+                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 border transition-colors ${
+                        isSectionLight
+                          ? "bg-black/[0.03] border-black/[0.08]"
+                          : "bg-black/45 border-white/8"
+                      }`}
+                    >
+                      <span
+                        className={isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"}
+                      >
+                        EDGE RATE LIMITER
+                      </span>
+                      <span
+                        className={isSectionLight ? "text-[#0e7490]" : "text-cyan-300"}
+                      >
+                        30 REQ/MIN · IP GUARD
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between rounded-xl bg-black/45 px-3.5 py-2.5 border border-white/8">
-                      <span className="text-[#aaa9ad]">API CREDIT SHIELD</span>
-                      <span className="text-[#10b981]">
+                    <div
+                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 border transition-colors ${
+                        isSectionLight
+                          ? "bg-black/[0.03] border-black/[0.08]"
+                          : "bg-black/45 border-white/8"
+                      }`}
+                    >
+                      <span
+                        className={isSectionLight ? "text-[#71717a]" : "text-[#aaa9ad]"}
+                      >
+                        API CREDIT SHIELD
+                      </span>
+                      <span
+                        className={isSectionLight ? "text-[#16a34a]" : "text-[#10b981]"}
+                      >
                         ${remainingCredit} / $150.00 READY
                       </span>
                     </div>
@@ -2453,6 +2761,7 @@ export default function LandingPage() {
                   {
                     badge: "195+ COUNTRIES",
                     color: "text-[#c6f432]",
+                    colorLight: "text-[#15803d]",
                     titleEn: "Global Köppen-Geiger Synthesis",
                     titleId: "Sintesis Iklim 195+ Negara Dunia",
                     descEn:
@@ -2463,6 +2772,7 @@ export default function LandingPage() {
                   {
                     badge: "60 FPS WEBGL",
                     color: "text-cyan-300",
+                    colorLight: "text-[#0e7490]",
                     titleEn: "Procedural 3D PBR Architecture",
                     titleId: "Arsitektur 3D PBR 60 FPS Ringan",
                     descEn:
@@ -2473,6 +2783,7 @@ export default function LandingPage() {
                   {
                     badge: "JUDGE READY",
                     color: "text-amber-300",
+                    colorLight: "text-[#d97706]",
                     titleEn: "1-Click Level 5 Judge Sandbox",
                     titleId: "Demo Juri Level 5 Satu Klik",
                     descEn:
@@ -2483,39 +2794,73 @@ export default function LandingPage() {
                 ].map((item) => (
                   <div
                     key={item.badge}
-                    className="gsap-scrub-bento-item gsap-batch-card rounded-[24px] bg-[#121316] p-5 sm:p-6 shadow-[inset_0_0_0_1px_#24262b] md:col-span-4"
+                    className={`gsap-scrub-bento-item gsap-batch-card rounded-[24px] p-5 sm:p-6 md:col-span-4 transition-colors ${
+                      isSectionLight
+                        ? "bg-white shadow-[inset_0_0_0_1px_#e2e0d8,0_4px_16px_rgba(0,0,0,0.03)]"
+                        : "bg-[#121316] shadow-[inset_0_0_0_1px_#24262b]"
+                    }`}
                   >
-                    <span className={`font-mono text-xs font-semibold ${item.color}`}>
+                    <span
+                      className={`font-mono text-xs font-semibold ${
+                        isSectionLight ? item.colorLight : item.color
+                      }`}
+                    >
                       * {item.badge}
                     </span>
-                    <h4 className="mt-2.5 text-lg font-medium text-white">
+                    <h4
+                      className={`mt-2.5 text-lg font-medium ${
+                        isSectionLight ? "text-[#0a0a0c]" : "text-white"
+                      }`}
+                    >
                       {isId ? item.titleId : item.titleEn}
                     </h4>
-                    <p className="mt-1.5 text-xs leading-relaxed text-[#aaa9ad]">
+                    <p
+                      className={`mt-1.5 text-xs leading-relaxed ${
+                        isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                      }`}
+                    >
                       {isId ? item.descId : item.descEn}
                     </p>
                   </div>
                 ))}
               </div>
 
-              {/* Part D: GSAP Scroll-Driven Kinetic Telemetry Marquee Band (Seamless inside #080808) */}
-              <div className="mt-14 overflow-hidden rounded-2xl border border-white/10 bg-[#0d0f12] py-3.5">
-                <div className="gsap-marquee-track verdara-marquee items-center gap-8 font-mono text-xs uppercase tracking-[0.16em] text-[#aaa9ad]">
+              {/* Part D: GSAP Scroll-Driven Kinetic Telemetry Marquee Band (Seamless inside section) */}
+              <div
+                className={`mt-14 overflow-hidden rounded-2xl border py-3.5 transition-colors ${
+                  isSectionLight
+                    ? "border-black/10 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+                    : "border-white/10 bg-[#0d0f12]"
+                }`}
+              >
+                <div
+                  className={`gsap-marquee-track verdara-marquee items-center gap-8 font-mono text-xs uppercase tracking-[0.16em] ${
+                    isSectionLight ? "text-[#52525b]" : "text-[#aaa9ad]"
+                  }`}
+                >
                   {[0, 1].map((loopIdx) => (
                     <div key={loopIdx} className="flex shrink-0 items-center gap-8">
-                      <span className="text-[#c6f432]">
+                      <span
+                        className={isSectionLight ? "text-[#15803d]" : "text-[#c6f432]"}
+                      >
                         * VERDARA SPATIAL ECO-TWIN v3.2
                       </span>
                       <span>META SAM 3.1 VISION SEGMENTATION</span>
-                      <span className="text-cyan-300">
+                      <span
+                        className={isSectionLight ? "text-[#0e7490]" : "text-cyan-300"}
+                      >
                         * META MUSE SPARK 3-AGENT COUNCIL
                       </span>
                       <span>NREL PVWATTS v8 SOLAR ENGINE</span>
-                      <span className="text-[#10b981]">
+                      <span
+                        className={isSectionLight ? "text-[#16a34a]" : "text-[#10b981]"}
+                      >
                         * DIN 1989-1 HYDROLOGICAL CISTERN
                       </span>
                       <span>195+ COUNTRIES · 60 FPS WEBGL</span>
-                      <span className="text-amber-300">
+                      <span
+                        className={isSectionLight ? "text-[#d97706]" : "text-amber-300"}
+                      >
                         * OWASP ASVS SECURITY GUARD
                       </span>
                     </div>
