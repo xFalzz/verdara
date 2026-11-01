@@ -239,7 +239,7 @@ export default function StudioShell({
     { href: "/council", labelEn: "AI Council", labelId: "Dewan AI" },
     { href: "/academy", labelEn: "Academy", labelId: "Akademi" },
     { href: "/faq", labelEn: "FAQ", labelId: "Tanya Jawab" },
-    { href: "/settings", labelEn: "Shield", labelId: "Perisai" },
+    { href: "/settings", labelEn: "Settings", labelId: "Pengaturan" },
   ];
 
   const handleCitySearch = async (e: React.FormEvent) => {
@@ -705,15 +705,16 @@ export default function StudioShell({
                       <div className="w-full shrink-0 space-y-1.5 pr-1">
                         <div className="flex items-center justify-between font-mono text-xs">
                           <span className="text-[#aaa9ad]">
-                            $150 Meta API Pool
+                            {isId ? "Status Keamanan AI" : "AI Security Status"}
                           </span>
                           <span className="font-bold text-[#c6f432]">
-                            ${remainingBudget} left
+                            {isId ? "Aktif & Terproteksi" : "Active & Protected"}
                           </span>
                         </div>
                         <p className="text-xs text-[#c9c7c0]">
-                          $35 Verified Reserve locked · 6 Golden Specimens cached
-                          at $0.00 (&lt;50ms).
+                          {isId
+                            ? "Isolasi kuota multi-tenant aktif · Audit angka deterministik ±3%."
+                            : "Multi-tenant quota isolation active · Deterministic ±3% validation."}
                         </p>
                       </div>
 

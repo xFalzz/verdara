@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
 import AuthGateModal from "@/components/ui/AuthGateModal";
+import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
+import DeviceCameraModal from "@/components/lens/DeviceCameraModal";
 import SpatialMaskViewer from "@/components/lens/SpatialMaskViewer";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
@@ -54,6 +56,8 @@ export default function LensPage() {
   const [voiceActive, setVoiceActive] = useState<boolean>(false);
   const [voiceTranscript, setVoiceTranscript] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [showCameraModal, setShowCameraModal] = useState<boolean>(false);
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -213,6 +217,28 @@ export default function LensPage() {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCameraCapture = (dataUrl: string) => {
+    setIsScanning(true);
+    setScanError(null);
+    setCustomImageUrl(dataUrl);
+    recordScanCompleted(
+      {
+        id: `scan-camera-${Date.now()}`,
+        sampleId: activeSample.id,
+        titleEn: "Camera Hardware Snapshot",
+        titleId: "Tangkapan Kamera Perangkat",
+        mode: activeSample.mode,
+        objectCount: activeSample.objects.length,
+        valueTotal: totals.valueMax,
+        currency: geo.policy.currency,
+        co2eAvoidedG: totals.co2eG,
+        createdAt: "Just now",
+      },
+      false
+    );
+    setTimeout(() => setIsScanning(false), 300);
   };
 
   const handleSimulateVoiceCommand = () => {
@@ -376,13 +402,13 @@ export default function LensPage() {
 
             <div className="flex flex-wrap items-center gap-2">
               <label
-                className={`flex min-h-[44px] cursor-pointer items-center border px-3.5 py-2 font-mono text-xs font-semibold transition ${
+                className={`flex min-h-[44px] cursor-pointer items-center rounded-xl border px-3.5 py-2 font-mono text-xs font-semibold transition ${
                   isLight
                     ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
                     : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
                 }`}
               >
-                <span>{isId ? "Unggah Foto Sendiri" : "Upload Custom Photo"}</span>
+                <span>{isId ? "📁 Unggah Foto" : "📁 Upload Photo"}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -393,8 +419,47 @@ export default function LensPage() {
 
               <button
                 type="button"
+                onClick={() => {
+                  if (isGuestOrStarter) {
+                    setAuthGateMessage(
+                      isId
+                        ? "Fitur kamera langsung memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengambil foto dengan kamera perangkat Anda."
+                        : "Direct device camera capture requires a verified account. Please sign in first to capture photos with your camera hardware."
+                    );
+                    setShowAuthGateModal(true);
+                    return;
+                  }
+                  setShowCameraModal(true);
+                }}
+                className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-semibold transition ${
+                  isLight
+                    ? "border-[#14532D] bg-[#14532D]/10 text-[#14532D] hover:bg-[#14532D]/20"
+                    : "border-[#A3E635]/60 bg-[#A3E635]/10 text-[#A3E635] hover:bg-[#A3E635]/20"
+                }`}
+              >
+                <span aria-hidden="true">📷</span>
+                <span>{isId ? "Kamera Device" : "Device Camera"}</span>
+              </button>
+
+              {customImageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setCustomImageUrl(null)}
+                  className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-semibold transition ${
+                    isLight
+                      ? "border-red-400 bg-red-50 text-red-700 hover:bg-red-100"
+                      : "border-red-500/40 bg-red-950/20 text-red-300 hover:bg-red-950/40"
+                  }`}
+                  title={isId ? "Kembali ke spesimen contoh bawaan" : "Reset to default sample specimen"}
+                >
+                  <span>✕ {isId ? "Reset Foto" : "Reset Photo"}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
                 onClick={handleSimulateVoiceCommand}
-                className={`min-h-[44px] cursor-pointer border px-3.5 py-2 font-mono text-xs font-semibold transition ${
+                className={`min-h-[44px] cursor-pointer rounded-xl border px-3.5 py-2 font-mono text-xs font-semibold transition ${
                   voiceActive
                     ? isLight
                       ? "border-[#14532D] bg-[#14532D] text-white"
@@ -404,19 +469,34 @@ export default function LensPage() {
                       : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
                 }`}
               >
-                {isId ? "Transkripsi Suara Muse" : "Muse Voice Filter"}
+                {isId ? "Suara Muse" : "Muse Voice"}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowShareModal(true)}
-                className={`min-h-[44px] cursor-pointer px-4 py-2 font-mono text-xs font-bold transition ${
+                className={`min-h-[44px] cursor-pointer rounded-xl px-4 py-2 font-mono text-xs font-bold transition ${
                   isLight
                     ? "bg-[#14532D] text-white hover:bg-[#0F3F22]"
                     : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
                 }`}
               >
-                {isId ? "Ekspor Kartu Laporan (PNG)" : "Export Impact Report (PNG)"}
+                {isId ? "Ekspor Laporan" : "Export Report"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowGuideModal(true)}
+                aria-label={isId ? "Buka Panduan Pemakaian SAM 3.1 Lens" : "Open SAM 3.1 Lens Usage Guide"}
+                className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-white text-[#101D16] hover:bg-[#F4F1EA]"
+                    : "border-[#1D3328] bg-[#0E1914] text-[#F2F7F4] hover:border-[#88AC9B]"
+                }`}
+                title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/20 text-xs">?</span>
+                <span>{isId ? "Panduan" : "Guide"}</span>
               </button>
             </div>
           </div>
@@ -956,6 +1036,22 @@ export default function LensPage() {
         onClose={() => setShowAuthGateModal(false)}
         message={authGateMessage}
         nextPath="/lens"
+        locale={locale}
+        theme={theme}
+      />
+
+      <DeviceCameraModal
+        isOpen={showCameraModal}
+        onClose={() => setShowCameraModal(false)}
+        onCapture={handleCameraCapture}
+        locale={locale}
+        theme={theme}
+      />
+
+      <FeatureGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        feature="lens"
         locale={locale}
         theme={theme}
       />

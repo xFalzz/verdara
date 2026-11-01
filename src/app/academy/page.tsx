@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
+import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import { ACADEMY_LESSONS, type AcademyLessonSpec } from "@/lib/meta/golden-cache";
 import type { ProofChecklistItem } from "@/lib/lens/masks";
@@ -42,6 +43,7 @@ export default function AcademyPage() {
   const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
   const [verifyingProof, setVerifyingProof] = useState<boolean>(false);
   const [proofResult, setProofResult] = useState<ProofResultState | null>(null);
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -174,9 +176,26 @@ export default function AcademyPage() {
               </h1>
             </div>
 
-            <div className={`rounded-xl border px-4 py-2.5 font-mono text-xs font-bold ${elevatedCard}`}>
-              {verifiedProofLessonIds.length} / {ACADEMY_LESSONS.length}{" "}
-              {isId ? "Protokol Terverifikasi" : "Protocols Verified"}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className={`rounded-xl border px-4 py-2.5 font-mono text-xs font-bold ${elevatedCard}`}>
+                {verifiedProofLessonIds.length} / {ACADEMY_LESSONS.length}{" "}
+                {isId ? "Protokol Terverifikasi" : "Protocols Verified"}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowGuideModal(true)}
+                aria-label={isId ? "Buka Panduan Akademi Aksi Lapangan" : "Open Field Action Academy Guide"}
+                className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-white text-[#101D16] hover:bg-[#F4F1EA]"
+                    : "border-[#1D3328] bg-[#13221B] text-[#F2F7F4] hover:border-[#88AC9B]"
+                }`}
+                title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/20 text-xs">?</span>
+                <span>{isId ? "Panduan" : "Guide"}</span>
+              </button>
             </div>
           </div>
         </header>
@@ -526,6 +545,14 @@ export default function AcademyPage() {
           </div>
         </div>
       </div>
+
+      <FeatureGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        feature="academy"
+        locale={locale}
+        theme={theme}
+      />
     </StudioShell>
   );
 }

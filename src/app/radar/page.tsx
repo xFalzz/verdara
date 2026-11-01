@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
+import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   formatArea,
@@ -57,6 +58,7 @@ export default function RadarPage() {
   );
   const [savedToast, setSavedToast] = useState<boolean>(false);
   const [showWorldPicker, setShowWorldPicker] = useState<boolean>(false);
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -113,21 +115,38 @@ export default function RadarPage() {
                 ? `Peta Bangunan 3D & Kalkulator Fisika Atap: ${geo.city} (${geo.countryCode})`
                 : `3D Extruded Urban Map & Roof Physics Calculator: ${geo.city} (${geo.countryCode})`}
             </h1>
-            <button
-              type="button"
-              onClick={() => setShowWorldPicker(!showWorldPicker)}
-              className="mt-2 inline-flex min-h-[38px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 py-1.5 font-mono text-xs font-semibold text-[#c6f432] transition hover:bg-[#1a1a1a]"
-            >
-              <span>
-                {showWorldPicker
-                  ? isId
-                    ? "Tutup Penjelajah Negara ×"
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowWorldPicker(!showWorldPicker)}
+                className="inline-flex min-h-[38px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 py-1.5 font-mono text-xs font-semibold text-[#c6f432] transition hover:bg-[#1a1a1a]"
+              >
+                <span>
+                  {showWorldPicker
+                    ? isId
+                      ? "Tutup Penjelajah Negara ×"
                     : "Close World City Picker ×"
-                  : isId
-                  ? "🌍 Pilih / Cari Kota & Negara Lain (195+ Negara)"
-                  : "🌍 Switch to Any World City / Country (195+ Countries)"}
-              </span>
-            </button>
+                    : isId
+                    ? "🌍 Pilih / Cari Kota & Negara Lain (195+ Negara)"
+                    : "🌍 Switch to Any World City / Country (195+ Countries)"}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowGuideModal(true)}
+                aria-label={isId ? "Buka Panduan Radar 3D" : "Open 3D Radar Guide"}
+                className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-mono text-xs font-bold transition ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-white text-[#101D16] hover:bg-[#F4F1EA]"
+                    : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
+                }`}
+                title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
+              >
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/20 text-[10px]">?</span>
+                <span>{isId ? "Panduan" : "Guide"}</span>
+              </button>
+            </div>
           </div>
 
           <div
@@ -540,6 +559,14 @@ export default function RadarPage() {
           </div>
         </div>
       </div>
+
+      <FeatureGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        feature="radar"
+        locale={locale}
+        theme={theme}
+      />
     </StudioShell>
   );
 }

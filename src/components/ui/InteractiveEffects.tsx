@@ -1293,8 +1293,8 @@ export function VerdaraBottomDock() {
     {
       code: "08",
       href: "/settings",
-      labelEn: "Shield",
-      labelId: "Perisai",
+      labelEn: "Settings",
+      labelId: "Pengaturan",
     },
   ];
 

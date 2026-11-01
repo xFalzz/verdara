@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
 import AuthGateModal from "@/components/ui/AuthGateModal";
+import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   executeVerdaraCouncil,
@@ -32,6 +33,7 @@ export default function CouncilPage() {
   const isGuestOrStarter = !isAuthenticated || authProvider === "starter";
   const [showAuthGateModal, setShowAuthGateModal] = useState<boolean>(false);
   const [authGateMessage, setAuthGateMessage] = useState<string>("");
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
 
   const [sessionResult, setSessionResult] =
     useState<CouncilSynthesisResult | null>(null);
@@ -280,6 +282,21 @@ export default function CouncilPage() {
                   : isId
                   ? "Jalankan Ulang Sidang (+20 XP)"
                   : "Re-Convene Council (+20 XP)"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowGuideModal(true)}
+                aria-label={isId ? "Buka Panduan Sidang Dewan AI" : "Open AI Council Guide"}
+                className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-white text-[#101D16] hover:bg-[#F4F1EA]"
+                    : "border-[#1D3328] bg-[#13221B] text-[#F2F7F4] hover:border-[#88AC9B]"
+                }`}
+                title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/20 text-xs">?</span>
+                <span>{isId ? "Panduan" : "Guide"}</span>
               </button>
             </div>
           </div>
@@ -636,6 +653,14 @@ export default function CouncilPage() {
         onClose={() => setShowAuthGateModal(false)}
         message={authGateMessage}
         nextPath="/council"
+        locale={locale}
+        theme={theme}
+      />
+
+      <FeatureGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        feature="council"
         locale={locale}
         theme={theme}
       />

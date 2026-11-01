@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import StudioShell from "@/components/ui/StudioShell";
+import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   formatArea,
@@ -31,6 +32,7 @@ export default function DashboardPage() {
 
   const [isNight, setIsNight] = useState(false);
   const [hudMinimized, setHudMinimized] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -136,6 +138,7 @@ export default function DashboardPage() {
                 ? "Pencahayaan: Siang"
                 : "Lighting: Daylight"}
             </button>
+
             <button
               type="button"
               onClick={
@@ -150,6 +153,21 @@ export default function DashboardPage() {
                 : isId
                 ? "Muat Spesimen Lengkap (Lv.5)"
                 : "Load Full Town Specimen (Lv.5)"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowGuideModal(true)}
+              aria-label={isId ? "Buka Panduan Townhouse 3D Dashboard" : "Open 3D Dashboard Townhouse Guide"}
+              className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border px-4 text-xs font-bold transition ${
+                isLight
+                  ? "border-[#151515]/20 bg-white text-[#151515] hover:bg-[#F4F1EA]"
+                  : "border-white/20 bg-[#080808] text-white hover:border-[#c6f432]/60"
+              }`}
+              title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
+            >
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/20 text-[10px]">?</span>
+              <span>{isId ? "Panduan" : "Guide"}</span>
             </button>
           </div>
         </div>
@@ -405,6 +423,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <FeatureGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        feature="dashboard"
+        locale={locale}
+        theme={theme}
+      />
     </StudioShell>
   );
 }
