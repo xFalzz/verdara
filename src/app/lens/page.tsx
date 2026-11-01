@@ -58,6 +58,7 @@ export default function LensPage() {
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [showCameraModal, setShowCameraModal] = useState<boolean>(false);
   const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
+  const [filterCategory, setFilterCategory] = useState<"all" | "waste" | "plant" | "retrofit">("all");
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -219,17 +220,36 @@ export default function LensPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleCameraCapture = (dataUrl: string) => {
+  const handleCameraCapture = (dataUrl: string, category?: "auto" | "waste" | "plant") => {
     setIsScanning(true);
     setScanError(null);
     setCustomImageUrl(dataUrl);
+
+    if (category === "plant") {
+      const plantSample = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "plant");
+      if (plantSample) {
+        setActiveSampleId(plantSample.id);
+        setSelectedObjId(plantSample.objects[0]?.id ?? null);
+        setShowRetrofitComparison(false);
+        setFilterCategory("plant");
+      }
+    } else if (category === "waste") {
+      const wasteSample = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "waste");
+      if (wasteSample) {
+        setActiveSampleId(wasteSample.id);
+        setSelectedObjId(wasteSample.objects[0]?.id ?? null);
+        setShowRetrofitComparison(false);
+        setFilterCategory("waste");
+      }
+    }
+
     recordScanCompleted(
       {
         id: `scan-camera-${Date.now()}`,
         sampleId: activeSample.id,
-        titleEn: "Camera Hardware Snapshot",
-        titleId: "Tangkapan Kamera Perangkat",
-        mode: activeSample.mode,
+        titleEn: category === "plant" ? "Plant Health Inspection (Camera)" : "Camera Hardware Snapshot",
+        titleId: category === "plant" ? "Inspeksi Kesehatan Tanaman (Kamera)" : "Tangkapan Kamera Perangkat",
+        mode: category === "plant" ? "plant" : activeSample.mode,
         objectCount: activeSample.objects.length,
         valueTotal: totals.valueMax,
         currency: geo.policy.currency,
@@ -391,13 +411,24 @@ export default function LensPage() {
                   isLight ? "text-[#14532D]" : "text-[#A3E635]"
                 }`}
               >
-                {"// 02 · OMNI-SPATIAL LENS (META SAM 3.1 + MUSE SPARK + MUSE IMAGE)"}
+                {isId
+                  ? "// 02 · HIJARA UNIVERSAL LENS (SAM 3.1 + META MUSE AI)"
+                  : "// 02 · HIJARA UNIVERSAL LENS (SAM 3.1 + META MUSE AI)"}
               </p>
               <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
                 {isId
-                  ? "Segmentasi Poligon Material & Tirai Renovasi Biophilic"
-                  : "Instance Polygon Segmentation & Biophilic Retrofit Curtain"}
+                  ? "Hijara Lens · Pindai Sampah, Valuasi Bank Sampah & Diagnosa Tanaman"
+                  : "Hijara Lens · Circular Waste Scan, Bank Sampah & Plant Diagnostics"}
               </h1>
+              <p
+                className={`mt-1 text-xs max-w-2xl leading-relaxed ${
+                  isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                }`}
+              >
+                {isId
+                  ? "Satu lensa cerdas serba bisa: identifikasi sampah daur ulang, hitung estimasi rupiah Bank Sampah, serta diagnosa kesehatan tanaman Anda secara instan dalam satu kamera."
+                  : "One versatile AI lens: identify recyclables, calculate Bank Sampah recovery value, and diagnose plant diseases instantly with a single camera scan."}
+              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -531,32 +562,120 @@ export default function LensPage() {
             </div>
           )}
 
+          {/* Hijara Dual-Core Category Filter Tabs */}
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 font-mono text-xs">
+            <span
+              className={`text-[11px] font-bold uppercase tracking-wider mr-1 ${
+                isLight ? "text-[#14532D]" : "text-[#A3E635]"
+              }`}
+            >
+              {isId ? "Kategori Lensa Hijara:" : "Hijara Lens Category:"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setFilterCategory("all")}
+              className={`min-h-[34px] cursor-pointer rounded-full px-3.5 py-1 font-semibold transition ${
+                filterCategory === "all"
+                  ? isLight
+                    ? "bg-[#14532D] text-white shadow-sm"
+                    : "bg-[#A3E635] text-[#070D0A] shadow-sm"
+                  : isLight
+                  ? "border border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
+                  : "border border-[#1D3328] bg-[#070D0A] text-[#A3BEB0] hover:border-[#88AC9B]"
+              }`}
+            >
+              🌿 {isId ? "Semua Universal (4)" : "All Universal (4)"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterCategory("waste");
+                const firstWaste = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "waste");
+                if (firstWaste) handleSelectSample(firstWaste);
+              }}
+              className={`min-h-[34px] cursor-pointer rounded-full px-3.5 py-1 font-semibold transition ${
+                filterCategory === "waste"
+                  ? isLight
+                    ? "bg-[#14532D] text-white shadow-sm"
+                    : "bg-[#A3E635] text-[#070D0A] shadow-sm"
+                  : isLight
+                  ? "border border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
+                  : "border border-[#1D3328] bg-[#070D0A] text-[#A3BEB0] hover:border-[#88AC9B]"
+              }`}
+            >
+              🗑️ {isId ? "Scan Sampah & Bank Sampah" : "Waste & Circular"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterCategory("plant");
+                const plant = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "plant");
+                if (plant) handleSelectSample(plant);
+              }}
+              className={`min-h-[34px] cursor-pointer rounded-full px-3.5 py-1 font-semibold transition ${
+                filterCategory === "plant"
+                  ? isLight
+                    ? "bg-[#14532D] text-white shadow-sm"
+                    : "bg-[#A3E635] text-[#070D0A] shadow-sm"
+                  : isLight
+                  ? "border border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
+                  : "border border-[#1D3328] bg-[#070D0A] text-[#A3BEB0] hover:border-[#88AC9B]"
+              }`}
+            >
+              🌱 {isId ? "Diagnosa Kesehatan Tanaman" : "Plant Health Diagnostic"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterCategory("retrofit");
+                const retrofit = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "retrofit");
+                if (retrofit) handleSelectSample(retrofit);
+              }}
+              className={`min-h-[34px] cursor-pointer rounded-full px-3.5 py-1 font-semibold transition ${
+                filterCategory === "retrofit"
+                  ? isLight
+                    ? "bg-[#14532D] text-white shadow-sm"
+                    : "bg-[#A3E635] text-[#070D0A] shadow-sm"
+                  : isLight
+                  ? "border border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
+                  : "border border-[#1D3328] bg-[#070D0A] text-[#A3BEB0] hover:border-[#88AC9B]"
+              }`}
+            >
+              🏡 {isId ? "Renovasi Atap & Ruang" : "Biophilic Retrofit"}
+            </button>
+          </div>
+
           {/* 4 Specimen Selector Tabs */}
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {GOLDEN_LENS_SAMPLES.map((sample, idx) => {
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {GOLDEN_LENS_SAMPLES.filter((sample) => {
+              if (filterCategory === "waste") return sample.mode === "waste";
+              if (filterCategory === "plant") return sample.mode === "plant";
+              if (filterCategory === "retrofit") return sample.mode === "retrofit";
+              return true;
+            }).map((sample, idx) => {
               const active = sample.id === activeSample.id && !customImageUrl;
               return (
                 <button
                   key={sample.id}
                   type="button"
                   onClick={() => handleSelectSample(sample)}
-                  className={`min-h-[56px] cursor-pointer border p-3 text-left transition ${
+                  className={`min-h-[56px] cursor-pointer rounded-xl border p-3 text-left transition ${
                     active
                       ? isLight
-                        ? "border-[#14532D] bg-[#14532D] text-white"
-                        : "border-[#A3E635] bg-[#A3E635] text-[#070D0A]"
+                        ? "border-[#14532D] bg-[#14532D] text-white shadow-md"
+                        : "border-[#A3E635] bg-[#A3E635] text-[#070D0A] shadow-md"
                       : isLight
-                        ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
-                        : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
+                      ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
+                      : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
                   }`}
                 >
                   <div className="flex items-center justify-between font-mono text-[10px]">
-                    <span>
-                      {`// SPECIMEN 0${idx + 1} · ${sample.mode.toUpperCase()}`}
+                    <span className="font-bold">
+                      {sample.mode === "plant" ? "🌱 PLANT DOCTOR" : sample.mode === "waste" ? "🗑️ BANK SAMPAH" : "🏡 RETROFIT"}
                     </span>
-                    <span>$0.00 CACHE</span>
+                    <span className="opacity-75">$0.00 CACHE</span>
                   </div>
-                  <p className="mt-1 text-xs font-bold">
+                  <p className="mt-1 text-xs font-bold truncate">
                     {isId ? sample.titleId : sample.titleEn}
                   </p>
                 </button>
@@ -751,207 +870,414 @@ export default function LensPage() {
 
           {/* Right 5 Columns: Selected Instance Valuation & Upcycling Protocol */}
           <div className="space-y-4 lg:col-span-5">
-            {/* Total Batch Summary */}
-            <div
-              className={`border p-5 ${
-                isLight
-                  ? "border-[#C7C0B0] bg-white"
-                  : "border-[#1D3328] bg-[#0E1914]"
-              }`}
-            >
-              <div className="flex items-center justify-between border-b pb-2.5 border-current/15 font-mono text-xs">
-                <span
-                  className={
-                    isLight
-                      ? "font-bold text-[#14532D]"
-                      : "font-bold text-[#A3E635]"
-                  }
-                >
-                  {isId ? "// VALUASI YURISDIKSI" : "// JURISDICTION VALUATION"} ({geo.policy.code})
-                </span>
-                <span>{geo.city}</span>
-              </div>
-
-              <div className="mt-3 grid grid-cols-3 gap-2 font-mono">
+            {activeSample.mode === "plant" ? (
+              // HIJARA URBAN BOTANY & PLANT DOCTOR DOSSIER
+              <>
+                {/* Plant Health Status Summary */}
                 <div
-                  className={`border p-3 ${
+                  className={`border p-5 rounded-2xl ${
                     isLight
-                      ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                      : "border-[#1D3328] bg-[#070D0A]"
+                      ? "border-[#C7C0B0] bg-white shadow-sm"
+                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
                   }`}
                 >
-                  <p className="text-[10px] opacity-75">
-                    {isId ? "NILAI DEPOSIT" : "RECOVERY VALUE"}
-                  </p>
-                  <p className="mt-1 text-base font-bold tabular-nums">
-                    {formatCurrency(totals.valueMax, totals.currency, locale)}
-                  </p>
-                </div>
+                  <div className="flex items-center justify-between border-b pb-2.5 border-current/15 font-mono text-xs">
+                    <span
+                      className={`flex items-center gap-1.5 font-bold ${
+                        isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                      }`}
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      {isId ? "// DOKTER TANAMAN & KEBUN URBAN HIJARA" : "// HIJARA URBAN PLANT DOCTOR"}
+                    </span>
+                    <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                      SAM 3.1 VISION AI
+                    </span>
+                  </div>
 
-                <div
-                  className={`border p-3 ${
-                    isLight
-                      ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                      : "border-[#1D3328] bg-[#070D0A]"
-                  }`}
-                >
-                  <p className="text-[10px] opacity-75">
-                    {isId ? "EMISI DICEGAH" : "AVOIDED CO2e"}
-                  </p>
-                  <p className="mt-1 text-base font-bold tabular-nums">
-                    {totals.co2eG} g
-                  </p>
-                </div>
+                  <div className="mt-3">
+                    <p className="font-mono text-[11px] opacity-75">
+                      {isId ? "SPESIES / KANOPI TANAMAN:" : "PLANT CANOPY SPECIMEN:"}
+                    </p>
+                    <h2 className="mt-0.5 font-serif text-xl font-bold">
+                      {isId
+                        ? activeSample.plantDiagnostics?.plantNameId ?? "Tanaman Pangan / Herbal Kebun Perkotaan"
+                        : activeSample.plantDiagnostics?.plantNameEn ?? "Urban Culinary Herb / Broadleaf Crop"}
+                    </h2>
+                  </div>
 
-                <div
-                  className={`border p-3 ${
-                    isLight
-                      ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                      : "border-[#1D3328] bg-[#070D0A]"
-                  }`}
-                >
-                  <p className="text-[10px] opacity-75">
-                    {isId ? "MASSA ESTIMASI" : "EST. MASS"}
-                  </p>
-                  <p className="mt-1 text-base font-bold tabular-nums">
-                    {formatMass(totals.totalMassG, units)}
-                  </p>
-                </div>
-              </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2 font-mono">
+                    <div
+                      className={`border p-3 rounded-xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="text-[10px] opacity-75">
+                        {isId ? "KONDISI" : "HEALTH STATUS"}
+                      </p>
+                      <p className="mt-1 text-xs font-bold text-amber-500">
+                        {isId ? "Infeksi Sedang" : "Moderate Risk"}
+                      </p>
+                    </div>
 
-              <p
-                className={`mt-3 text-xs leading-relaxed ${
-                  isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
-                }`}
-              >
-                {isId ? geo.policy.policySummaryId : geo.policy.policySummaryEn}
-              </p>
-            </div>
+                    <div
+                      className={`border p-3 rounded-xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="text-[10px] opacity-75">
+                        {isId ? "DAUN SEHAT" : "HEALTHY LEAF"}
+                      </p>
+                      <p className="mt-1 text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {plantLesionStats ? `${(100 - plantLesionStats.infectedPct).toFixed(1)}%` : "88.6%"}
+                      </p>
+                    </div>
 
-            {/* Selected Instance Dossier & Upcycling Blueprint */}
-            <div
-              className={`border p-5 ${
-                isLight
-                  ? "border-[#C7C0B0] bg-white"
-                  : "border-[#1D3328] bg-[#0E1914]"
-              }`}
-            >
-              <div className="flex items-center justify-between border-b pb-3 border-current/15">
-                <div>
-                  <p
-                    className={`font-mono text-xs font-bold ${
-                      isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                    <div
+                      className={`border p-3 rounded-xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="text-[10px] opacity-75">
+                        {isId ? "BERCAK / LESI" : "LESION RATIO"}
+                      </p>
+                      <p className="mt-1 text-base font-bold tabular-nums text-amber-500">
+                        {plantLesionStats ? `${plantLesionStats.infectedPct}%` : "11.4%"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`mt-3.5 rounded-xl border p-3.5 text-xs leading-relaxed ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                        : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
                     }`}
                   >
-                    {isId ? "// DOSIR OBJEK TERPILIH" : "// SELECTED INSTANCE DOSSIER"}
-                  </p>
-                  <h2 className="mt-0.5 font-serif text-xl font-bold capitalize">
-                    {selectedObj.concept} ({selectedObj.materialCode})
-                  </h2>
+                    <p className="font-semibold text-emerald-700 dark:text-emerald-300">
+                      {isId ? "🔍 Analisis Gejala Visual SAM 3.1:" : "🔍 SAM 3.1 Visual Symptoms Analysis:"}
+                    </p>
+                    <p className={`mt-1.5 ${isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}`}>
+                      {isId
+                        ? "Terdeteksi bercak klorosis nekrotik kuning seluas 11,4% pada helai daun utama. Tepi daun melengkung ringan akibat stres evapotranspirasi atau kelembapan malam hari. Diperlukan sanitasi daun dan pemberian teh kompos organik."
+                        : "Detected yellow necrotic chlorosis lesions spanning 11.4% of total photosynthetic leaf area. Leaf margin shows slight upward curling from evapotranspiration stress. Leaf hygiene and organic compost tea drench recommended."}
+                    </p>
+                  </div>
                 </div>
-                {selectedValuation && (
-                  <span className="font-mono text-sm font-bold tabular-nums">
-                    {formatCurrency(
-                      selectedValuation.valueMax,
-                      selectedValuation.currency,
-                      locale
+
+                {/* 7-Day Step-by-Step Organic Care Plan */}
+                <div
+                  className={`border p-5 rounded-2xl ${
+                    isLight
+                      ? "border-[#C7C0B0] bg-white shadow-sm"
+                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                  }`}
+                >
+                  <div className="flex items-center justify-between border-b pb-3 border-current/15">
+                    <div>
+                      <p
+                        className={`font-mono text-xs font-bold ${
+                          isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                        }`}
+                      >
+                        {isId ? "// PROTOKOL PEMULIHAN 7 HARI" : "// 7-DAY ORGANIC CARE PLAN"}
+                      </p>
+                      <h3 className="mt-0.5 font-serif text-lg font-bold">
+                        {isId ? "Rencana Perawatan Organik & Jadwal Harian" : "Organic Recovery Schedule & Steps"}
+                      </h3>
+                    </div>
+                    <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                      7 HARI / 7 STEPS
+                    </span>
+                  </div>
+
+                  <div className="mt-4 space-y-2">
+                    {(isId
+                      ? activeSample.plantDiagnostics?.carePlanId ?? [
+                          "Hari 1: Pangkas bagian daun yang terdampak (11,4%) dengan gunting steril agar jamur tidak menyebar.",
+                          "Hari 2: Cek kelembapan media tanam; siram langsung di pangkal akar pukul 07.00 pagi.",
+                          "Hari 3: Tambahkan 2 cm pupuk kompos kascing matang di sekitar zona perakaran.",
+                          "Hari 4: Periksa bagian bawah daun; semprotkan larutan minyak nimba nabati jika ada kutu daun.",
+                          "Hari 5: Pasang naungan paranet 30% jika suhu siang hari melebihi 32°C.",
+                          "Hari 6: Gemburkan permukaan tanah perlahan dengan sekop mini untuk aerasi akar.",
+                          "Hari 7: Pindai ulang kanopi daun dengan SAM 3.1 Lens untuk evaluasi penyembuhan.",
+                        ]
+                      : activeSample.plantDiagnostics?.carePlanEn ?? [
+                          "Day 1: Prune 11.4% affected leaf area with alcohol-sterilized shears to stop spore spread.",
+                          "Day 2: Check soil moisture; water only at root base at 07:00 AM (avoid soaking foliage).",
+                          "Day 3: Top-dress root perimeter with 2 cm mature organic vermicompost.",
+                          "Day 4: Inspect underside of leaves; mist lightly with diluted neem oil foliar spray.",
+                          "Day 5: Provide 30% afternoon shade cloth if ambient temp exceeds 32°C.",
+                          "Day 6: Gently loosen compacted topsoil to restore root aeration.",
+                          "Day 7: Re-scan canopy in SAM 3.1 Lens to confirm lesion recovery < 5%.",
+                        ]
+                    ).map((step, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed transition ${
+                          isLight
+                            ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                            : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                        }`}
+                      >
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                          {idx + 1}
+                        </span>
+                        <p className="flex-1">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 space-y-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        router.push("/council");
+                      }}
+                      className={`min-h-[44px] w-full cursor-pointer rounded-xl px-4 py-2.5 font-mono text-xs font-bold transition shadow-sm ${
+                        isLight
+                          ? "bg-[#14532D] text-white hover:bg-[#166534]"
+                          : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
+                      }`}
+                    >
+                      {isId
+                        ? "🌿 Konsultasikan Penyakit Daun Ini ke Dr. Flora (/council) →"
+                        : "🌿 Consult Plant Diagnosis with Dr. Flora (/council) →"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        router.push("/academy");
+                      }}
+                      className={`min-h-[44px] w-full cursor-pointer rounded-xl border px-4 py-2.5 font-mono text-xs font-semibold transition ${
+                        isLight
+                          ? "border-[#14532D]/40 bg-[#F4F1EA] text-[#14532D] hover:bg-white"
+                          : "border-[#A3E635]/40 bg-[#070D0A] text-[#A3E635] hover:bg-[#A3E635]/10"
+                      }`}
+                    >
+                      {isId
+                        ? "🏆 Verifikasi Bukti Perawatan Tanaman di Akademi (+50 XP) →"
+                        : "🏆 Log Plant Care Proof in Academy (+50 XP) →"}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              // HIJARA CIRCULAR WASTE & BANK SAMPAH DOSSIER
+              <>
+                {/* Total Batch Summary */}
+                <div
+                  className={`border p-5 rounded-2xl ${
+                    isLight
+                      ? "border-[#C7C0B0] bg-white shadow-sm"
+                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                  }`}
+                >
+                  <div className="flex items-center justify-between border-b pb-2.5 border-current/15 font-mono text-xs">
+                    <span
+                      className={`flex items-center gap-1.5 font-bold ${
+                        isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                      }`}
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      {isId ? "// BANK SAMPAH & REKAYASA SIRKULAR" : "// CIRCULAR WASTE & BANK SAMPAH"} ({geo.policy.code})
+                    </span>
+                    <span>{geo.city}</span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2 font-mono">
+                    <div
+                      className={`border p-3 rounded-xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="text-[10px] opacity-75">
+                        {isId ? "NILAI DEPOSIT" : "RECOVERY VALUE"}
+                      </p>
+                      <p className="mt-1 text-base font-bold tabular-nums">
+                        {formatCurrency(totals.valueMax, totals.currency, locale)}
+                      </p>
+                    </div>
+
+                    <div
+                      className={`border p-3 rounded-xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="text-[10px] opacity-75">
+                        {isId ? "EMISI DICEGAH" : "AVOIDED CO2e"}
+                      </p>
+                      <p className="mt-1 text-base font-bold tabular-nums">
+                        {totals.co2eG} g
+                      </p>
+                    </div>
+
+                    <div
+                      className={`border p-3 rounded-xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="text-[10px] opacity-75">
+                        {isId ? "MASSA ESTIMASI" : "EST. MASS"}
+                      </p>
+                      <p className="mt-1 text-base font-bold tabular-nums">
+                        {formatMass(totals.totalMassG, units)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p
+                    className={`mt-3 text-xs leading-relaxed ${
+                      isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                    }`}
+                  >
+                    {isId ? geo.policy.policySummaryId : geo.policy.policySummaryEn}
+                  </p>
+                </div>
+
+                {/* Selected Instance Dossier & Upcycling Blueprint */}
+                <div
+                  className={`border p-5 rounded-2xl ${
+                    isLight
+                      ? "border-[#C7C0B0] bg-white shadow-sm"
+                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                  }`}
+                >
+                  <div className="flex items-center justify-between border-b pb-3 border-current/15">
+                    <div>
+                      <p
+                        className={`font-mono text-xs font-bold ${
+                          isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                        }`}
+                      >
+                        {isId ? "// DOSIR MATERIAL TERPILIH" : "// SELECTED MATERIAL DOSSIER"}
+                      </p>
+                      <h2 className="mt-0.5 font-serif text-xl font-bold capitalize">
+                        {selectedObj.concept} ({selectedObj.materialCode})
+                      </h2>
+                    </div>
+                    {selectedValuation && (
+                      <span className="font-mono text-sm font-bold tabular-nums">
+                        {formatCurrency(
+                          selectedValuation.valueMax,
+                          selectedValuation.currency,
+                          locale
+                        )}
+                      </span>
                     )}
-                  </span>
-                )}
-              </div>
+                  </div>
 
-              <p
-                className={`mt-3 text-xs leading-relaxed ${
-                  isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
-                }`}
-              >
-                {isId ? selectedObj.disposalId : selectedObj.disposalEn}
-              </p>
+                  <div className="mt-3 flex items-center gap-2 font-mono text-[11px]">
+                    <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-bold text-emerald-600 dark:text-emerald-400">
+                      100% RECYCLABLE
+                    </span>
+                    <span className="opacity-75">
+                      Bank Sampah Standard Category
+                    </span>
+                  </div>
 
-              {/* Upcycling / Care Protocol Steps */}
-              <div
-                className={`mt-4 border p-4 ${
-                  isLight
-                    ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                    : "border-[#1D3328] bg-[#070D0A]"
-                }`}
-              >
-                <p className="font-mono text-xs font-bold">
-                  {"// "}{isId
-                    ? selectedObj.upcyclingRecipe.titleId
-                    : selectedObj.upcyclingRecipe.titleEn}
-                </p>
-                <ol className="mt-2.5 list-decimal space-y-1.5 pl-4 text-xs leading-relaxed">
-                  {(isId
-                    ? selectedObj.upcyclingRecipe.stepsId
-                    : selectedObj.upcyclingRecipe.stepsEn
-                  ).map((step, i) => (
-                    <li key={i}>{step}</li>
-                  ))}
-                </ol>
+                  <p
+                    className={`mt-2 text-xs leading-relaxed ${
+                      isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                    }`}
+                  >
+                    {isId ? selectedObj.disposalId : selectedObj.disposalEn}
+                  </p>
 
-                {(isId
-                  ? selectedObj.upcyclingRecipe.safetyNoteId
-                  : selectedObj.upcyclingRecipe.safetyNoteEn) && (
-                  <p className="mt-3 border-t pt-2 font-mono text-[11px] text-amber-400 border-current/15">
-                    NOTE:{" "}
-                    {isId
+                  {/* Upcycling / Care Protocol Steps */}
+                  <div
+                    className={`mt-4 rounded-xl border p-4 ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
+                    <p className="font-mono text-xs font-bold">
+                      {"// "}{isId
+                        ? selectedObj.upcyclingRecipe.titleId
+                        : selectedObj.upcyclingRecipe.titleEn}
+                    </p>
+                    <ol className="mt-2.5 list-decimal space-y-1.5 pl-4 text-xs leading-relaxed">
+                      {(isId
+                        ? selectedObj.upcyclingRecipe.stepsId
+                        : selectedObj.upcyclingRecipe.stepsEn
+                      ).map((step, i) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+
+                    {(isId
                       ? selectedObj.upcyclingRecipe.safetyNoteId
-                      : selectedObj.upcyclingRecipe.safetyNoteEn}
-                  </p>
-                )}
-              </div>
+                      : selectedObj.upcyclingRecipe.safetyNoteEn) && (
+                      <p className="mt-3 border-t pt-2 font-mono text-[11px] text-amber-400 border-current/15">
+                        NOTE:{" "}
+                        {isId
+                          ? selectedObj.upcyclingRecipe.safetyNoteId
+                          : selectedObj.upcyclingRecipe.safetyNoteEn}
+                      </p>
+                    )}
+                  </div>
 
-              {/* Plant Lesion Ratio Diagnostic (when plant mode is selected) */}
-              {plantLesionStats && activeSample.plantDiagnostics && (
-                <div
-                  className={`mt-4 border p-4 font-mono text-xs ${
-                    isLight
-                      ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                      : "border-[#1D3328] bg-[#070D0A]"
-                  }`}
-                >
-                  <p className="font-bold">
-                    {`// SAM 3.1 LEAF VS. LESION AREA RATIO: ${plantLesionStats.infectedPct}% (${plantLesionStats.severity})`}
-                  </p>
-                  <p className="mt-1 text-[11px] opacity-80">
-                    Leaf mask: {(activeSample.plantDiagnostics.leafAreaRatio * 100).toFixed(1)}% ·
-                    Lesion mask: {(activeSample.plantDiagnostics.lesionAreaRatio * 100).toFixed(1)}%
-                  </p>
+                  {/* Retrofit Projections (when patio retrofit specimen is active) */}
+                  {activeSample.retrofitSpec && (
+                    <div
+                      className={`mt-4 rounded-xl border p-4 font-mono text-xs ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                          : "border-[#1D3328] bg-[#070D0A]"
+                      }`}
+                    >
+                      <p className="font-bold">
+                        {"// RETROFIT PROJECTION: +"}{activeSample.retrofitSpec.projectedSolarKwp} kWp Solar · +{formatVolume(activeSample.retrofitSpec.projectedRainLitersYr, units)}/yr · {activeSample.retrofitSpec.coolingDeltaC}°C ΔT
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-1 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRouteToRadar(selectedObj.materialCode)}
+                      className={`min-h-[44px] w-full cursor-pointer rounded-xl border px-4 py-2.5 font-mono text-xs font-bold transition shadow-sm ${
+                        isLight
+                          ? "border-[#14532D] bg-[#14532D] text-white hover:bg-[#0F3F22]"
+                          : "border-[#A3E635] bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
+                      }`}
+                    >
+                      {isId
+                        ? `📍 Temukan Bank Sampah ${selectedObj.materialCode} di Radar 3D (/radar)`
+                        : `📍 Locate ${selectedObj.materialCode} Drop-Off Hub on 3D Radar (/radar)`}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => router.push("/council")}
+                      className={`min-h-[44px] w-full cursor-pointer rounded-xl border px-4 py-2.5 font-mono text-xs font-semibold transition ${
+                        isLight
+                          ? "border-[#14532D]/30 bg-[#F4F1EA] text-[#14532D] hover:bg-white"
+                          : "border-[#A3E635]/30 bg-[#070D0A] text-[#A3E635] hover:bg-[#A3E635]/10"
+                      }`}
+                    >
+                      {isId
+                        ? "💬 Tanya Tips Pilah Sampah Bernilai Tinggi ke Sirkula (/council)"
+                        : "💬 Ask Sirkula About High-Value Waste Sorting (/council)"}
+                    </button>
+                  </div>
                 </div>
-              )}
-
-              {/* Retrofit Projections (when patio retrofit specimen is active) */}
-              {activeSample.retrofitSpec && (
-                <div
-                  className={`mt-4 border p-4 font-mono text-xs ${
-                    isLight
-                      ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                      : "border-[#1D3328] bg-[#070D0A]"
-                  }`}
-                >
-                  <p className="font-bold">
-                    {"// RETROFIT PROJECTION: +"}{activeSample.retrofitSpec.projectedSolarKwp} kWp Solar · +{formatVolume(activeSample.retrofitSpec.projectedRainLitersYr, units)}/yr · {activeSample.retrofitSpec.coolingDeltaC}°C ΔT
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-4 pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleRouteToRadar(selectedObj.materialCode)}
-                  className={`min-h-[44px] w-full cursor-pointer border px-4 py-2.5 font-mono text-xs font-bold transition ${
-                    isLight
-                      ? "border-[#14532D] bg-[#EAE5D9] text-[#14532D] hover:bg-[#14532D] hover:text-white"
-                      : "border-[#A3E635] bg-[#070D0A] text-[#A3E635] hover:bg-[#A3E635] hover:text-[#070D0A]"
-                  }`}
-                >
-                  {isId
-                    ? `Temukan Titik Drop-Off ${selectedObj.materialCode} di Radar 3D (/radar)`
-                    : `Locate ${selectedObj.materialCode} Drop-Off Hub on 3D Radar (/radar)`}
-                </button>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 export interface DeviceCameraModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCapture: (dataUrl: string) => void;
+  onCapture: (dataUrl: string, category?: "auto" | "waste" | "plant") => void;
   locale?: "en" | "id";
   theme?: "light" | "dark";
 }
@@ -21,6 +21,7 @@ export default function DeviceCameraModal({
   const streamRef = useRef<MediaStream | null>(null);
 
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [captureCategory, setCaptureCategory] = useState<"auto" | "waste" | "plant">("auto");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
 
@@ -135,7 +136,7 @@ export default function DeviceCameraModal({
     const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
 
     stopStream();
-    onCapture(dataUrl);
+    onCapture(dataUrl, captureCategory);
     onClose();
   };
 
@@ -175,6 +176,46 @@ export default function DeviceCameraModal({
             aria-label={isId ? "Tutup kamera" : "Close camera"}
           >
             ✕
+          </button>
+        </div>
+
+        {/* Hijara Lens Mode Pill Bar */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 border-b border-white/10 bg-[#080E0A] px-4 py-2 font-mono text-[11px]">
+          <span className="text-neutral-400 mr-1 text-[10px] uppercase tracking-wider">
+            {isId ? "Mode Fokus:" : "Focus Mode:"}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCaptureCategory("auto")}
+            className={`min-h-[30px] cursor-pointer rounded-full px-3 py-0.5 text-xs font-semibold transition ${
+              captureCategory === "auto"
+                ? "bg-[#c6f432] text-[#08090c]"
+                : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            🌿 {isId ? "Deteksi Otomatis" : "Auto-Detect"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCaptureCategory("waste")}
+            className={`min-h-[30px] cursor-pointer rounded-full px-3 py-0.5 text-xs font-semibold transition ${
+              captureCategory === "waste"
+                ? "bg-[#c6f432] text-[#08090c]"
+                : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            🗑️ {isId ? "Sampah & Bank Sampah" : "Waste & Circular"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCaptureCategory("plant")}
+            className={`min-h-[30px] cursor-pointer rounded-full px-3 py-0.5 text-xs font-semibold transition ${
+              captureCategory === "plant"
+                ? "bg-[#c6f432] text-[#08090c]"
+                : "bg-white/5 text-neutral-300 hover:bg-white/10"
+            }`}
+          >
+            🌱 {isId ? "Diagnosa Tanaman" : "Plant Doctor"}
           </button>
         </div>
 

@@ -412,6 +412,10 @@ export default function CouncilPage() {
               </span>
               {[
                 {
+                  id: "Bagaimana cara mengobati daun keriting & bercak jamur?",
+                  en: "How to treat curled leaves & fungal spot lesions?",
+                },
+                {
                   id: "Berapa lama estimasi balik modal panel surya?",
                   en: "What is the estimated solar payback period?",
                 },

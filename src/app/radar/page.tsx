@@ -238,12 +238,12 @@ export default function RadarPage() {
                       isLight ? "text-[#14532D]" : "text-[#A3E635]"
                     }`}
                   >
-                    {"// VERIFIED OPENSTREETMAP CIRCULAR HUBS"}
+                    {isId ? "// BANK SAMPAH & FASILITAS SIRKULAR TERVERIFIKASI" : "// VERIFIED BANK SAMPAH & CIRCULAR HUBS"}
                   </p>
                   <h2 className="mt-0.5 font-serif text-lg font-bold">
                     {isId
-                      ? `Titik Drop-Off & Daur Ulang di ${geo.city}`
-                      : `Drop-Off & Recycling Facilities in ${geo.city}`}
+                      ? `Peta Titik Drop-Off Bank Sampah & Daur Ulang di ${geo.city}`
+                      : `Bank Sampah & Drop-Off Facilities in ${geo.city}`}
                   </h2>
                 </div>
                 <span className="font-mono text-xs">

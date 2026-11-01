@@ -113,7 +113,7 @@ export default function Radar3DMap({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [is3DPitch, setIs3DPitch] = useState(true);
   const [autoOrbit, setAutoOrbit] = useState(false);
-  const [activeStyleType, setActiveStyleType] = useState<"liberty" | "voyager" | "raster">("liberty");
+  const [activeStyleType, setActiveStyleType] = useState<"liberty" | "voyager" | "raster">("raster");
   const [inspectedRoof, setInspectedRoof] = useState<{
     lat: number;
     lng: number;
@@ -245,7 +245,7 @@ export default function Radar3DMap({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: LIBERTY_STYLE_URL,
+      style: VOYAGER_RASTER_STYLE,
       center: [lng, lat],
       zoom: 15.6,
       pitch: 58,
