@@ -227,8 +227,8 @@ export const useVerdaraStore = create<VerdaraState>()(
       },
 
       resetToStarterPlot: () => {
-        const currentEmail = get().email || "starter@verdara.app";
-        const currentName = get().displayName || "Starter Resident";
+        const currentEmail = get().email || "guest@sandbox.verdara.local";
+        const currentName = get().displayName !== "Guest Resident" ? get().displayName : "Sandbox Resident";
         if (typeof window !== "undefined") {
           try {
             window.sessionStorage.setItem(
@@ -263,8 +263,9 @@ export const useVerdaraStore = create<VerdaraState>()(
       },
 
       loginWithEmail: (email, name, opts) => {
+        const cleanEmail = email.trim();
         const cleanName =
-          name?.trim() || email.split("@")[0] || "Verdara Resident";
+          name?.trim() || cleanEmail.split("@")[0] || "Verdara Resident";
         const avatar = opts?.avatarUrl || "";
         const uid = opts?.userId || `usr-${Date.now().toString(36)}`;
 
@@ -276,7 +277,7 @@ export const useVerdaraStore = create<VerdaraState>()(
                 isAuthenticated: true,
                 authProvider: "email",
                 displayName: cleanName,
-                email,
+                email: cleanEmail,
                 avatarUrl: avatar,
                 userId: uid,
               })
@@ -289,30 +290,25 @@ export const useVerdaraStore = create<VerdaraState>()(
           isAuthenticated: true,
           authProvider: "email",
           displayName: cleanName,
-          email,
+          email: cleanEmail,
           avatarUrl: avatar,
           userId: uid,
         });
       },
 
       loginWithOAuth: (provider, profile) => {
-        const defaultEmail =
-          provider === "google"
-            ? "resident.google@verdara.app"
-            : provider === "facebook"
-            ? "resident.facebook@verdara.app"
-            : "resident@verdara.app";
+        const resolvedUid =
+          profile?.userId || `usr-${Date.now().toString(36)}`;
+        const fallbackEmail = `user-${resolvedUid.slice(0, 8)}@${provider}.oauth.local`;
         const defaultName =
           provider === "google"
             ? "Google Verified Resident"
             : provider === "facebook"
             ? "Facebook Verified Resident"
             : "Verdara Resident";
-        const resolvedEmail = profile?.email?.trim() || defaultEmail;
+        const resolvedEmail = profile?.email?.trim() || fallbackEmail;
         const resolvedName = profile?.displayName?.trim() || defaultName;
         const resolvedAvatar = profile?.avatarUrl || "";
-        const resolvedUid =
-          profile?.userId || `usr-${Date.now().toString(36)}`;
         const actualProvider: AuthProviderType =
           provider === "google" || provider === "facebook"
             ? provider

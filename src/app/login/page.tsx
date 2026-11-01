@@ -32,8 +32,8 @@ export default function LoginPage() {
     logout,
   } = useVerdaraStore();
 
-  const [email, setEmail] = useState("resident@verdara.app");
-  const [password, setPassword] = useState("verdara2026");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
@@ -90,21 +90,6 @@ export default function LoginPage() {
     setFormError(null);
     setOauthNotice(null);
     resetToStarterPlot();
-    try {
-      await fetch("/api/db", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "starter@verdara.app",
-          displayName: "Starter Plot (Level 1)",
-          role: "resident",
-          city: geo.city,
-          countryCode: geo.countryCode,
-        }),
-      });
-    } catch {
-      // Local store hydrated
-    }
     router.push(nextRoute);
   };
 
@@ -164,27 +149,12 @@ export default function LoginPage() {
         return;
       }
     } else {
-      // Offline fallback only when Supabase is unconfigured
-      const demoEmail =
-        provider === "google"
-          ? "resident.google@verdara.app"
-          : "resident.facebook@verdara.app";
-      const demoName =
-        provider === "google"
-          ? "Google Verified Resident"
-          : "Facebook Verified Resident";
-
-      loginWithOAuth(provider, {
-        email: demoEmail,
-        displayName: demoName,
-        avatarUrl: "",
-      });
-
-      if (typeof window !== "undefined") {
-        window.history.replaceState({}, "", window.location.pathname);
-      }
-
-      router.replace(nextRoute || "/dashboard");
+      setFormError(
+        isId
+          ? "Layanan autentikasi Supabase sedang tidak tersedia."
+          : "Supabase authentication service is currently unavailable."
+      );
+      setOauthLoading(null);
     }
   };
 
@@ -192,8 +162,12 @@ export default function LoginPage() {
     e.preventDefault();
     setOauthNotice(null);
     setOauthError(null);
+    setFormError(null);
 
-    if (!email.trim() || !email.includes("@")) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanEmail.includes("@")) {
       setFormError(
         isId
           ? "Masukkan alamat email yang valid (contoh: email@example.com)."
@@ -201,7 +175,7 @@ export default function LoginPage() {
       );
       return;
     }
-    if (password.trim().length < 6) {
+    if (cleanPassword.length < 6) {
       setFormError(
         isId
           ? "Kata sandi minimal harus 6 karakter."
@@ -210,150 +184,114 @@ export default function LoginPage() {
       return;
     }
 
-    setFormError(null);
-
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // If Supabase is available, try signing up / signing in via Supabase Auth
     if (
       supabaseUrl &&
       supabaseAnonKey &&
       !supabaseUrl.includes("placeholder") &&
       !supabaseUrl.includes("your-project")
     ) {
-      try {
-        const supabase = createClient();
+      const supabase = createClient();
 
-        if (isRegisterMode) {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                full_name: displayName.trim() || email.split("@")[0],
-              },
-            },
+      if (isRegisterMode) {
+        // 1. REGISTER NEW REAL USER VIA DEDICATED AUTH API
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: cleanEmail,
+              password: cleanPassword,
+              displayName: displayName.trim() || cleanEmail.split("@")[0],
+            }),
+          });
+          const regData = await res.json();
+
+          if (!res.ok || !regData.ok) {
+            setFormError(
+              regData.message ||
+                (isId ? "Pendaftaran gagal. Silakan coba lagi." : "Registration failed. Please try again.")
+            );
+            return;
+          }
+
+          // Immediately sign in with the new confirmed user credentials
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: cleanPassword,
           });
 
-          if (error) {
-            setFormError(error.message);
+          if (signInError) {
+            setFormError(signInError.message);
             return;
           }
 
-          if (data?.user) {
-            loginWithEmail(data.user.email || email, displayName, {
-              userId: data.user.id,
-            });
-            await fetch("/api/db", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email,
-                displayName: displayName || email.split("@")[0],
-                role: "resident",
-                city: geo.city,
-                countryCode: geo.countryCode,
-              }),
-            });
-            router.push(nextRoute);
-            return;
-          }
-        } else {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (error) {
-            // Auto-fallback 1: If credentials not found, attempt auto-signup on Supabase
-            if (error.message.includes("Invalid login credentials")) {
-              const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                  data: {
-                    full_name: displayName.trim() || email.split("@")[0],
-                  },
-                },
-              });
-
-              if (!signUpError && signUpData?.user) {
-                loginWithEmail(signUpData.user.email || email, displayName, {
-                  userId: signUpData.user.id,
-                });
-                router.push(nextRoute);
-                return;
-              }
-            }
-
-            // Auto-fallback 2: If Supabase requires email verification or rejects password,
-            // seamlessly hydrate local resident session with authentic identity so user is NEVER blocked
-            loginWithEmail(email, displayName || email.split("@")[0]);
-            try {
-              await fetch("/api/db", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email,
-                  displayName: displayName || email.split("@")[0],
-                  role: "resident",
-                  city: geo.city,
-                  countryCode: geo.countryCode,
-                }),
-              });
-            } catch {
-              // Local store hydrated
-            }
-            router.push(nextRoute);
-            return;
-          }
-
-          if (data?.user) {
+          if (signInData?.user) {
             loginWithEmail(
-              data.user.email || email,
-              data.user.user_metadata?.full_name || displayName,
-              {
-                userId: data.user.id,
-                avatarUrl: data.user.user_metadata?.avatar_url || "",
-              }
+              signInData.user.email || cleanEmail,
+              displayName.trim() || cleanEmail.split("@")[0],
+              { userId: signInData.user.id }
             );
             router.push(nextRoute);
             return;
           }
+        } catch (err: any) {
+          setFormError(
+            err?.message ||
+              (isId ? "Terjadi kesalahan koneksi saat pendaftaran." : "Connection error during registration.")
+          );
+          return;
         }
-      } catch {
-        // Fallback to local resident login
+      } else {
+        // 2. SIGN IN EXISTING REAL USER
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: cleanPassword,
+          });
+
+          if (error) {
+            if (error.message.toLowerCase().includes("invalid login credentials")) {
+              setFormError(
+                isId
+                  ? "Email atau kata sandi tidak cocok. Jika belum mendaftar, silakan klik tab 'Daftar' di atas."
+                  : "Invalid email or password. If you haven't registered yet, please click the 'Register' tab above."
+              );
+            } else {
+              setFormError(error.message);
+            }
+            return;
+          }
+
+          if (data?.user) {
+            const userMeta = data.user.user_metadata || {};
+            const userName =
+              userMeta.full_name ||
+              userMeta.name ||
+              displayName.trim() ||
+              cleanEmail.split("@")[0];
+            loginWithEmail(data.user.email || cleanEmail, userName, {
+              userId: data.user.id,
+              avatarUrl: userMeta.avatar_url || "",
+            });
+            router.push(nextRoute);
+            return;
+          }
+        } catch (err: any) {
+          setFormError(
+            err?.message ||
+              (isId ? "Terjadi kendala saat proses masuk." : "Failed to sign in.")
+          );
+          return;
+        }
       }
+    } else {
+      // Local development offline fallback
+      loginWithEmail(cleanEmail, displayName.trim() || cleanEmail.split("@")[0]);
+      router.push(nextRoute);
     }
-
-    // Local authentication fallback
-    loginWithEmail(email, displayName);
-    try {
-      await fetch("/api/db", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          displayName: displayName || email.split("@")[0],
-          role: "resident",
-          city: geo.city,
-          countryCode: geo.countryCode,
-        }),
-      });
-    } catch {
-      // Local store hydrated
-    }
-    router.push(nextRoute);
-  };
-
-  const handleAutofillDemo = () => {
-    setEmail("resident@verdara.app");
-    setPassword("verdara2026");
-    if (isRegisterMode) {
-      setDisplayName("Alex Santoso");
-    }
-    setFormError(null);
   };
 
   return (
@@ -590,7 +528,7 @@ export default function LoginPage() {
                         {isId ? "Sesi Aktif Terdeteksi" : "Active Session"}
                       </span>
                       <span className="text-[10px] text-white/70">
-                        {storedEmail || "resident@verdara.app"}
+                        {storedEmail || (isId ? "Akun Residen" : "Resident Account")}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -678,14 +616,16 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          loginWithEmail(email || "resident@verdara.app", displayName || "Verdara Resident");
-                          router.push(nextRoute);
+                          setOauthError(null);
+                          setIsRegisterMode(false);
+                          const inputEl = document.getElementById("resident-email");
+                          if (inputEl) inputEl.focus();
                         }}
                         className="flex min-h-[38px] flex-1 cursor-pointer items-center justify-center rounded-xl bg-[#c6f432] px-4 py-2 font-mono text-xs font-bold text-[#080808] transition hover:bg-[#b0dc28]"
                       >
                         {isId
-                          ? "Masuk Langsung dengan Akun Ini →"
-                          : "Sign In Directly With This Account →"}
+                          ? "Masuk dengan Email di Bawah →"
+                          : "Use Email & Password Below →"}
                       </button>
                     </div>
                   </div>
@@ -807,13 +747,20 @@ export default function LoginPage() {
                         ? "MASUK DENGAN EMAIL"
                         : "EMAIL & PASSWORD"}
                     </span>
-                    <button
-                      type="button"
-                      onClick={handleAutofillDemo}
-                      className="cursor-pointer rounded-full bg-white/8 px-2.5 py-0.5 text-[10px] font-semibold text-[#c6f432] transition hover:bg-white/15"
-                    >
-                      {isId ? "Isi Contoh Cepat" : "Autofill Resident Email"}
-                    </button>
+                    {email ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail("");
+                          setPassword("");
+                          setDisplayName("");
+                          setFormError(null);
+                        }}
+                        className="cursor-pointer rounded-full bg-white/8 px-2.5 py-0.5 text-[10px] font-semibold text-[#aaa9ad] transition hover:bg-white/15"
+                      >
+                        {isId ? "Bersihkan" : "Clear"}
+                      </button>
+                    ) : null}
                   </div>
 
                   {formError && (
@@ -838,7 +785,7 @@ export default function LoginPage() {
                         type="text"
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder={isId ? "Nama Anda" : "Your Name"}
+                        placeholder={isId ? "Nama Lengkap Anda" : "Your Full Name"}
                         className="mt-1 min-h-[44px] w-full rounded-xl bg-[#111317] px-4 text-sm text-white placeholder-[#777] shadow-[inset_0_0_0_1px_#2c2c2c] focus:shadow-[inset_0_0_0_1.5px_#c6f432] focus:outline-none"
                       />
                     </div>
@@ -857,7 +804,7 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="resident@verdara.app"
+                      placeholder={isId ? "nama@domain.com" : "name@domain.com"}
                       className="mt-1 min-h-[44px] w-full rounded-xl bg-[#111317] px-4 text-sm text-white placeholder-[#777] shadow-[inset_0_0_0_1px_#2c2c2c] focus:shadow-[inset_0_0_0_1.5px_#c6f432] focus:outline-none"
                     />
                   </div>

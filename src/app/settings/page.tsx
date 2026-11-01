@@ -194,7 +194,7 @@ export default function SettingsPage() {
               </div>
 
               <h2 className="text-lg font-bold">{displayName}</h2>
-              <p className={`font-mono text-xs ${textMuted}`}>{email || "resident@verdara.app"}</p>
+              <p className={`font-mono text-xs ${textMuted}`}>{email || (isId ? "Email belum terhubung" : "No email connected")}</p>
 
               <div className="mt-4 w-full divide-y divide-current/10 border-t border-current/10 pt-3 text-left font-mono text-xs">
                 <div className="flex justify-between py-1.5">
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                       id="profile-email-readonly"
                       type="text"
                       disabled
-                      value={email || "resident@verdara.app"}
+                      value={email || (isId ? "Email belum terhubung" : "No email connected")}
                       className={`mt-1.5 min-h-[44px] w-full cursor-not-allowed rounded-xl border px-3.5 text-sm font-mono opacity-70 ${
                         isLight
                           ? "border-[#C7C0B0] bg-[#EAE5D9] text-[#101D16]"

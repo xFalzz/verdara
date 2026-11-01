@@ -120,8 +120,8 @@ export default function StudioShell({
                 });
               } else {
                 loginWithEmail(
-                  parsed.email || "resident@verdara.app",
-                  parsed.displayName || "Verdara Resident",
+                  parsed.email || "",
+                  parsed.displayName || "Resident",
                   { avatarUrl: parsed.avatarUrl, userId: parsed.userId }
                 );
               }
@@ -190,8 +190,8 @@ export default function StudioShell({
           const parsed = JSON.parse(raw);
           if (parsed?.isAuthenticated) {
             loginWithEmail(
-              parsed.email || "resident@verdara.app",
-              parsed.displayName || "Verdara Resident"
+              parsed.email || "",
+              parsed.displayName || "Resident"
             );
             setAuthChecked(true);
             return;
