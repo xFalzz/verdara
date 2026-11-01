@@ -159,14 +159,16 @@ export default function DashboardPage() {
               type="button"
               onClick={() => setShowGuideModal(true)}
               aria-label={isId ? "Buka Panduan Townhouse 3D Dashboard" : "Open 3D Dashboard Townhouse Guide"}
-              className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-full border px-4 text-xs font-bold transition ${
+              className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-4 text-xs font-bold transition shadow-sm ${
                 isLight
-                  ? "border-[#151515]/20 bg-white text-[#151515] hover:bg-[#F4F1EA]"
-                  : "border-white/20 bg-[#080808] text-white hover:border-[#c6f432]/60"
+                  ? "border-[#14532D]/35 bg-[#F2F7F4] text-[#14532D] hover:bg-[#E2EDE6] hover:border-[#14532D]"
+                  : "border-[#A3E635]/50 bg-[#0A120E] text-[#A3E635] hover:bg-[#A3E635]/15 hover:border-[#A3E635] shadow-[0_0_12px_rgba(163,230,53,0.12)]"
               }`}
               title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
             >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/20 text-[10px]">?</span>
+              <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black ${
+                isLight ? "bg-[#14532D]/15 text-[#14532D]" : "bg-[#A3E635]/25 text-[#A3E635]"
+              }`}>?</span>
               <span>{isId ? "Panduan" : "Guide"}</span>
             </button>
           </div>

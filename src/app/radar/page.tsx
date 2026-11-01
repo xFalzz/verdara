@@ -96,64 +96,67 @@ export default function RadarPage() {
       <div className="space-y-6">
         {/* Top Filter & Material Routing Header */}
         <div
-          className={`flex flex-wrap items-center justify-between gap-4 border p-5 ${
+          className={`rounded-2xl border p-5 ${
             isLight
-              ? "border-[#C7C0B0] bg-white"
-              : "border-[#1D3328] bg-[#0E1914]"
+              ? "border-[#C7C0B0] bg-white text-[#101D16]"
+              : "border-[#1D3328] bg-[#0E1914] text-[#F2F7F4]"
           }`}
         >
-          <div>
-            <p
-              className={`font-mono text-xs font-bold ${
-                isLight ? "text-[#14532D]" : "text-[#A3E635]"
-              }`}
-            >
-              {`// 03 · 3D URBAN RADAR & ROOF PHYSICS (${geo.lat.toFixed(2)}°, ${geo.lng.toFixed(2)}°)`}
-            </p>
-            <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
-              {isId
-                ? `Peta Bangunan 3D & Kalkulator Fisika Atap: ${geo.city} (${geo.countryCode})`
-                : `3D Extruded Urban Map & Roof Physics Calculator: ${geo.city} (${geo.countryCode})`}
-            </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowWorldPicker(!showWorldPicker)}
-                className="inline-flex min-h-[38px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 py-1.5 font-mono text-xs font-semibold text-[#c6f432] transition hover:bg-[#1a1a1a]"
-              >
-                <span>
-                  {showWorldPicker
-                    ? isId
-                      ? "Tutup Penjelajah Negara ×"
-                    : "Close World City Picker ×"
-                    : isId
-                    ? "🌍 Pilih / Cari Kota & Negara Lain (195+ Negara)"
-                    : "🌍 Switch to Any World City / Country (195+ Countries)"}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowGuideModal(true)}
-                aria-label={isId ? "Buka Panduan Radar 3D" : "Open 3D Radar Guide"}
-                className={`inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-mono text-xs font-bold transition ${
-                  isLight
-                    ? "border-[#C7C0B0] bg-white text-[#101D16] hover:bg-[#F4F1EA]"
-                    : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="space-y-1.5">
+              <p
+                className={`font-mono text-xs font-bold ${
+                  isLight ? "text-[#14532D]" : "text-[#A3E635]"
                 }`}
-                title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
               >
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/20 text-[10px]">?</span>
-                <span>{isId ? "Panduan" : "Guide"}</span>
-              </button>
-            </div>
-          </div>
+                {`// 03 · 3D URBAN RADAR & ROOF PHYSICS (${geo.lat.toFixed(2)}°, ${geo.lng.toFixed(2)}°)`}
+              </p>
+              <h1 className="font-serif text-2xl font-bold sm:text-3xl">
+                {isId
+                  ? `Peta Bangunan 3D & Kalkulator Fisika Atap: ${geo.city} (${geo.countryCode})`
+                  : `3D Extruded Urban Map & Roof Physics Calculator: ${geo.city} (${geo.countryCode})`}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowWorldPicker(!showWorldPicker)}
+                  className="inline-flex min-h-[38px] cursor-pointer items-center gap-2 rounded-full bg-[#080808] px-4 py-1.5 font-mono text-xs font-semibold text-[#c6f432] transition hover:bg-[#1a1a1a]"
+                >
+                  <span>
+                    {showWorldPicker
+                      ? isId
+                        ? "Tutup Penjelajah Negara ×"
+                        : "Close World City Picker ×"
+                      : isId
+                      ? "🌍 Pilih / Cari Kota & Negara Lain (195+ Negara)"
+                      : "🌍 Switch to Any World City / Country (195+ Countries)"}
+                  </span>
+                </button>
 
-          <div
-            role="group"
-            aria-label={isId ? "Filter Material" : "Material Filter"}
-            className="flex flex-wrap items-center gap-1.5"
-          >
+                <button
+                  type="button"
+                  onClick={() => setShowGuideModal(true)}
+                  aria-label={isId ? "Buka Panduan Radar 3D" : "Open 3D Radar Guide"}
+                  className={`inline-flex min-h-[38px] cursor-pointer items-center gap-2 rounded-full border px-3.5 py-1.5 font-mono text-xs font-bold transition shadow-sm ${
+                    isLight
+                      ? "border-[#14532D]/35 bg-[#F2F7F4] text-[#14532D] hover:bg-[#E2EDE6] hover:border-[#14532D]"
+                      : "border-[#A3E635]/50 bg-[#0A120E] text-[#A3E635] hover:bg-[#A3E635]/15 hover:border-[#A3E635] shadow-[0_0_12px_rgba(163,230,53,0.12)]"
+                  }`}
+                  title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
+                >
+                  <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black ${
+                    isLight ? "bg-[#14532D]/15 text-[#14532D]" : "bg-[#A3E635]/25 text-[#A3E635]"
+                  }`}>?</span>
+                  <span>{isId ? "Panduan" : "Guide"}</span>
+                </button>
+              </div>
+            </div>
+
+            <div
+              role="group"
+              aria-label={isId ? "Filter Material" : "Material Filter"}
+              className="flex flex-wrap items-center gap-1.5"
+            >
             {MATERIAL_FILTERS.map((code) => {
               const active =
                 (code === "ALL" && !selectedMaterialFilter) ||
@@ -181,6 +184,7 @@ export default function RadarPage() {
             })}
           </div>
         </div>
+      </div>
 
         {showWorldPicker && (
           <WorldCityExplorer isLight={isLight} isId={isId} compact />

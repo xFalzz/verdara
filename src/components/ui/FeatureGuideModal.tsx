@@ -355,6 +355,42 @@ export default function FeatureGuideModal({
 
   if (!isOpen) return null;
 
+  const modalBg = isLight
+    ? "border-[#C7C0B0] bg-[#FFFFFF] text-[#111827] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)]"
+    : "border-[#1D3328] bg-[#0A120E] text-[#F2F7F4] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]";
+
+  const cardBg = isLight
+    ? "border-[#D8D2C5] bg-[#F7F5EE] text-[#1F2937]"
+    : "border-[#1D3328] bg-[#111C16] text-[#F3F4F6]";
+
+  const sectionHeading = isLight
+    ? "text-[#14532D] font-bold"
+    : "text-[#A3E635] font-bold";
+
+  const badgeStyle = isLight
+    ? "bg-[#14532D]/10 text-[#14532D] border border-[#14532D]/30"
+    : "bg-[#A3E635]/15 text-[#A3E635] border border-[#A3E635]/30";
+
+  const stepNumStyle = isLight
+    ? "bg-[#14532D]/15 text-[#14532D] font-black"
+    : "bg-[#A3E635]/20 text-[#A3E635] font-black";
+
+  const stepHeadingStyle = isLight
+    ? "text-[#0F172A] font-bold"
+    : "text-[#F8FAFC] font-bold";
+
+  const textMutedStyle = isLight
+    ? "text-[#4B5563]"
+    : "text-[#9CA3AF]";
+
+  const textSecondaryStyle = isLight
+    ? "text-[#374151]"
+    : "text-[#CBD5E1]";
+
+  const gotItBtnStyle = isLight
+    ? "bg-[#14532D] text-white hover:bg-[#0E3D22]"
+    : "bg-[#A3E635] text-[#070D0A] hover:bg-[#BEF264]";
+
   return (
     <div
       role="dialog"
@@ -362,26 +398,24 @@ export default function FeatureGuideModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
-        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border p-6 shadow-2xl transition-all ${
-          isLight
-            ? "border-[#C7C0B0] bg-[#FFFFFF] text-[#101D16]"
-            : "border-[#1D3328] bg-[#0E1511] text-[#F2F7F4]"
-        }`}
+        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border p-6 shadow-2xl transition-all ${modalBg}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-[#c6f432]/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#c6f432]">
+            <span className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold ${badgeStyle}`}>
               {guide.badge}
             </span>
-            <span className="font-mono text-xs text-neutral-400">
+            <span className={`font-mono text-xs ${textMutedStyle}`}>
               {isId ? "PANDUAN FITUR" : "FEATURE GUIDE"}
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-neutral-400 hover:text-white transition"
+            className={`rounded-lg p-1.5 transition ${
+              isLight ? "text-gray-500 hover:text-black hover:bg-gray-100" : "text-gray-400 hover:text-white hover:bg-white/10"
+            }`}
             aria-label={isId ? "Tutup panduan" : "Close guide"}
           >
             ✕
@@ -393,33 +427,31 @@ export default function FeatureGuideModal({
           <h2 className="font-serif text-2xl font-bold tracking-tight">
             {isId ? guide.titleId : guide.titleEn}
           </h2>
-          <p className="font-sans text-xs text-neutral-400 leading-relaxed">
+          <p className={`font-sans text-xs leading-relaxed ${textMutedStyle}`}>
             {isId ? guide.subtitleId : guide.subtitleEn}
           </p>
         </div>
 
         {/* 4 Step Cards */}
         <div className="mt-5 space-y-3">
-          <p className="font-mono text-[11px] font-bold text-[#c6f432] uppercase tracking-wider">
+          <p className={`font-mono text-[11px] uppercase tracking-wider ${sectionHeading}`}>
             {isId ? "// LANGKAH PENGGUNAAN PRAKTIS" : "// STEP-BY-STEP WORKFLOW"}
           </p>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {guide.steps.map((st) => (
               <div
                 key={st.num}
-                className={`rounded-2xl border p-3.5 ${
-                  isLight
-                    ? "border-[#C7C0B0] bg-[#F4F1EA]"
-                    : "border-white/10 bg-[#121B15]"
-                }`}
+                className={`rounded-2xl border p-3.5 ${cardBg}`}
               >
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#c6f432]">
-                  <span>{st.num}</span>
-                  <span className="text-white font-sans text-xs font-semibold">
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex h-5 w-6 items-center justify-center rounded font-mono text-[11px] ${stepNumStyle}`}>
+                    {st.num}
+                  </span>
+                  <span className={`font-sans text-xs ${stepHeadingStyle}`}>
                     {isId ? st.headingId : st.headingEn}
                   </span>
                 </div>
-                <p className="mt-1.5 font-sans text-[11px] leading-relaxed text-neutral-400">
+                <p className={`mt-2 font-sans text-[11px] leading-relaxed ${textSecondaryStyle}`}>
                   {isId ? st.descId : st.descEn}
                 </p>
               </div>
@@ -429,10 +461,10 @@ export default function FeatureGuideModal({
 
         {/* Best Practices & Tips */}
         <div className="mt-5 space-y-2">
-          <p className="font-mono text-[11px] font-bold text-[#c6f432] uppercase tracking-wider">
+          <p className={`font-mono text-[11px] uppercase tracking-wider ${sectionHeading}`}>
             {isId ? "// TIPS EFISIENSI & AKURASI" : "// TIPS & BEST PRACTICES"}
           </p>
-          <ul className="space-y-1.5 text-xs text-neutral-400 font-sans list-disc list-inside">
+          <ul className={`space-y-1.5 text-xs font-sans list-disc list-inside ${textSecondaryStyle}`}>
             {(isId ? guide.tipsId : guide.tipsEn).map((tip, idx) => (
               <li key={idx} className="leading-relaxed">
                 {tip}
@@ -442,12 +474,12 @@ export default function FeatureGuideModal({
         </div>
 
         {/* Technical Specs Footer */}
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-black/10 dark:border-white/10 pt-4 font-mono text-[10px] text-neutral-400">
-          <span>{isId ? guide.specsId : guide.specsEn}</span>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-black/10 dark:border-white/10 pt-4 font-mono text-[10px]">
+          <span className={textMutedStyle}>{isId ? guide.specsId : guide.specsEn}</span>
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto min-h-[38px] cursor-pointer rounded-xl bg-[#c6f432] px-5 py-1.5 font-sans text-xs font-bold text-black transition hover:bg-[#bef264]"
+            className={`w-full sm:w-auto min-h-[38px] cursor-pointer rounded-xl px-5 py-1.5 font-sans text-xs font-bold transition ${gotItBtnStyle}`}
           >
             {isId ? "Saya Mengerti →" : "Got It →"}
           </button>

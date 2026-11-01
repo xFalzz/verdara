@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 /**
  * Supabase OAuth PKCE Callback Route Handler
- * Receives the code from external providers (Google)
+ * Receives the code from external providers (Google, Facebook)
  * and exchanges it for a permanent session.
  */
 export async function GET(request: Request) {

@@ -298,13 +298,12 @@ export default function StudioShell({
           </h1>
           <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
             {isId
-              ? "Mengalihkan Anda ke Portal Login Verdara. Silakan masuk dengan akun terverifikasi Google atau email warga Anda."
-              : "Redirecting to the Verdara Session Portal. Please sign in with your verified Google or resident email account."}
+              ? "Mengalihkan Anda ke Portal Login Verdara. Silakan masuk dengan akun terverifikasi Google, Facebook, atau email warga Anda."
+              : "Redirecting to the Verdara Session Portal. Please sign in with your verified Google, Facebook, or resident email account."}
           </p>
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
               href={`/login?next=${encodeURIComponent(pathname || "/dashboard")}`}
-              prefetch={false}
               className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#c6f432] px-5 text-xs font-bold text-[#080808] transition hover:bg-[#d6ff4d]"
             >
               {isId ? "Buka Halaman Login →" : "Go to Login Portal →"}

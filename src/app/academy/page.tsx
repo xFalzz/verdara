@@ -186,14 +186,16 @@ export default function AcademyPage() {
                 type="button"
                 onClick={() => setShowGuideModal(true)}
                 aria-label={isId ? "Buka Panduan Akademi Aksi Lapangan" : "Open Field Action Academy Guide"}
-                className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition ${
+                className={`flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition shadow-sm ${
                   isLight
-                    ? "border-[#C7C0B0] bg-white text-[#101D16] hover:bg-[#F4F1EA]"
-                    : "border-[#1D3328] bg-[#13221B] text-[#F2F7F4] hover:border-[#88AC9B]"
+                    ? "border-[#14532D]/35 bg-[#F2F7F4] text-[#14532D] hover:bg-[#E2EDE6] hover:border-[#14532D]"
+                    : "border-[#A3E635]/50 bg-[#0A120E] text-[#A3E635] hover:bg-[#A3E635]/15 hover:border-[#A3E635] shadow-[0_0_12px_rgba(163,230,53,0.12)]"
                 }`}
                 title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
               >
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-current/20 text-xs">?</span>
+                <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black ${
+                  isLight ? "bg-[#14532D]/15 text-[#14532D]" : "bg-[#A3E635]/25 text-[#A3E635]"
+                }`}>?</span>
                 <span>{isId ? "Panduan" : "Guide"}</span>
               </button>
             </div>

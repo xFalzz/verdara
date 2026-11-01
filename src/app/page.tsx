@@ -2885,9 +2885,9 @@ export default function LandingPage() {
                     titleEn: "Verified Resident Plot & OAuth 2.0",
                     titleId: "Plot Warga Terverifikasi & OAuth 2.0",
                     descEn:
-                      "Sign in via Google or resident email to explore living 3D town structures, SAM 3.1 vision, and Muse Spark council.",
+                      "Sign in via Google, Facebook, or resident email to explore living 3D town structures, SAM 3.1 vision, and Muse Spark council.",
                     descId:
-                      "Masuk melalui Google atau email warga untuk menjelajahi kota hidup 3D, visi SAM 3.1, dan dewan pakar Muse Spark.",
+                      "Masuk melalui Google, Facebook, atau email warga untuk menjelajahi kota hidup 3D, visi SAM 3.1, dan dewan pakar Muse Spark.",
                   },
                 ].map((item) => (
                   <div
