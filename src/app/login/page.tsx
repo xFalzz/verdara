@@ -37,9 +37,7 @@ export default function LoginPage() {
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(
-    null
-  );
+  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null);
   const [oauthNotice, setOauthNotice] = useState<string | null>(null);
   const [oauthError, setOauthError] = useState<{
     error: string;
@@ -93,7 +91,7 @@ export default function LoginPage() {
     router.push(nextRoute);
   };
 
-  const handleOAuthLogin = async (provider: "google" | "facebook") => {
+  const handleOAuthLogin = async (provider: "google") => {
     setFormError(null);
     setOauthError(null);
     setOauthLoading(provider);
@@ -114,17 +112,12 @@ export default function LoginPage() {
         )}`;
 
         const { data, error } = await supabase.auth.signInWithOAuth({
-          provider,
+          provider: "google",
           options: {
             redirectTo,
-            queryParams:
-              provider === "google"
-                ? { access_type: "offline", prompt: "select_account" }
-                : undefined,
+            queryParams: { access_type: "offline", prompt: "select_account" },
             scopes:
-              provider === "google"
-                ? "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid"
-                : "public_profile,email",
+              "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
           },
         });
 
@@ -142,8 +135,8 @@ export default function LoginPage() {
         setFormError(
           err?.message ||
             (isId
-              ? "Gagal memulai autentikasi sosial."
-              : "Failed to initiate social login.")
+              ? "Gagal memulai autentikasi Google."
+              : "Failed to initiate Google authentication.")
         );
         setOauthLoading(null);
         return;
@@ -575,29 +568,15 @@ export default function LoginPage() {
                     <p className="leading-relaxed text-[11px] text-amber-100">
                       {oauthError.description.includes("exchange external code")
                         ? isId
-                          ? "Supabase tidak dapat menukar kode otorisasi eksternal dengan Google atau Meta. Hal ini terjadi bila Kunci Rahasia Aplikasi (Client Secret) di Supabase Dashboard belum sesuai dengan yang ada di Google Cloud Console atau Meta for Developers, atau produk Masuk Facebook belum diaktifkan."
-                          : "Supabase was unable to exchange external code with Google or Meta. This happens when the Client Secret in Supabase Dashboard (Auth > Providers) does not match Google Cloud Console or Meta for Developers, or when Facebook Login is still in pending setup."
-                        : oauthError.description.toLowerCase().includes("user email")
-                        ? isId
-                          ? "Akun Facebook Anda berhasil terhubung, tetapi Facebook tidak mengirimkan alamat email ke Supabase. Hal ini biasanya terjadi jika akun Facebook dibuat hanya dengan nomor telepon atau izin email belum dicentang di dashboard Facebook App."
-                          : "Your Facebook account connected, but Facebook did not return an email address. This typically happens if the Facebook account was registered with a phone number only, or if the email permission is not enabled in Meta for Developers."
+                          ? "Izin login Google berhasil disetujui, namun Supabase gagal menukar kode otorisasi dengan token Google. Hal ini terjadi karena Client Secret di Supabase Dashboard (Auth > Providers > Google) belum cocok dengan Client Secret di Google Cloud Console."
+                          : "Google authorization succeeded, but Supabase could not exchange the code for a token. This occurs when the Client Secret in Supabase Dashboard (Auth > Providers > Google) does not match Google Cloud Console."
                         : oauthError.description}
                     </p>
                     <div className="rounded-lg bg-black/40 p-2.5 text-[10px] text-amber-300 space-y-1">
-                      <p className="font-semibold">{isId ? "Langkah Solusi:" : "Resolution Steps:"}</p>
-                      {oauthError.description.toLowerCase().includes("user email") ? (
-                        <>
-                          <p>1. {isId ? "Di Meta for Developers > App 'Verdara-Town' > Use Cases > Authentication, pastikan izin 'email' aktif" : "In Meta for Developers > App 'Verdara-Town' > Use Cases > Authentication, verify 'email' permission is enabled"}</p>
-                          <p>2. {isId ? "Pastikan akun Facebook Anda memiliki Email Utama terverifikasi di Pengaturan Facebook" : "Ensure your Facebook account has a verified Primary Email in Facebook Settings"}</p>
-                          <p>3. {isId ? "Atau klik tombol 'Masuk Langsung dengan Akun Ini' di bawah untuk masuk seketika" : "Or click 'Sign In Directly With This Account' below to enter immediately"}</p>
-                        </>
-                      ) : (
-                        <>
-                          <p>1. {isId ? "Buka Supabase Dashboard > Authentication > Providers" : "Open Supabase Dashboard > Authentication > Providers"}</p>
-                          <p>2. {isId ? "Pastikan Client ID & Client Secret di-paste tanpa spasi" : "Ensure Client ID & Client Secret are pasted without trailing spaces"}</p>
-                          <p>3. {isId ? "Di Meta for Developers, klik 'Siapkan' pada Masuk Facebook" : "In Meta for Developers, click 'Set up' on Facebook Login"}</p>
-                        </>
-                      )}
+                      <p className="font-semibold">{isId ? "Langkah Solusi Kunci Rahasia:" : "Resolution Steps:"}</p>
+                      <p>1. {isId ? "Buka Google Cloud Console > APIs & Services > Credentials" : "Open Google Cloud Console > APIs & Services > Credentials"}</p>
+                      <p>2. {isId ? "Klik Client ID Anda dan salin Client Secret (Rahasia Klien)" : "Click your Client ID and copy the Client Secret"}</p>
+                      <p>3. {isId ? "Buka Supabase Dashboard > Authentication > Providers > Google, lalu paste Client Secret tanpa spasi dan klik Save" : "Open Supabase Dashboard > Authentication > Providers > Google, paste Client Secret without trailing spaces, and click Save"}</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-2">
@@ -631,30 +610,30 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                {/* SOCIAL OAUTH 2.0 PROVIDERS (GOOGLE & FACEBOOK) */}
+                {/* SOCIAL OAUTH 2.0 (GOOGLE SINGLE SIGN-ON) */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-[#aaa9ad]">
                     <span>
                       {isId
-                        ? "MASUK CEPAT DENGAN SOSIAL (OAUTH 2.0)"
-                        : "CONTINUE WITH SOCIAL OAUTH 2.0"}
+                        ? "MASUK CEPAT DENGAN GOOGLE (OAUTH 2.0)"
+                        : "CONTINUE WITH GOOGLE OAUTH 2.0"}
                     </span>
                     <span className="rounded-full bg-[#1e9e5a]/20 px-2 py-0.5 text-[9px] font-semibold text-[#5ce69b]">
-                      Secure Single Sign-On
+                      Verified Identity
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  <div>
                     {/* Google OAuth Button */}
                     <button
                       type="button"
                       onClick={() => handleOAuthLogin("google")}
                       disabled={oauthLoading !== null}
-                      className="flex min-h-[46px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl border border-white/15 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#111111] shadow-sm transition hover:bg-[#f2f2ef] active:scale-[0.99] disabled:opacity-60"
+                      className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white px-5 py-3 text-sm font-semibold text-[#111111] shadow-sm transition hover:bg-[#f2f2ef] active:scale-[0.99] disabled:opacity-60"
                     >
                       <svg
-                        width="18"
-                        height="18"
+                        width="20"
+                        height="20"
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                         className="shrink-0"
@@ -679,35 +658,11 @@ export default function LoginPage() {
                       <span>
                         {oauthLoading === "google"
                           ? isId
-                            ? "Menghubungkan..."
-                            : "Connecting..."
-                          : "Google"}
-                      </span>
-                    </button>
-
-                    {/* Facebook OAuth Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleOAuthLogin("facebook")}
-                      disabled={oauthLoading !== null}
-                      className="flex min-h-[46px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl border border-[#1877F2]/50 bg-[#1877F2] px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-[#166fe5] active:scale-[0.99] disabled:opacity-60"
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        aria-hidden="true"
-                        className="shrink-0"
-                      >
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                      </svg>
-                      <span>
-                        {oauthLoading === "facebook"
-                          ? isId
-                            ? "Menghubungkan..."
-                            : "Connecting..."
-                          : "Facebook"}
+                            ? "Menghubungkan ke Google..."
+                            : "Connecting to Google..."
+                          : isId
+                          ? "Masuk dengan Akun Google"
+                          : "Continue with Google"}
                       </span>
                     </button>
                   </div>
