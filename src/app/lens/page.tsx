@@ -368,6 +368,7 @@ export default function LensPage() {
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <Link
                 href="/login?next=/lens"
+                prefetch={false}
                 className="inline-flex min-h-[38px] items-center rounded-xl bg-amber-400 px-4 py-1.5 font-sans text-xs font-bold text-black transition hover:bg-amber-300"
               >
                 {isId ? "Masuk dengan Akun Terverifikasi →" : "Sign In with Verified Account →"}

@@ -47,8 +47,8 @@ export default function AuthGateModal({
     : "Meta AI features require a verified account. Please sign in first.";
 
   const explanation = isId
-    ? "Untuk melindungi kuota credit token Meta AI ($150 pool) dari penyalahgunaan dan menjaga stabilitas sistem, fitur konsultasi langsung 3 Pakar AI dan pemindaian visual kustom dikhususkan bagi pengguna yang telah masuk."
-    : "To safeguard the $150 Meta AI credit pool from depletion and ensure system stability, interactive specialist consultations and custom image scans are reserved for verified accounts.";
+    ? "Untuk melindungi kuota credit token Meta AI dari penyalahgunaan dan menjaga stabilitas sistem, fitur konsultasi langsung 3 Pakar AI dan pemindaian visual kustom dikhususkan bagi pengguna yang telah masuk."
+    : "To safeguard Meta AI credit tokens from depletion and ensure system stability, interactive specialist consultations and custom image scans are reserved for verified accounts.";
 
   return (
     <div
@@ -100,6 +100,7 @@ export default function AuthGateModal({
           </button>
           <Link
             href={`/login?next=${encodeURIComponent(nextPath)}`}
+            prefetch={false}
             className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center cursor-pointer rounded-xl bg-amber-400 px-5 py-2 font-sans text-xs font-bold text-black transition hover:bg-amber-300"
           >
             {isId ? "Masuk atau Daftar Sekarang →" : "Sign In or Register Now →"}
