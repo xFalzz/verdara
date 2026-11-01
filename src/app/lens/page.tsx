@@ -40,13 +40,11 @@ export default function LensPage() {
   const [showAuthGateModal, setShowAuthGateModal] = useState<boolean>(false);
   const [authGateMessage, setAuthGateMessage] = useState<string>("");
 
-  const [activeSampleId, setActiveSampleId] = useState<string>(
-    GOLDEN_LENS_SAMPLES[0]!.id
-  );
+  // Realistic Standby State: When false, lens shows clean camera/upload viewfinder, not pre-filled mock results
+  const [hasScanned, setHasScanned] = useState<boolean>(false);
+  const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
   const [customImageUrl, setCustomImageUrl] = useState<string | null>(null);
-  const [selectedObjId, setSelectedObjId] = useState<string | null>(
-    GOLDEN_LENS_SAMPLES[0]!.objects[0]!.id
-  );
+  const [selectedObjId, setSelectedObjId] = useState<string | null>(null);
   const [xrayLevel, setXrayLevel] = useState<number>(20);
   const [showRetrofitComparison, setShowRetrofitComparison] =
     useState<boolean>(false);
@@ -127,7 +125,18 @@ export default function LensPage() {
 
   const selectedValuation = objectValuations[selectedObj.id];
 
+  const handleResetScanner = () => {
+    setHasScanned(false);
+    setActiveSampleId(null);
+    setCustomImageUrl(null);
+    setSelectedObjId(null);
+    setVoiceTranscript(null);
+    setScanError(null);
+    setShowRetrofitComparison(false);
+  };
+
   const handleSelectSample = async (sample: GoldenLensSample) => {
+    setHasScanned(true);
     setIsScanning(true);
     setScanError(null);
     setCustomImageUrl(null);
@@ -197,6 +206,7 @@ export default function LensPage() {
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
+        setHasScanned(true);
         setIsScanning(true);
         setCustomImageUrl(reader.result);
         recordScanCompleted(
@@ -221,6 +231,7 @@ export default function LensPage() {
   };
 
   const handleCameraCapture = (dataUrl: string, category?: "auto" | "waste" | "plant") => {
+    setHasScanned(true);
     setIsScanning(true);
     setScanError(null);
     setCustomImageUrl(dataUrl);
@@ -472,18 +483,18 @@ export default function LensPage() {
                 <span>{isId ? "Kamera Device" : "Device Camera"}</span>
               </button>
 
-              {customImageUrl && (
+              {(hasScanned || customImageUrl) && (
                 <button
                   type="button"
-                  onClick={() => setCustomImageUrl(null)}
-                  className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-semibold transition ${
+                  onClick={handleResetScanner}
+                  className={`flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition shadow-sm ${
                     isLight
                       ? "border-red-400 bg-red-50 text-red-700 hover:bg-red-100"
                       : "border-red-500/40 bg-red-950/20 text-red-300 hover:bg-red-950/40"
                   }`}
-                  title={isId ? "Kembali ke spesimen contoh bawaan" : "Reset to default sample specimen"}
+                  title={isId ? "Reset ke mode pemindai awal" : "Reset back to initial camera mode"}
                 >
-                  <span>✕ {isId ? "Reset Foto" : "Reset Photo"}</span>
+                  <span>✕ {isId ? "Pindai Baru / Reset" : "Scan New / Reset"}</span>
                 </button>
               )}
 
@@ -645,15 +656,25 @@ export default function LensPage() {
             </button>
           </div>
 
+          {/* Specimen Demo Presets Banner */}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 font-mono text-[11px] border-current/10">
+            <span className={isLight ? "text-[#14532D] font-bold" : "text-[#A3E635] font-bold"}>
+              {isId ? "// DATA SPESIMEN CONTOH (OPSIONAL):" : "// CALIBRATED DEMO SPECIMENS (OPTIONAL):"}
+            </span>
+            <span className="opacity-70 text-[10px]">
+              {isId ? "Klik salah satu untuk menguji simulasi SAM 3.1 tanpa foto" : "Click to test SAM 3.1 simulation without custom photo"}
+            </span>
+          </div>
+
           {/* 4 Specimen Selector Tabs */}
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {GOLDEN_LENS_SAMPLES.filter((sample) => {
               if (filterCategory === "waste") return sample.mode === "waste";
               if (filterCategory === "plant") return sample.mode === "plant";
               if (filterCategory === "retrofit") return sample.mode === "retrofit";
               return true;
-            }).map((sample, idx) => {
-              const active = sample.id === activeSample.id && !customImageUrl;
+            }).map((sample) => {
+              const active = hasScanned && sample.id === activeSampleId && !customImageUrl;
               return (
                 <button
                   key={sample.id}
@@ -688,189 +709,475 @@ export default function LensPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left 7 Columns: SAM 3.1 Polygon Visor & Scrubber Controls */}
           <div className="space-y-4 lg:col-span-7">
-            <div
-              className={`border p-4 ${
-                isLight
-                  ? "border-[#C7C0B0] bg-white"
-                  : "border-[#1D3328] bg-[#0E1914]"
-              }`}
-            >
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                <div>
-                  <span
-                    className={
-                      isLight
-                        ? "font-bold text-[#14532D]"
-                        : "font-bold text-[#A3E635]"
-                    }
-                  >
-                    {isId ? "// VISOR POLIGON SAM 3.1" : "// SAM 3.1 POLYGON VISOR"}
-                  </span>{" "}
-                  <span>
-                    ({activeSample.objects.length} {isId ? "objek" : "instances"} · IoU &lt; 0.85)
-                  </span>
-                </div>
-
-                {isScanning && (
-                  <span role="status" className="font-bold">
-                    {isId
-                      ? "Memindai poligon SAM 3.1..."
-                      : "Segmenting SAM 3.1 polygons..."}
-                  </span>
-                )}
-              </div>
-
-              <SpatialMaskViewer
-                sample={activeSample}
-                selectedObjectId={selectedObj.id}
-                onSelectObject={(obj) => setSelectedObjId(obj.id)}
-                xrayLevel={xrayLevel}
-                showRetrofitComparison={showRetrofitComparison}
-                retrofitCurtainPct={retrofitCurtainPct}
-                onRetrofitCurtainChange={setRetrofitCurtainPct}
-                customImageUrl={customImageUrl}
-                locale={locale}
-              />
-
-              {/* X-Ray & Muse Image Before/After Scrubber Controls */}
+            {!hasScanned && !customImageUrl ? (
+              // STANDBY CAMERA & VIEWFINDER DROPZONE
               <div
-                className={`mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 ${
-                  isLight ? "border-[#C7C0B0]" : "border-[#1D3328]"
+                className={`rounded-2xl border p-6 text-center transition-all ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-white shadow-sm"
+                    : "border-[#1D3328] bg-[#0E1914] shadow-sm"
                 }`}
               >
-                <div>
-                  <div className="flex items-center justify-between font-mono text-xs">
-                    <label htmlFor="xray-slider">
-                      {isId
-                        ? "Mode X-Ray Poligon SAM 3.1"
-                        : "SAM 3.1 Polygon X-Ray Opacity"}
-                    </label>
-                    <span className="font-bold tabular-nums">{xrayLevel}%</span>
-                  </div>
-                  <input
-                    id="xray-slider"
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={xrayLevel}
-                    onChange={(e) => setXrayLevel(Number(e.target.value))}
-                    className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between font-mono text-xs">
-                    <span>
-                      {isId
-                        ? "Tirai Renovasi Meta Muse Image"
-                        : "Meta Muse Image Retrofit Curtain"}
+                <div className="flex items-center justify-between border-b pb-3 font-mono text-xs border-current/15">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className={isLight ? "font-bold text-[#14532D]" : "font-bold text-[#A3E635]"}>
+                      {isId ? "// JENDELA BIDIK KAMERA SAM 3.1" : "// SAM 3.1 CAMERA VIEWFINDER"}
                     </span>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    ZERO-SHOT READY
+                  </span>
+                </div>
+
+                {/* Viewfinder Target Reticle Box */}
+                <div className="relative mt-4 flex aspect-[4/3] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-current/25 bg-current/5 p-6 select-none sm:aspect-[16/10]">
+                  {/* High-Tech Corner Crosshairs */}
+                  <div className="pointer-events-none absolute top-3 left-3 h-6 w-6 border-t-2 border-l-2 border-emerald-500" />
+                  <div className="pointer-events-none absolute top-3 right-3 h-6 w-6 border-t-2 border-r-2 border-emerald-500" />
+                  <div className="pointer-events-none absolute bottom-3 left-3 h-6 w-6 border-b-2 border-l-2 border-emerald-500" />
+                  <div className="pointer-events-none absolute bottom-3 right-3 h-6 w-6 border-b-2 border-r-2 border-emerald-500" />
+
+                  <div className="text-5xl">📷</div>
+
+                  <h2 className="mt-3 font-serif text-xl font-bold sm:text-2xl">
+                    {isId
+                      ? "Arahkan Kamera atau Unggah Foto Spesimen"
+                      : "Aim Camera or Upload Specimen Photo"}
+                  </h2>
+
+                  <p
+                    className={`mt-2 max-w-md text-xs leading-relaxed ${
+                      isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                    }`}
+                  >
+                    {isId
+                      ? "Ambil foto sampah daur ulang (botol, kaleng, kardus) atau daun tanaman yang menunjukkan gejala penyakit untuk segmentasi poligon instan."
+                      : "Capture recyclables (bottles, cans, paper) or plant leaves showing disease symptoms for instant instance polygon segmentation."}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowRetrofitComparison((prev) => !prev)
-                      }
-                      className={`min-h-[44px] cursor-pointer border px-3 py-1 font-mono text-xs font-bold transition ${
-                        showRetrofitComparison
-                          ? isLight
-                            ? "border-[#14532D] bg-[#14532D] text-white"
-                            : "border-[#A3E635] bg-[#A3E635] text-[#070D0A]"
-                          : isLight
-                            ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
-                            : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                      onClick={() => {
+                        if (isGuestOrStarter) {
+                          setAuthGateMessage(
+                            isId
+                              ? "Fitur kamera langsung memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengambil foto dengan kamera perangkat Anda."
+                              : "Direct device camera capture requires a verified account. Please sign in first to capture photos with your camera hardware."
+                          );
+                          setShowAuthGateModal(true);
+                          return;
+                        }
+                        setShowCameraModal(true);
+                      }}
+                      className={`flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 font-mono text-xs font-bold transition shadow-md ${
+                        isLight
+                          ? "bg-[#14532D] text-white hover:bg-[#166534]"
+                          : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
                       }`}
                     >
-                      {showRetrofitComparison
-                        ? isId
-                          ? "AKTIF (GESER TIRAI)"
-                          : "ACTIVE (DRAG CURTAIN)"
-                        : isId
-                          ? "AKTIFKAN BEFORE/AFTER"
-                          : "ENABLE BEFORE/AFTER"}
+                      <span>📷</span>
+                      <span>{isId ? "Buka Kamera Device" : "Open Device Camera"}</span>
                     </button>
-                  </div>
 
-                  {showRetrofitComparison && (
-                    <input
-                      type="range"
-                      aria-label={
-                        isId
-                          ? "Persentase Tirai Before After"
-                          : "Before After Curtain Percentage"
-                      }
-                      min={5}
-                      max={95}
-                      value={retrofitCurtainPct}
-                      onChange={(e) =>
-                        setRetrofitCurtainPct(Number(e.target.value))
-                      }
-                      className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
-                    />
-                  )}
+                    <label
+                      className={`flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-mono text-xs font-semibold transition ${
+                        isLight
+                          ? "border-[#14532D]/40 bg-white text-[#14532D] hover:bg-[#F4F1EA]"
+                          : "border-[#A3E635]/40 bg-[#0A120E] text-[#A3E635] hover:bg-[#A3E635]/15"
+                      }`}
+                    >
+                      <span>📁</span>
+                      <span>{isId ? "Pilih Berkas Foto" : "Upload Photo File"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCustomUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 font-mono text-[11px] opacity-75">
+                  <span>💡</span>
+                  <span>
+                    {isId
+                      ? "Belum ada foto sendiri? Klik salah satu tombol spesimen contoh di atas untuk menguji coba."
+                      : "Don't have a photo right now? Click any demo specimen button above to test."}
+                  </span>
                 </div>
               </div>
-            </div>
+            ) : (
+              // ACTIVE SCANNED VISOR (SAM 3.1 POLYGON VISOR)
+              <>
+                <div
+                  className={`border p-4 rounded-2xl ${
+                    isLight
+                      ? "border-[#C7C0B0] bg-white shadow-sm"
+                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                  }`}
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                    <div>
+                      <span
+                        className={
+                          isLight
+                            ? "font-bold text-[#14532D]"
+                            : "font-bold text-[#A3E635]"
+                        }
+                      >
+                        {isId ? "// VISOR POLIGON SAM 3.1" : "// SAM 3.1 POLYGON VISOR"}
+                      </span>{" "}
+                      <span>
+                        ({activeSample.objects.length} {isId ? "objek" : "instances"} · IoU &lt; 0.85)
+                      </span>
+                    </div>
 
-            {/* Segmented Object Selector Strip */}
-            <div
-              className={`border p-4 ${
-                isLight
-                  ? "border-[#C7C0B0] bg-white"
-                  : "border-[#1D3328] bg-[#0E1914]"
-              }`}
-            >
-              <p
-                className={`mb-2.5 font-mono text-xs font-bold ${
-                  isLight ? "text-[#14532D]" : "text-[#A3E635]"
-                }`}
-              >
-                {isId ? "// OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "// DETECTED INSTANCES (CLICK TO INSPECT)"}
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {activeSample.objects.map((obj) => {
-                  const val = objectValuations[obj.id];
-                  const isSel = obj.id === selectedObj.id;
-                  return (
-                    <button
-                      key={obj.id}
-                      type="button"
-                      onClick={() => setSelectedObjId(obj.id)}
-                      className={`min-h-[52px] cursor-pointer border p-3 text-left transition ${
-                        isSel
-                          ? isLight
-                            ? "border-[#14532D] bg-[#14532D] text-white"
-                            : "border-[#A3E635] bg-[#A3E635] text-[#070D0A]"
-                          : isLight
-                            ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
-                            : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                    {isScanning && (
+                      <span role="status" className="font-bold">
+                        {isId
+                          ? "Memindai poligon SAM 3.1..."
+                          : "Segmenting SAM 3.1 polygons..."}
+                      </span>
+                    )}
+                  </div>
+
+                  <SpatialMaskViewer
+                    sample={activeSample}
+                    selectedObjectId={selectedObj.id}
+                    onSelectObject={(obj) => setSelectedObjId(obj.id)}
+                    xrayLevel={xrayLevel}
+                    showRetrofitComparison={showRetrofitComparison}
+                    retrofitCurtainPct={retrofitCurtainPct}
+                    onRetrofitCurtainChange={setRetrofitCurtainPct}
+                    customImageUrl={customImageUrl}
+                    locale={locale}
+                  />
+
+                  {customImageUrl && (
+                    <div
+                      className={`mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3 font-mono text-xs ${
+                        isLight
+                          ? "border-[#14532D]/30 bg-[#F2F7F4]"
+                          : "border-[#A3E635]/30 bg-[#0A120E]"
                       }`}
                     >
-                      <div className="flex items-center justify-between font-mono text-[11px]">
-                        <span className="font-bold">{obj.materialCode}</span>
-                        <span className="tabular-nums">
-                          conf {(obj.score * 100).toFixed(0)}%
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="font-bold">
+                          {isId
+                            ? "Foto Kamera / Unggahan Anda Aktif"
+                            : "Your Camera / Uploaded Photo Active"}
                         </span>
                       </div>
-                      <div className="mt-1 flex items-center justify-between text-xs">
-                        <span className="font-semibold capitalize">
-                          {obj.concept}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] opacity-75">
+                          {isId ? "Pilih Mode Analisis:" : "Analysis Mode:"}
                         </span>
-                        {val && (
-                          <span className="font-mono font-bold tabular-nums">
-                            {formatCurrency(val.valueMax, val.currency, locale)}
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const plantSample = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "plant");
+                            if (plantSample) {
+                              setActiveSampleId(plantSample.id);
+                              setSelectedObjId(plantSample.objects[0]?.id ?? null);
+                              setShowRetrofitComparison(false);
+                              setFilterCategory("plant");
+                            }
+                          }}
+                          className={`cursor-pointer rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
+                            activeSample.mode === "plant"
+                              ? isLight ? "bg-[#14532D] text-white" : "bg-[#A3E635] text-[#070D0A]"
+                              : "border border-current/20 hover:bg-current/10"
+                          }`}
+                        >
+                          🌱 {isId ? "Diagnosa Tanaman" : "Plant Diagnostic"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const wasteSample = GOLDEN_LENS_SAMPLES.find((s) => s.mode === "waste");
+                            if (wasteSample) {
+                              setActiveSampleId(wasteSample.id);
+                              setSelectedObjId(wasteSample.objects[0]?.id ?? null);
+                              setShowRetrofitComparison(false);
+                              setFilterCategory("waste");
+                            }
+                          }}
+                          className={`cursor-pointer rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
+                            activeSample.mode === "waste"
+                              ? isLight ? "bg-[#14532D] text-white" : "bg-[#A3E635] text-[#070D0A]"
+                              : "border border-current/20 hover:bg-current/10"
+                          }`}
+                        >
+                          🗑️ {isId ? "Scan Sampah" : "Waste Scan"}
+                        </button>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                    </div>
+                  )}
+
+                  {/* X-Ray & Muse Image Before/After Scrubber Controls */}
+                  <div
+                    className={`mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 ${
+                      isLight ? "border-[#C7C0B0]" : "border-[#1D3328]"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <label htmlFor="xray-slider">
+                          {isId
+                            ? "Mode X-Ray Poligon SAM 3.1"
+                            : "SAM 3.1 Polygon X-Ray Opacity"}
+                        </label>
+                        <span className="font-bold tabular-nums">{xrayLevel}%</span>
+                      </div>
+                      <input
+                        id="xray-slider"
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={xrayLevel}
+                        onChange={(e) => setXrayLevel(Number(e.target.value))}
+                        className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span>
+                          {isId
+                            ? "Tirai Renovasi Meta Muse Image"
+                            : "Meta Muse Image Retrofit Curtain"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowRetrofitComparison((prev) => !prev)
+                          }
+                          className={`min-h-[44px] cursor-pointer border px-3 py-1 font-mono text-xs font-bold transition ${
+                            showRetrofitComparison
+                              ? isLight
+                                ? "border-[#14532D] bg-[#14532D] text-white"
+                                : "border-[#A3E635] bg-[#A3E635] text-[#070D0A]"
+                              : isLight
+                                ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                                : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                          }`}
+                        >
+                          {showRetrofitComparison
+                            ? isId
+                              ? "AKTIF (GESER TIRAI)"
+                              : "ACTIVE (DRAG CURTAIN)"
+                            : isId
+                              ? "AKTIFKAN BEFORE/AFTER"
+                              : "ENABLE BEFORE/AFTER"}
+                        </button>
+                      </div>
+
+                      {showRetrofitComparison && (
+                        <input
+                          type="range"
+                          aria-label={
+                            isId
+                              ? "Persentase Tirai Before After"
+                              : "Before After Curtain Percentage"
+                          }
+                          min={5}
+                          max={95}
+                          value={retrofitCurtainPct}
+                          onChange={(e) =>
+                            setRetrofitCurtainPct(Number(e.target.value))
+                          }
+                          className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Segmented Object Selector Strip */}
+                <div
+                  className={`border p-4 rounded-2xl ${
+                    isLight
+                      ? "border-[#C7C0B0] bg-white shadow-sm"
+                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                  }`}
+                >
+                  <p
+                    className={`mb-2.5 font-mono text-xs font-bold ${
+                      isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                    }`}
+                  >
+                    {isId ? "// OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "// DETECTED INSTANCES (CLICK TO INSPECT)"}
+                  </p>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {activeSample.objects.map((obj) => {
+                      const val = objectValuations[obj.id];
+                      const isSel = obj.id === selectedObj.id;
+                      return (
+                        <button
+                          key={obj.id}
+                          type="button"
+                          onClick={() => setSelectedObjId(obj.id)}
+                          className={`min-h-[52px] cursor-pointer border p-3 text-left transition rounded-xl ${
+                            isSel
+                              ? isLight
+                                ? "border-[#14532D] bg-[#14532D] text-white shadow-sm"
+                                : "border-[#A3E635] bg-[#A3E635] text-[#070D0A] shadow-sm"
+                              : isLight
+                                ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                                : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-mono text-[11px]">
+                            <span className="font-bold">{obj.materialCode}</span>
+                            <span className="tabular-nums">
+                              conf {(obj.score * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                          <div className="mt-1 flex items-center justify-between text-xs">
+                            <span className="font-semibold capitalize">
+                              {obj.concept}
+                            </span>
+                            {val && (
+                              <span className="font-mono font-bold tabular-nums">
+                                {formatCurrency(val.valueMax, val.currency, locale)}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right 5 Columns: Selected Instance Valuation & Upcycling Protocol */}
           <div className="space-y-4 lg:col-span-5">
-            {activeSample.mode === "plant" ? (
+            {!hasScanned && !customImageUrl ? (
+              // STANDBY INTELLIGENCE DOSSIER (WAITING FOR USER PHOTO)
+              <div
+                className={`border p-6 rounded-2xl ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-white shadow-sm"
+                    : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                }`}
+              >
+                <div className="flex items-center justify-between border-b pb-3 border-current/15 font-mono text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                    <span className={isLight ? "font-bold text-[#14532D]" : "font-bold text-[#A3E635]"}>
+                      {isId ? "// INTELIJEN VISI BERSIAGA" : "// VISION INTELLIGENCE STANDBY"}
+                    </span>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    SAM 3.1 + META MUSE
+                  </span>
+                </div>
+
+                <div className="mt-4">
+                  <p className="font-mono text-[11px] opacity-75">
+                    {isId ? "STATUS SENSOR KAMERA:" : "CAMERA SENSOR STATUS:"}
+                  </p>
+                  <h2 className="mt-0.5 font-serif text-xl font-bold">
+                    {isId ? "Menunggu Input Pemindaian" : "Waiting for Scan Input"}
+                  </h2>
+                  <p className={`mt-1.5 text-xs leading-relaxed ${isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}`}>
+                    {isId
+                      ? "Arahkan kamera ke sampah anorganik (botol, kaleng, kardus) atau daun tanaman Anda. SAM 3.1 akan mengekstrak poligon segmentasi dan menghitung nilai deposit atau diagnosa kesehatan daun secara real-time."
+                      : "Aim the camera at recyclables (bottles, cans, paper) or plant foliage. SAM 3.1 will segment exact instance masks and calculate local recovery values or plant health metrics in real time."}
+                  </p>
+                </div>
+
+                {/* 3 Standby Stat Placeholders */}
+                <div className="mt-4 grid grid-cols-3 gap-2 font-mono">
+                  <div className={`border p-3 rounded-xl ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                    <p className="text-[10px] opacity-75">{isId ? "DEPOSIT" : "VALUATION"}</p>
+                    <p className="mt-1 text-base font-bold tabular-nums opacity-40">--</p>
+                  </div>
+                  <div className={`border p-3 rounded-xl ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                    <p className="text-[10px] opacity-75">{isId ? "EMISI CO2e" : "AVOIDED CO2e"}</p>
+                    <p className="mt-1 text-base font-bold tabular-nums opacity-40">--</p>
+                  </div>
+                  <div className={`border p-3 rounded-xl ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                    <p className="text-[10px] opacity-75">{isId ? "STATUS" : "STATUS"}</p>
+                    <p className="mt-1 text-xs font-bold text-emerald-500">READY</p>
+                  </div>
+                </div>
+
+                {/* Diagnostic Capabilities Feature List */}
+                <div className="mt-5 space-y-2.5">
+                  <p className="font-mono text-xs font-bold opacity-75">
+                    {isId ? "// KAPABILITAS SENSOR SAM 3.1:" : "// SAM 3.1 VISION CAPABILITIES:"}
+                  </p>
+
+                  <div className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                    <span className="text-base">🗑️</span>
+                    <div>
+                      <strong className="block font-semibold">{isId ? "Audit Sampah & Bank Sampah" : "Waste & Bank Sampah Audit"}</strong>
+                      <span className={isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}>
+                        {isId
+                          ? "Segmentasi material plastik PET/HDPE, aluminium, kaca, dan e-waste dengan estimasi deposit tunai lokal."
+                          : "Segment PET, HDPE, aluminum, glass, and e-waste instances with localized cash redemption values."}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                    <span className="text-base">🌱</span>
+                    <div>
+                      <strong className="block font-semibold">{isId ? "Dokter Tanaman & Daun Kebun" : "Plant Doctor & Leaf Health"}</strong>
+                      <span className={isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}>
+                        {isId
+                          ? "Deteksi klorosis, nekrosis, dan rasio lesi daun berpenyakit lengkap dengan jadwal perawatan organik 7 hari."
+                          : "Detect chlorosis, necrosis, and diseased lesion surface area ratios with a 7-day organic recovery schedule."}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                    <span className="text-base">🏡</span>
+                    <div>
+                      <strong className="block font-semibold">{isId ? "Retrofit Biophilic & Atap" : "Biophilic Retrofit & Roof"}</strong>
+                      <span className={isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}>
+                        {isId
+                          ? "Segmentasi atap surya, halaman beton, dan simulasi penambahan kanopi hijau perkotaan."
+                          : "Segment rooftop solar zones, impervious pavement, and biophilic green canopy additions."}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 border-t pt-4 border-current/10">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isGuestOrStarter) {
+                        setAuthGateMessage(
+                          isId
+                            ? "Fitur kamera langsung memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengambil foto dengan kamera perangkat Anda."
+                            : "Direct device camera capture requires a verified account. Please sign in first to capture photos with your camera hardware."
+                        );
+                        setShowAuthGateModal(true);
+                        return;
+                      }
+                      setShowCameraModal(true);
+                    }}
+                    className={`min-h-[44px] w-full cursor-pointer rounded-xl px-4 py-2.5 font-mono text-xs font-bold transition shadow-sm ${
+                      isLight
+                        ? "bg-[#14532D] text-white hover:bg-[#166534]"
+                        : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
+                    }`}
+                  >
+                    📷 {isId ? "Buka Kamera & Mulai Pindai Sekarang" : "Open Camera & Start Scan Now"}
+                  </button>
+                </div>
+              </div>
+            ) : activeSample.mode === "plant" ? (
               // HIJARA URBAN BOTANY & PLANT DOCTOR DOSSIER
               <>
                 {/* Plant Health Status Summary */}

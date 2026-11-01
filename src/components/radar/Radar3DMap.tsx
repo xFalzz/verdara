@@ -48,6 +48,30 @@ export default function Radar3DMap({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    const fallbackRasterStyle: maplibregl.StyleSpecification = {
+      version: 8,
+      sources: {
+        "carto-voyager": {
+          type: "raster",
+          tiles: [
+            "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+          ],
+          tileSize: 256,
+          attribution: "© OpenStreetMap contributors, © CARTO",
+        },
+      },
+      layers: [
+        {
+          id: "carto-voyager-layer",
+          type: "raster",
+          source: "carto-voyager",
+          minzoom: 0,
+          maxzoom: 20,
+        },
+      ],
+    };
+
+    let styleApplied = false;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: "https://tiles.openfreemap.org/styles/liberty",
@@ -59,12 +83,36 @@ export default function Radar3DMap({
       scrollZoom: true,
     });
 
+    const activateFallback = () => {
+      if (styleApplied) return;
+      styleApplied = true;
+      try {
+        map.setStyle(fallbackRasterStyle);
+        setMapLoaded(true);
+      } catch {
+        // Safe fallback
+      }
+    };
+
+    map.on("error", (e) => {
+      if (e.error?.message?.includes("styles/liberty") || !map.isStyleLoaded()) {
+        activateFallback();
+      }
+    });
+
+    const fallbackTimer = setTimeout(() => {
+      if (!map.isStyleLoaded()) {
+        activateFallback();
+      }
+    }, 2500);
+
     map.addControl(
       new maplibregl.NavigationControl({ visualizePitch: true }),
       "bottom-right"
     );
 
     map.on("load", () => {
+      styleApplied = true;
       try {
         const style = map.getStyle();
         const vectorSource =

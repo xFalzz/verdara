@@ -181,9 +181,7 @@ export default function CouncilPage() {
     [aiShield.useOpenWeightModel, buildCurrentSiteBrief, isGuestOrStarter, isId, userId, userPrompt]
   );
 
-  useEffect(() => {
-    handleRunCouncil();
-  }, [handleRunCouncil]);
+  // Deliberation is triggered intentionally by user button click or question submission, preserving credits and realistic workflow
 
   return (
     <StudioShell>
@@ -464,6 +462,84 @@ export default function CouncilPage() {
             className="rounded-xl border border-rose-500/50 bg-rose-950/20 p-4 font-mono text-xs text-rose-400"
           >
             {errorMessage}
+          </div>
+        )}
+
+        {!sessionResult && !isRunning && (
+          <div className={`rounded-2xl border p-8 text-center ${surfaceCard}`}>
+            <div className="flex items-center justify-center gap-2 font-mono text-xs">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className={isLight ? "font-bold text-[#14532D]" : "font-bold text-[#A3E635]"}>
+                {isId ? "// RUANG SIDANG DEWAN SPESIALIS BERSIAGA" : "// SPECIALIST COUNCIL CHAMBER STANDBY"}
+              </span>
+            </div>
+
+            <h2 className="mt-3 font-serif text-2xl font-bold">
+              {isId ? "Tiga Spesialis AI Siap Menganalisis Tapak Anda" : "Three AI Specialists Ready to Deliberate Your Site"}
+            </h2>
+
+            <p className={`mx-auto mt-2 max-w-xl text-xs leading-relaxed ${textSecondary}`}>
+              {isId
+                ? "Dr. Flora (Spesialis Biologis & Tanaman), Ir. Arka (Fisikawan Surya & Energi), dan Sirkula (Ahli Ekonomi Sirkular) menunggu instruksi Anda untuk menyintesis rencana aksi terbaik."
+                : "Dr. Flora (Biological & Botany Specialist), Ir. Arka (Solar Physics & Energy Engineer), and Sirkula (Circular Economy Strategist) are awaiting your prompt to synthesize an optimal action plan."}
+            </p>
+
+            <div className="mx-auto mt-6 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3 text-left">
+              <div className={`rounded-xl border p-3.5 ${elevatedCard}`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🌿</span>
+                  <div>
+                    <h3 className="font-bold text-xs">Dr. Flora</h3>
+                    <p className="font-mono text-[10px] opacity-75">{isId ? "Biologi & Kanopi" : "Botany & Soil"}</p>
+                  </div>
+                </div>
+                <p className={`mt-2 text-[11px] leading-relaxed ${textMuted}`}>
+                  {isId ? "Rekomendasi vegetasi, tanah, dan pencegahan erosi perakarannya." : "Vegetation selection, soil health, and root erosion prevention."}
+                </p>
+              </div>
+
+              <div className={`rounded-xl border p-3.5 ${elevatedCard}`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚡</span>
+                  <div>
+                    <h3 className="font-bold text-xs">Ir. Arka</h3>
+                    <p className="font-mono text-[10px] opacity-75">{isId ? "Fisika Surya" : "Solar Physics"}</p>
+                  </div>
+                </div>
+                <p className={`mt-2 text-[11px] leading-relaxed ${textMuted}`}>
+                  {isId ? "Kalkulasi sudut azimuth, kWh/kWp, dan efisiensi inverter surya." : "Azimuth angle, kWh/kWp generation, and solar inverter efficiency."}
+                </p>
+              </div>
+
+              <div className={`rounded-xl border p-3.5 ${elevatedCard}`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">♻️</span>
+                  <div>
+                    <h3 className="font-bold text-xs">Sirkula</h3>
+                    <p className="font-mono text-[10px] opacity-75">{isId ? "Sirkularitas" : "Circular Flow"}</p>
+                  </div>
+                </div>
+                <p className={`mt-2 text-[11px] leading-relaxed ${textMuted}`}>
+                  {isId ? "Integrasi daur ulang bank sampah, komposting, dan payback period." : "Bank Sampah recyclables sorting, composting, and financial ROI."}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleRunCouncil()}
+                disabled={isRunning}
+                className={`flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-6 py-2.5 font-mono text-xs font-bold transition shadow-md ${
+                  isLight
+                    ? "bg-[#14532D] text-white hover:bg-[#166534]"
+                    : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
+                }`}
+              >
+                <span>⚖️</span>
+                <span>{isId ? "Mulai Sidang Dewan Sekarang (+20 XP) →" : "Start Council Deliberation Now (+20 XP) →"}</span>
+              </button>
+            </div>
           </div>
         )}
 
