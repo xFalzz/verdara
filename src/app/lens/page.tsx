@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
+import AuthGateModal from "@/components/ui/AuthGateModal";
 import SpatialMaskViewer from "@/components/lens/SpatialMaskViewer";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
@@ -21,6 +23,9 @@ import {
 export default function LensPage() {
   const router = useRouter();
   const {
+    isAuthenticated,
+    authProvider,
+    userId,
     locale,
     units,
     theme,
@@ -28,6 +33,10 @@ export default function LensPage() {
     recordScanCompleted,
     setSelectedMaterialFilter,
   } = useVerdaraStore();
+
+  const isGuestOrStarter = !isAuthenticated || authProvider === "starter";
+  const [showAuthGateModal, setShowAuthGateModal] = useState<boolean>(false);
+  const [authGateMessage, setAuthGateMessage] = useState<string>("");
 
   const [activeSampleId, setActiveSampleId] = useState<string>(
     GOLDEN_LENS_SAMPLES[0]!.id
@@ -121,18 +130,21 @@ export default function LensPage() {
     setSelectedObjId(sample.objects[0]?.id ?? null);
     setShowRetrofitComparison(sample.mode === "retrofit");
 
-    try {
-      await fetch("/api/lens/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sampleId: sample.id,
-          countryCode: geo.countryCode,
-          isJudge: true,
-        }),
-      });
-    } catch {
-      // Deterministic golden cache remains active offline
+    if (!isGuestOrStarter) {
+      try {
+        await fetch("/api/lens/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sampleId: sample.id,
+            countryCode: geo.countryCode,
+            userId: userId || "verified-resident",
+            isJudge: true,
+          }),
+        });
+      } catch {
+        // Deterministic golden cache remains active offline
+      }
     }
 
     recordScanCompleted(
@@ -155,6 +167,17 @@ export default function LensPage() {
   };
 
   const handleCustomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isGuestOrStarter) {
+      if (e.target) e.target.value = "";
+      setAuthGateMessage(
+        isId
+          ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengunggah dan menganalisis foto kustom Anda dengan SAM 3.1."
+          : "Meta AI features require a verified account. Please sign in first to upload and analyze your custom photos with SAM 3.1."
+      );
+      setShowAuthGateModal(true);
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
@@ -193,6 +216,16 @@ export default function LensPage() {
   };
 
   const handleSimulateVoiceCommand = () => {
+    if (isGuestOrStarter) {
+      setAuthGateMessage(
+        isId
+          ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengaktifkan filter suara Muse."
+          : "Meta AI features require a verified account. Please sign in first to activate Muse voice filters."
+      );
+      setShowAuthGateModal(true);
+      return;
+    }
+
     setVoiceActive(true);
     const query = isId
       ? "Muse Voice Transcribe: 'Tampilkan nilai deposit daur ulang tertinggi dan titik drop-off terdekat di peta 3D.'"
@@ -286,6 +319,37 @@ export default function LensPage() {
   return (
     <StudioShell>
       <div className="space-y-6">
+        {isGuestOrStarter && (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 font-mono text-xs text-amber-200">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-amber-400">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+                <span>
+                  {isId
+                    ? "MODE STARTER SANDBOX · SPATIAL LENS AMAN ($0.00)"
+                    : "STARTER SANDBOX MODE · SAFE SPATIAL LENS ($0.00)"}
+                </span>
+              </div>
+              <span className="rounded bg-amber-400/20 px-2 py-0.5 text-[10px] text-amber-300">
+                Cost: $0.00 (Zero Credit Risk)
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] leading-relaxed text-amber-100/90 font-sans">
+              {isId
+                ? "Fitur AI Meta memerlukan akun terverifikasi. Anda dapat menjelajahi 4 spesimen contoh statis secara gratis ($0.00). Untuk mengunggah foto sendiri dan memindai dengan Meta SAM 3.1 langsung, silakan login terlebih dahulu."
+                : "Meta AI features require a verified account. You can freely explore the 4 static sample specimens ($0.00). To upload your own photos and run live Meta SAM 3.1 scans, please sign in first."}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Link
+                href="/login?next=/lens"
+                className="inline-flex min-h-[38px] items-center rounded-xl bg-amber-400 px-4 py-1.5 font-sans text-xs font-bold text-black transition hover:bg-amber-300"
+              >
+                {isId ? "Masuk dengan Akun Terverifikasi →" : "Sign In with Verified Account →"}
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Top Specimen Bar */}
         <div
           className={`border p-5 ${
@@ -886,6 +950,15 @@ export default function LensPage() {
           </div>
         )}
       </div>
+
+      <AuthGateModal
+        isOpen={showAuthGateModal}
+        onClose={() => setShowAuthGateModal(false)}
+        message={authGateMessage}
+        nextPath="/lens"
+        locale={locale}
+        theme={theme}
+      />
     </StudioShell>
   );
 }

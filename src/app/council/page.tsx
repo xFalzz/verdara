@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
+import AuthGateModal from "@/components/ui/AuthGateModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
   executeVerdaraCouncil,
@@ -14,6 +16,9 @@ import { formatArea, formatCurrency, formatNumber, formatVolume } from "@/lib/sc
 export default function CouncilPage() {
   const router = useRouter();
   const {
+    isAuthenticated,
+    authProvider,
+    userId,
     locale,
     units,
     theme,
@@ -23,6 +28,10 @@ export default function CouncilPage() {
     toggleOpenWeightModel,
     awardXp,
   } = useVerdaraStore();
+
+  const isGuestOrStarter = !isAuthenticated || authProvider === "starter";
+  const [showAuthGateModal, setShowAuthGateModal] = useState<boolean>(false);
+  const [authGateMessage, setAuthGateMessage] = useState<string>("");
 
   const [sessionResult, setSessionResult] =
     useState<CouncilSynthesisResult | null>(null);
@@ -69,6 +78,23 @@ export default function CouncilPage() {
     };
   }, [geo, housingCalc, isId, locale]);
 
+  const handleProtectedAction = useCallback(
+    (actionCallback: () => void, customMsg?: string) => {
+      if (isGuestOrStarter) {
+        setAuthGateMessage(
+          customMsg ||
+            (isId
+              ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu."
+              : "Meta AI features require a verified account. Please sign in first.")
+        );
+        setShowAuthGateModal(true);
+        return;
+      }
+      actionCallback();
+    },
+    [isGuestOrStarter, isId]
+  );
+
   const handleRunCouncil = useCallback(
     async (overridePrompt?: string) => {
       setIsRunning(true);
@@ -80,6 +106,30 @@ export default function CouncilPage() {
       setTimeout(() => setActiveRoundStep(2), 200);
       setTimeout(() => setActiveRoundStep(3), 400);
 
+      // Guest / Starter mode: zero-cost local deterministic math preview, never calls live Meta API
+      if (isGuestOrStarter) {
+        try {
+          const fallback = await executeVerdaraCouncil(brief, {
+            userId: "starter-guest",
+            ipHash: "127.0.0.1",
+            isJudge: false,
+            useOpenWeightModel: true,
+            userQuery: promptToUse || undefined,
+          });
+          setSessionResult(fallback);
+        } catch {
+          setErrorMessage(
+            isId
+              ? "Gagal menyintesis sidang dewan. Silakan coba lagi."
+              : "Unable to synthesize council deliberation. Please retry."
+          );
+        } finally {
+          setTimeout(() => setIsRunning(false), 450);
+        }
+        return;
+      }
+
+      // Verified account path: connect to live API / server pipeline
       try {
         const res = await fetch("/api/council", {
           method: "POST",
@@ -87,6 +137,7 @@ export default function CouncilPage() {
           body: JSON.stringify({
             siteBrief: brief,
             prompt: promptToUse || undefined,
+            userId: userId || "verified-resident",
             isJudge: true,
             useOpenWeightModel: aiShield.useOpenWeightModel,
           }),
@@ -96,7 +147,7 @@ export default function CouncilPage() {
           setSessionResult(data.result);
         } else {
           const fallback = await executeVerdaraCouncil(brief, {
-            userId: "local-judge",
+            userId: userId || "verified-resident",
             ipHash: "127.0.0.1",
             isJudge: true,
             useOpenWeightModel: aiShield.useOpenWeightModel,
@@ -107,7 +158,7 @@ export default function CouncilPage() {
       } catch {
         try {
           const fallback = await executeVerdaraCouncil(brief, {
-            userId: "local-judge",
+            userId: userId || "verified-resident",
             ipHash: "127.0.0.1",
             isJudge: true,
             useOpenWeightModel: aiShield.useOpenWeightModel,
@@ -125,7 +176,7 @@ export default function CouncilPage() {
         setTimeout(() => setIsRunning(false), 450);
       }
     },
-    [aiShield.useOpenWeightModel, buildCurrentSiteBrief, isId, userPrompt]
+    [aiShield.useOpenWeightModel, buildCurrentSiteBrief, isGuestOrStarter, isId, userId, userPrompt]
   );
 
   useEffect(() => {
@@ -136,6 +187,42 @@ export default function CouncilPage() {
     <StudioShell>
       <div className="space-y-6">
         <header className={`rounded-2xl border p-5 ${surfaceCard}`}>
+          {isGuestOrStarter && (
+            <div className="mb-5 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 font-mono text-xs text-amber-200">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-amber-400">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span>
+                    {isId
+                      ? "MODE STARTER SANDBOX · FITUR AI LANGSUNG DIKUNCI"
+                      : "STARTER SANDBOX MODE · LIVE AI FEATURES LOCKED"}
+                  </span>
+                </div>
+                <span className="rounded bg-amber-400/20 px-2 py-0.5 text-[10px] text-amber-300">
+                  Cost: $0.00 (Zero Credit Risk)
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-amber-100/90 font-sans">
+                {isId
+                  ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengakses konsultasi langsung 3 Pakar AI (Flora, Arka, Sirkula) dan melindungi kuota credit token Meta AI."
+                  : "Meta AI features require a verified account. Please sign in first to access live consultations with the 3 AI Specialists and safeguard Meta AI credit tokens."}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/login?next=/council"
+                  className="inline-flex min-h-[38px] items-center rounded-xl bg-amber-400 px-4 py-1.5 font-sans text-xs font-bold text-black transition hover:bg-amber-300"
+                >
+                  {isId ? "Masuk dengan Akun Terverifikasi →" : "Sign In with Verified Account →"}
+                </Link>
+                <span className="text-[11px] text-amber-300/70">
+                  {isId
+                    ? "Pratinjau rumus fisika lokal tetap aktif untuk eksplorasi."
+                    : "Local physics formula preview remains active for exploration."}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className={`font-mono text-xs font-bold tracking-wider ${textMuted}`}>
@@ -174,8 +261,10 @@ export default function CouncilPage() {
               <button
                 type="button"
                 onClick={() => {
-                  awardXp(20);
-                  handleRunCouncil();
+                  handleProtectedAction(() => {
+                    awardXp(20);
+                    handleRunCouncil();
+                  }, isId ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk menjalankan sidang dewan langsung." : "Meta AI features require a verified account. Please sign in first to run live council deliberations.");
                 }}
                 disabled={isRunning}
                 className={`min-h-[44px] cursor-pointer rounded-xl px-4 py-2 font-mono text-xs font-black transition disabled:opacity-50 ${
@@ -257,8 +346,10 @@ export default function CouncilPage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                awardXp(25);
-                handleRunCouncil();
+                handleProtectedAction(() => {
+                  awardXp(25);
+                  handleRunCouncil();
+                }, isId ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengajukan pertanyaan kustom ke 3 Pakar AI." : "Meta AI features require a verified account. Please sign in first to submit custom queries to the 3 Meta AI Specialists.");
               }}
               className="flex flex-col gap-2.5 sm:flex-row sm:items-center"
             >
@@ -324,9 +415,11 @@ export default function CouncilPage() {
                     key={chip.en}
                     type="button"
                     onClick={() => {
-                      setUserPrompt(text);
-                      awardXp(25);
-                      handleRunCouncil(text);
+                      handleProtectedAction(() => {
+                        setUserPrompt(text);
+                        awardXp(25);
+                        handleRunCouncil(text);
+                      }, isId ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk menanyakan topik ini ke 3 Pakar AI." : "Meta AI features require a verified account. Please sign in first to query the 3 Meta AI Specialists on this topic.");
                     }}
                     className={`cursor-pointer rounded-lg border px-2.5 py-1 text-left transition ${
                       isLight
@@ -537,6 +630,15 @@ export default function CouncilPage() {
           </>
         )}
       </div>
+
+      <AuthGateModal
+        isOpen={showAuthGateModal}
+        onClose={() => setShowAuthGateModal(false)}
+        message={authGateMessage}
+        nextPath="/council"
+        locale={locale}
+        theme={theme}
+      />
     </StudioShell>
   );
 }

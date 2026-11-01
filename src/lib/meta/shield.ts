@@ -84,9 +84,14 @@ export function checkAiCreditShield(opts: {
   isJudge?: boolean;
   op: AiOperation;
   isCacheHit?: boolean;
+  isStarter?: boolean;
 }): CreditShieldStatus {
   const cfg = getShieldConfig();
   const isPrivileged = Boolean(opts.isJudge);
+  const isStarterOrGuest =
+    opts.userId.includes("starter") ||
+    opts.userId.includes("guest") ||
+    Boolean(opts.isStarter);
   const now = Date.now();
   const startOfUtcDay = new Date().setUTCHours(0, 0, 0, 0);
 
@@ -115,7 +120,9 @@ export function checkAiCreditShield(opts: {
   const userTodayCount = todayEntries.filter(
     (e) => e.userId === opts.userId && e.op === opts.op && !e.cacheHit
   ).length;
-  const userRemainingToday = Math.max(0, maxUserQuota - userTodayCount);
+  const userRemainingToday = isStarterOrGuest
+    ? 0
+    : Math.max(0, maxUserQuota - userTodayCount);
 
   // Layer 3: Cache Hit is always $0.00 and immediately allowed
   if (opts.isCacheHit) {
@@ -131,6 +138,23 @@ export function checkAiCreditShield(opts: {
       judgeRemainingUsd,
       cacheHitRatePct,
       userRemainingToday,
+    };
+  }
+
+  // Security Gate: Starter / guest users cannot invoke live Meta AI calling features
+  if (isStarterOrGuest) {
+    return {
+      allowed: false,
+      mode: "eco_saver_cache",
+      reason: "starter_guest_requires_verified_account",
+      todaySpendUsd,
+      totalSpendUsd,
+      lifetimeCapUsd: cfg.lifetimeCapUsd,
+      judgeReserveUsd: cfg.judgeReserveUsd,
+      publicRemainingUsd,
+      judgeRemainingUsd,
+      cacheHitRatePct,
+      userRemainingToday: 0,
     };
   }
 

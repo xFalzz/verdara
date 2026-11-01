@@ -836,6 +836,11 @@ export default function LoginPage() {
                         ? "Jelajahi Plot Awal (Lv.1 · 0 XP)"
                         : "Explore Starter Plot (Lv.1 · 0 XP)"}
                     </button>
+                    <p className="mt-1.5 text-center font-mono text-[10px] text-[#8e939d]">
+                      {isId
+                        ? "Pratinjau visual & simulasi kota 3D ($0.00). Fitur AI Meta langsung memerlukan login."
+                        : "3D visual & eco-town simulation preview ($0.00). Live Meta AI features require login."}
+                    </p>
                   </div>
                 </div>
               </div>

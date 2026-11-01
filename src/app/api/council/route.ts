@@ -59,12 +59,32 @@ export async function POST(req: NextRequest) {
     brief.bioporeUnits = clampNumber(brief.bioporeUnits, 0, 500, 8);
     brief.tciScore = clampNumber(brief.tciScore, 0, 100, 72);
 
+    const resolvedUserId = sanitizeInputText(cleanBody.userId || "judge-demo", 50);
+    const isStarterOrGuest =
+      resolvedUserId.startsWith("starter") || resolvedUserId.startsWith("guest");
+
+    // Security Gate: Block live custom queries from unverified / starter guests
+    if (isStarterOrGuest && sanitizedPrompt) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "verified_account_required",
+            message:
+              "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu.",
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     const result = await executeVerdaraCouncil(brief, {
-      userId: sanitizeInputText(cleanBody.userId || "judge-demo", 50),
+      userId: resolvedUserId,
       ipHash,
-      isJudge: cleanBody.isJudge ?? true,
-      useOpenWeightModel: cleanBody.useOpenWeightModel ?? true,
-      userQuery: sanitizedPrompt,
+      isJudge: isStarterOrGuest ? false : (cleanBody.isJudge ?? true),
+      useOpenWeightModel: isStarterOrGuest
+        ? true
+        : (cleanBody.useOpenWeightModel ?? true),
+      userQuery: isStarterOrGuest ? undefined : sanitizedPrompt,
     });
 
     return NextResponse.json({

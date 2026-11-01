@@ -22,6 +22,7 @@ export default function StudioShell({
   const router = useRouter();
   const {
     isAuthenticated,
+    authProvider,
     displayName,
     locale,
     units,
@@ -38,6 +39,7 @@ export default function StudioShell({
     setCustomCoordinates,
     loginWithEmail,
     loginWithOAuth,
+    resetToStarterPlot,
     updateUserProfile,
     logout,
   } = useVerdaraStore();
@@ -118,6 +120,8 @@ export default function StudioShell({
                   avatarUrl: parsed.avatarUrl,
                   userId: parsed.userId,
                 });
+              } else if (parsed.authProvider === "starter") {
+                resetToStarterPlot();
               } else {
                 loginWithEmail(
                   parsed.email || "",
@@ -189,10 +193,14 @@ export default function StudioShell({
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed?.isAuthenticated) {
-            loginWithEmail(
-              parsed.email || "",
-              parsed.displayName || "Resident"
-            );
+            if (parsed.authProvider === "starter") {
+              resetToStarterPlot();
+            } else {
+              loginWithEmail(
+                parsed.email || "",
+                parsed.displayName || "Resident"
+              );
+            }
             setAuthChecked(true);
             return;
           }
@@ -209,6 +217,7 @@ export default function StudioShell({
     router,
     loginWithEmail,
     loginWithOAuth,
+    resetToStarterPlot,
     updateUserProfile,
     logout,
   ]);
@@ -461,22 +470,30 @@ export default function StudioShell({
               </span>
             </button>
 
-            {/* Logout Button */}
-            <button
-              type="button"
-              onClick={() => {
-                handleLogout();
-
-              }}
-              title={displayName}
-              className={`min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium whitespace-nowrap transition ${
-                isLight
-                  ? "border-black/15 bg-white text-[#111] hover:bg-rose-50 hover:text-rose-700 shadow-2xs"
-                  : "border-white/15 bg-[#14161b] text-[#e2e1dc] hover:bg-rose-950/40 hover:text-rose-300"
-              }`}
-            >
-              {isId ? "Keluar" : "Logout"}
-            </button>
+            {/* Sign In (Starter Mode) or Logout Button */}
+            {authProvider === "starter" ? (
+              <Link
+                href="/login"
+                className="min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border border-amber-400 bg-amber-400/10 px-3 sm:px-4 text-[11px] sm:text-xs font-bold text-amber-400 hover:bg-amber-400 hover:text-black whitespace-nowrap transition inline-flex items-center"
+              >
+                {isId ? "Masuk Akun" : "Sign In"}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  handleLogout();
+                }}
+                title={displayName}
+                className={`min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium whitespace-nowrap transition ${
+                  isLight
+                    ? "border-black/15 bg-white text-[#111] hover:bg-rose-50 hover:text-rose-700 shadow-2xs"
+                    : "border-white/15 bg-[#14161b] text-[#e2e1dc] hover:bg-rose-950/40 hover:text-rose-300"
+                }`}
+              >
+                {isId ? "Keluar" : "Logout"}
+              </button>
+            )}
           </div>
         </div>
 

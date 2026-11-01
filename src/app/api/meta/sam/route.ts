@@ -56,6 +56,23 @@ export async function POST(req: NextRequest) {
     const countryCode = sanitizeInputText(body.countryCode || "US-CA", 10);
     const isJudge = body.isJudge ?? true;
     const userId = sanitizeInputText(body.userId || "judge-demo", 60);
+    const isStarterOrGuest =
+      userId.startsWith("starter") || userId.startsWith("guest");
+
+    // Security Gate: Custom image segmentation requires verified resident account
+    if (body.imageBase64 && isStarterOrGuest) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "verified_account_required",
+            message:
+              "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu.",
+          },
+        },
+        { status: 403 }
+      );
+    }
 
     const sample =
       GOLDEN_LENS_SAMPLES.find(

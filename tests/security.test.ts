@@ -8,6 +8,7 @@ import {
   clampNumber,
   checkRateLimit,
 } from "../src/lib/security/guard";
+import { checkAiCreditShield } from "../src/lib/meta/shield";
 
 describe("Verdara Cybersecurity Defense-in-Depth Suite", () => {
   it("neutralizes XSS vectors, script protocols, and Trojan Source overrides", () => {
@@ -86,5 +87,40 @@ describe("Verdara Cybersecurity Defense-in-Depth Suite", () => {
     const fourthCheck = checkRateLimit(testKey, 3, 0.1);
     expect(fourthCheck.allowed).toBe(false);
     expect(fourthCheck.remaining).toBe(0);
+  });
+
+  it("strictly locks live Meta AI calling features for starter/guest users while permitting zero-cost cache preview", () => {
+    // 1. Zero-cost cache preview is permitted for starter users ($0.00 spend)
+    const cacheHitCheck = checkAiCreditShield({
+      userId: "starter-guest",
+      ipHash: "127.0.0.1",
+      op: "lens_scan",
+      isCacheHit: true,
+    });
+    expect(cacheHitCheck.allowed).toBe(true);
+    expect(cacheHitCheck.mode).toBe("eco_saver_cache");
+    expect(cacheHitCheck.reason).toBe("cache_hit_zero_cost");
+
+    // 2. Live Meta AI call attempt by starter user is strictly rejected
+    const liveCallCheck = checkAiCreditShield({
+      userId: "starter-guest",
+      ipHash: "127.0.0.1",
+      op: "council",
+      isCacheHit: false,
+    });
+    expect(liveCallCheck.allowed).toBe(false);
+    expect(liveCallCheck.mode).toBe("eco_saver_cache");
+    expect(liveCallCheck.reason).toBe("starter_guest_requires_verified_account");
+    expect(liveCallCheck.userRemainingToday).toBe(0);
+
+    // 3. Live call by guest user is also rejected
+    const guestCallCheck = checkAiCreditShield({
+      userId: "guest-explorer-99",
+      ipHash: "127.0.0.1",
+      op: "eco_retrofit",
+      isCacheHit: false,
+    });
+    expect(guestCallCheck.allowed).toBe(false);
+    expect(guestCallCheck.reason).toBe("starter_guest_requires_verified_account");
   });
 });

@@ -227,8 +227,9 @@ export const useVerdaraStore = create<VerdaraState>()(
       },
 
       resetToStarterPlot: () => {
-        const currentEmail = get().email || "guest@sandbox.verdara.local";
-        const currentName = get().displayName !== "Guest Resident" ? get().displayName : "Sandbox Resident";
+        const currentEmail = "guest@sandbox.verdara.local";
+        const currentName = "Starter Resident";
+        const guestUid = "starter-guest";
         if (typeof window !== "undefined") {
           try {
             window.sessionStorage.setItem(
@@ -238,6 +239,7 @@ export const useVerdaraStore = create<VerdaraState>()(
                 authProvider: "starter",
                 displayName: currentName,
                 email: currentEmail,
+                userId: guestUid,
               })
             );
           } catch {
@@ -250,6 +252,7 @@ export const useVerdaraStore = create<VerdaraState>()(
           authProvider: "starter",
           displayName: currentName,
           email: currentEmail,
+          userId: guestUid,
           xp: 0,
           level: 1,
           progressPct: 0,

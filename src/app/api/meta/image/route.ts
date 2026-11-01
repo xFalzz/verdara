@@ -52,6 +52,23 @@ export async function POST(req: NextRequest) {
     const userId = sanitizeInputText(body.userId || "judge-demo", 60);
     const koppenCode = sanitizeInputText(body.koppenCode || "Csb", 10);
     const sanitizedPrompt = body.prompt ? sanitizeInputText(body.prompt, 300) : undefined;
+    const isStarterOrGuest =
+      userId.startsWith("starter") || userId.startsWith("guest");
+
+    // Security Gate: Custom retrofit synthesis requires verified resident account
+    if (sanitizedPrompt && isStarterOrGuest) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "verified_account_required",
+            message:
+              "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu.",
+          },
+        },
+        { status: 403 }
+      );
+    }
 
     const shield = checkAiCreditShield({
       userId,
