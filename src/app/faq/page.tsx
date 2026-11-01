@@ -236,13 +236,13 @@ const FAQ_ITEMS: FaqItem[] = [
     },
   },
   {
-    id: "hijara-lens-dual-core",
+    id: "verdara-lens-dual-core",
     category: "ai",
-    badge: "HIJARA LENS",
-    qEn: "What is Hijara Lens and how does it differ from a standard scanner?",
-    qId: "Apa itu Hijara Lens dan apa bedanya dengan Scan biasa?",
-    aEn: "Hijara Lens is the evolution of circular waste scanning. In addition to identifying recyclable materials and Bank Sampah recovery guidelines, Hijara Lens can also diagnose your plant health and disease conditions - all from a single camera snapshot.",
-    aId: "Hijara Lens adalah evolusi dari fitur Scan Sampah. Selain mengidentifikasi jenis sampah dan cara pengelolaannya, Hijara Lens kini juga bisa mendiagnosa kondisi kesehatan tanaman Anda - cukup dengan satu kali foto menggunakan kamera yang sama.",
+    badge: "VERDARA LENS",
+    qEn: "What is Verdara Lens and how does it differ from a standard scanner?",
+    qId: "Apa itu Verdara Lens dan apa bedanya dengan Scan biasa?",
+    aEn: "Verdara Lens is the evolution of circular waste scanning. In addition to identifying recyclable materials and Bank Sampah recovery guidelines, Verdara Lens can also diagnose your plant health and disease conditions using Meta SAM 3.1 from a single camera snapshot.",
+    aId: "Verdara Lens adalah evolusi dari fitur Scan Sampah. Selain mengidentifikasi jenis sampah dan cara pengelolaannya, Verdara Lens kini juga bisa mendiagnosa kondisi kesehatan tanaman Anda menggunakan Meta SAM 3.1 cukup dengan satu kali foto menggunakan kamera yang sama.",
     points: [
       {
         titleEn: "01 · Circular Waste & Bank Sampah",
@@ -263,11 +263,11 @@ const FAQ_ITEMS: FaqItem[] = [
         descId: "Jadwal aksi harian praktis (pemangkasan, siram pagi, kompos kascing, semprot minyak nimba).",
       },
     ],
-    techSpec: "HIJARA_LENS :: Meta SAM 3.1 + Plant Lesion Severity Ratio + Bank Sampah Valuation",
+    techSpec: "VERDARA_LENS :: Meta SAM 3.1 + Plant Lesion Severity Ratio + Bank Sampah Valuation",
     relatedRoute: {
       href: "/lens",
-      labelEn: "Open Hijara Lens →",
-      labelId: "Buka Hijara Lens →",
+      labelEn: "Open Verdara Lens →",
+      labelId: "Buka Verdara Lens →",
     },
   },
   {

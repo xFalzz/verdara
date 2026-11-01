@@ -179,7 +179,7 @@ export default function DeviceCameraModal({
           </button>
         </div>
 
-        {/* Hijara Lens Mode Pill Bar */}
+        {/* Verdara Lens Mode Pill Bar */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 border-b border-white/10 bg-[#080E0A] px-4 py-2 font-mono text-[11px]">
           <span className="text-neutral-400 mr-1 text-[10px] uppercase tracking-wider">
             {isId ? "Mode Fokus:" : "Focus Mode:"}

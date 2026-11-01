@@ -93,7 +93,7 @@ export async function analyzeImageLocally(
         const hasLesions = warmEarthyScore > 1.1 || rAvg > 110;
         resolve(buildPlantResult(hasLesions));
       } else if (warmEarthyScore > 1.4 && rAvg > 110 && gAvg < 140 && bAvg < 100) {
-        // Tempurung Kelapa / Batok Kelapa / Organik Kering (Exact specimen from Hijara demo video)
+        // Tempurung Kelapa / Batok Kelapa / Organik Kering (Exact specimen from Verdara demo video)
         resolve(buildCoconutShellResult());
       } else if (warmEarthyScore > 1.2 && rAvg > 140 && gAvg > 120 && bAvg < 120) {
         // Kardus Bekas Gelombang / Karton
@@ -519,7 +519,7 @@ function buildDefaultRecyclableResult(): CustomClassificationResult {
 
 /**
  * Text-to-Speech audio assistant reading scan synthesis aloud
- * Matches Hijara's "Suara AI Aktif" feature natively with zero token cost!
+ * Matches Verdara's "Suara AI Aktif" feature natively with zero token cost!
  */
 export function speakScanSummary(
   text: string,

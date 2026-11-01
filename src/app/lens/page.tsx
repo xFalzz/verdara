@@ -199,7 +199,7 @@ export default function LensPage() {
       setSelectedObjId(result.sample.objects[0]?.id ?? null);
       setHasScanned(true);
 
-      // Award XP & show Hijara EcoScore toast
+      // Award XP & show Verdara EcoScore toast
       awardXp(25, "sorting_station");
       setEcoScoreToast(
         isId
@@ -432,7 +432,7 @@ export default function LensPage() {
 
   return (
     <StudioShell>
-      {/* Hijara EcoScore Toast Alert */}
+      {/* Verdara EcoScore Toast Alert */}
       {ecoScoreToast && (
         <div className="fixed top-20 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2.5 rounded-full border border-emerald-500 bg-[#070D0A]/95 px-6 py-2.5 font-mono text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-md">
           <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
@@ -456,12 +456,12 @@ export default function LensPage() {
                   isLight ? "text-[#14532D]" : "text-[#A3E635]"
                 }`}
               >
-                {"// 02 · HIJARA UNIVERSAL LENS (SAM 3.1 + META MUSE AI)"}
+                {"// 02 · VERDARA UNIVERSAL LENS (SAM 3.1 + META MUSE AI)"}
               </p>
               <h1 className="font-serif text-2xl font-bold sm:text-3xl">
                 {isId
-                  ? "Hijara Lens · Pindai Sampah, Bank Sampah & Diagnosa Tanaman"
-                  : "Hijara Lens · Circular Waste Scan, Bank Sampah & Plant Diagnostics"}
+                  ? "Verdara Lens · Pindai Sampah, Bank Sampah & Diagnosa Tanaman"
+                  : "Verdara Lens · Circular Waste Scan, Bank Sampah & Plant Diagnostics"}
               </h1>
               <p
                 className={`mt-1 text-xs max-w-2xl leading-relaxed ${
@@ -572,7 +572,7 @@ export default function LensPage() {
             </div>
           )}
 
-          {/* Hijara Dual-Core Category Filter Tabs */}
+          {/* Verdara Dual-Core Category Filter Tabs */}
           <div className="mt-4 flex flex-wrap items-center gap-1.5 font-mono text-xs">
             <span
               className={`text-[11px] font-bold uppercase tracking-wider mr-1 ${
@@ -652,7 +652,7 @@ export default function LensPage() {
                 }`}
               >
                 <div className="flex items-center justify-between border-b pb-3 font-mono text-xs border-current/15">
-                  {/* Camera vs Upload Tabs (Persis Hijara) */}
+                  {/* Camera vs Upload Tabs (Persis Verdara) */}
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -763,7 +763,7 @@ export default function LensPage() {
                   )}
                 </div>
 
-                {/* Quick Test Sample Tags (Persis seperti Video Hijara) */}
+                {/* Quick Test Sample Tags (Persis seperti Video Verdara) */}
                 <div className="mt-4 border-t pt-3 border-current/10">
                   <div className="flex flex-wrap items-center justify-between gap-1.5 font-mono text-[11px]">
                     <span className={`font-bold ${isLight ? "text-[#14532D]" : "text-[#A3E635]"}`}>
@@ -864,7 +864,7 @@ export default function LensPage() {
                     className="h-full w-full object-cover"
                   />
 
-                  {/* High-Tech Glowing Laser Scan Beam (Persis Hijara Demo) */}
+                  {/* High-Tech Glowing Laser Scan Beam (Persis Verdara Demo) */}
                   {isAnalyzing && (
                     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/45 backdrop-blur-[2px]">
                       <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#A3E635] to-transparent shadow-[0_0_24px_#A3E635] animate-bounce" />
@@ -1185,7 +1185,7 @@ export default function LensPage() {
                 </div>
               </div>
             ) : activeSample.mode === "plant" ? (
-              // HIJARA URBAN BOTANY & PLANT DOCTOR DOSSIER
+              // VERDARA URBAN BOTANY & PLANT DOCTOR DOSSIER
               <>
                 {/* Plant Health Status Summary */}
                 <div
@@ -1202,7 +1202,7 @@ export default function LensPage() {
                       }`}
                     >
                       <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      {isId ? "// DOKTER TANAMAN & KEBUN URBAN HIJARA" : "// HIJARA URBAN PLANT DOCTOR"}
+                      {isId ? "// DOKTER TANAMAN & KEBUN URBAN VERDARA" : "// VERDARA URBAN PLANT DOCTOR"}
                     </span>
                     <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                       SAM 3.1 VISION AI
@@ -1388,7 +1388,7 @@ export default function LensPage() {
                 </div>
               </>
             ) : (
-              // HIJARA CIRCULAR WASTE & BANK SAMPAH DOSSIER
+              // VERDARA CIRCULAR WASTE & BANK SAMPAH DOSSIER
               <>
                 {/* Total Batch Summary Card */}
                 <div
