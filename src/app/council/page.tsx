@@ -376,8 +376,8 @@ export default function CouncilPage() {
                 onChange={(e) => setUserPrompt(e.target.value)}
                 placeholder={
                   isId
-                    ? "Tanyakan apa pun ke 3 Pakar AI (mis. Biaya panel surya, sumur biopori, kompos)..."
-                    : "Ask the 3 Meta AI Specialists (e.g. Solar payback, biopore design, food waste)..."
+                    ? "Tanyakan seputar energi surya, tata air, iklim mikro & sampah sirkular tapak..."
+                    : "Ask about rooftop solar, hydrology, microclimate & circular waste for your site..."
                 }
                 className={`min-h-[44px] flex-1 rounded-xl border px-4 text-xs outline-none transition focus:border-[#1e9e5a] ${
                   isLight
@@ -403,6 +403,12 @@ export default function CouncilPage() {
                   : "Ask Council (+25 XP) →"}
               </button>
             </form>
+
+            <p className={`mt-2 font-mono text-[10px] ${textMuted}`}>
+              {isId
+                ? "🛡️ Pagar Pembatas AI: Dewan Spesialis secara ketat menolak pertanyaan di luar topik energi surya, air hujan, iklim mikro (TCI), dan Bank Sampah."
+                : "🛡️ AI Topic Boundary: The Council strictly declines queries outside rooftop solar, hydrology, microclimate (TCI), and circular waste."}
+            </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
               <span className={textMuted}>
@@ -553,6 +559,74 @@ export default function CouncilPage() {
 
         {sessionResult && (
           <>
+            {sessionResult.isOffTopic && (
+              <div
+                role="alert"
+                className={`rounded-2xl border p-5 font-mono text-xs transition ${
+                  isLight
+                    ? "border-amber-600/40 bg-amber-50 text-amber-950"
+                    : "border-amber-400/50 bg-amber-950/40 text-amber-200"
+                }`}
+              >
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  <span className="text-lg">🛡️</span>
+                  <span>
+                    {isId
+                      ? "PEMBERITAHUAN: PERTANYAAN DI LUAR LINGKUP TAPAK EKOLOGIS DITOLAK"
+                      : "NOTICE: OFF-TOPIC QUERY REJECTED BY SPECIALIST COUNCIL"}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed opacity-90 font-sans">
+                  {sessionResult.offTopicMessage ||
+                    (isId
+                      ? "Dewan Spesialis Verdara (Flora, Arka, Sirkula) memiliki pagar pembatas (guardrail) ketat dan hanya melayani konsultasi seputar rekayasa tapak: efisiensi energi surya, konservasi air hujan, iklim mikro (TCI), vegetasi kanopi, dan ekonomi sirkular Bank Sampah."
+                      : "The Verdara Specialist Council enforces strict guardrails and only provides consultation on site engineering: rooftop solar, rainwater hydrology, microclimate comfort (TCI), canopy flora, and circular Bank Sampah recovery.")}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-bold opacity-80">
+                    {isId ? "Pilih Topik Konsultasi Sah:" : "Select Valid Consultation Topic:"}
+                  </span>
+                  {[
+                    {
+                      id: "Bagaimana cara memaksimalkan efisiensi panel surya?",
+                      en: "How to maximize rooftop solar panel efficiency?",
+                    },
+                    {
+                      id: "Berapa kapasitas tandon air hujan dan jumlah biopori ideal?",
+                      en: "What is the optimal rainwater cistern and biopore sizing?",
+                    },
+                    {
+                      id: "Vegetasi apa yang paling efektif meredam radiasi panas atap?",
+                      en: "Which native vegetation best mitigates roof thermal heat?",
+                    },
+                    {
+                      id: "Bagaimana cara menyortir sampah agar bernilai di Bank Sampah?",
+                      en: "How to sort recyclables for maximum Bank Sampah value?",
+                    },
+                  ].map((sug) => {
+                    const label = isId ? sug.id : sug.en;
+                    return (
+                      <button
+                        key={sug.en}
+                        type="button"
+                        onClick={() => {
+                          setUserPrompt(label);
+                          handleRunCouncil(label);
+                        }}
+                        className={`cursor-pointer rounded-lg border px-2.5 py-1 text-left font-mono text-[11px] font-bold transition ${
+                          isLight
+                            ? "border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                            : "border-amber-400/30 bg-amber-900/30 text-amber-100 hover:bg-amber-800/40"
+                        }`}
+                      >
+                        {label} →
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {sessionResult.messages.map((msg, idx) => {
                 const isRevealed = activeRoundStep >= idx + 1;

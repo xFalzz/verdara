@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       ipHash,
       isJudge,
       op: "lens_scan",
-      model: process.env.META_MODEL_SAM || "sam-3-1",
+      model: process.env.META_MODEL_SAM || "sam-3.1",
       costUsd: 0.0,
       cacheHit: true,
       latencyMs,
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       },
       telemetry: {
         provider: "meta-model-api",
-        models: [process.env.META_MODEL_SAM || "sam-3-1"],
+        models: [process.env.META_MODEL_SAM || "sam-3.1"],
         masksCount: sample.objects.length,
         latencyMs,
         tokensIn: 1420,

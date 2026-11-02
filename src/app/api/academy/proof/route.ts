@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       ipHash,
       isJudge,
       op: "proof_verify",
-      model: process.env.META_MODEL_SAM || "sam-3-1",
+      model: process.env.META_MODEL_SAM || "sam-3.1",
       costUsd: 0.0,
       cacheHit: true,
       latencyMs,
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       xpAwarded: evaluation.verified ? lesson.xpReward : 0,
       unlockedItemCode: evaluation.verified ? lesson.unlocksItemCode : null,
       telemetry: {
-        model: process.env.META_MODEL_SAM || "sam-3-1",
+        model: process.env.META_MODEL_SAM || "sam-3.1",
         conceptsChecked: lesson.proofRequirements.length,
         latencyMs,
         dhashBitLength: 64,

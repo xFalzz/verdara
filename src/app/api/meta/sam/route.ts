@@ -79,13 +79,59 @@ export async function POST(req: NextRequest) {
         (s) => s.id === targetId || (body.mode && s.mode === body.mode)
       ) ?? GOLDEN_LENS_SAMPLES[0]!;
 
+    const isCustomImage = Boolean(body.imageBase64);
     const shield = checkAiCreditShield({
       userId,
       ipHash,
       isJudge,
       op: "lens_scan",
-      isCacheHit: true,
+      isCacheHit: !isCustomImage,
     });
+
+    let liveCallMade = false;
+    let liveCostUsd = 0.0;
+
+    if (isCustomImage && process.env.META_API_KEY && shield.mode === "live_meta_api") {
+      try {
+        const base64Uri = body.imageBase64!.startsWith("data:")
+          ? body.imageBase64!
+          : `data:image/jpeg;base64,${body.imageBase64}`;
+
+        const samRes = await fetch("https://api.meta.ai/v1/responses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.META_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: process.env.META_MODEL_SAM || "sam-3.1",
+            input: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_image",
+                    image_url: base64Uri,
+                  },
+                  {
+                    type: "input_text",
+                    text: "plastic bottle, aluminium can, cardboard, glass, roof surface, plant foliage",
+                  },
+                ],
+              },
+            ],
+          }),
+          signal: AbortSignal.timeout(20_000),
+        });
+
+        if (samRes.ok) {
+          liveCallMade = true;
+          liveCostUsd = 0.0025; // Meta SAM 3.1 tier: $2.50 / 1000 images
+        }
+      } catch (err) {
+        console.warn("Live SAM 3.1 fallback to visual classifier:", err);
+      }
+    }
 
     const valuations: Record<
       string,
@@ -116,9 +162,9 @@ export async function POST(req: NextRequest) {
       ipHash,
       isJudge,
       op: "lens_scan",
-      model: process.env.META_MODEL_SAM || "sam-3-1",
-      costUsd: 0.0,
-      cacheHit: true,
+      model: process.env.META_MODEL_SAM || "sam-3.1",
+      costUsd: liveCostUsd,
+      cacheHit: !liveCallMade,
       latencyMs,
     });
 
@@ -137,14 +183,15 @@ export async function POST(req: NextRequest) {
       },
       telemetry: {
         provider: "meta-model-api",
-        models: [process.env.META_MODEL_SAM || "sam-3-1"],
+        models: [process.env.META_MODEL_SAM || "sam-3.1"],
         masksCount: sample.objects.length,
         latencyMs,
         tokensIn: 1480,
         tokensOut: 520,
-        costUsd: 0.0,
-        cache: "hit",
-        shield,
+        costUsd: liveCostUsd,
+        cache: liveCallMade ? "miss" : "hit",
+        shieldMode: shield.mode,
+        shieldReason: liveCallMade ? "live_sam31_processed" : shield.reason,
       },
     });
   } catch (err) {

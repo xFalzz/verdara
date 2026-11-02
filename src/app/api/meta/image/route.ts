@@ -70,13 +70,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const isCustomPrompt = Boolean(sanitizedPrompt);
     const shield = checkAiCreditShield({
       userId,
       ipHash,
       isJudge,
       op: "eco_retrofit",
-      isCacheHit: true,
+      isCacheHit: !isCustomPrompt,
     });
+
+    let liveCallMade = false;
+    let liveCostUsd = 0.0;
+    let generatedImageUrl = "/specimens/patio_retrofit_after.webp";
+
+    if (isCustomPrompt && process.env.META_API_KEY && shield.mode === "live_meta_api") {
+      try {
+        const imgRes = await fetch("https://api.meta.ai/v1/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.META_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: process.env.META_MODEL_IMAGE || "muse-image-1.0",
+            prompt: `Photorealistic architectural eco-retrofit with monocrystalline solar panels, vertical biophilic green wall, and modular rainwater cistern for Köppen ${koppenCode} climate: ${sanitizedPrompt}`,
+            n: 1,
+            size: "1024x1024",
+          }),
+          signal: AbortSignal.timeout(25_000),
+        });
+
+        if (imgRes.ok) {
+          const imgData = (await imgRes.json()) as {
+            data?: { b64_json?: string; url?: string }[];
+          };
+          const b64 = imgData.data?.[0]?.b64_json;
+          if (b64) {
+            generatedImageUrl = `data:image/webp;base64,${b64}`;
+            liveCallMade = true;
+            liveCostUsd = 0.04; // Standard Meta Muse Image tier
+          }
+        }
+      } catch (err) {
+        console.warn("Live Muse Image generation fallback:", err);
+      }
+    }
 
     const latencyMs = Math.max(180, Date.now() - startMs);
     recordAiUsage({
@@ -84,9 +122,9 @@ export async function POST(req: NextRequest) {
       ipHash,
       isJudge,
       op: "eco_retrofit",
-      model: process.env.META_MODEL_IMAGE || "muse-image",
-      costUsd: 0.0,
-      cacheHit: true,
+      model: process.env.META_MODEL_IMAGE || "muse-image-1.0",
+      costUsd: liveCostUsd,
+      cacheHit: !liveCallMade,
       latencyMs,
     });
 
@@ -103,17 +141,18 @@ export async function POST(req: NextRequest) {
         projectedRainLitersYr: 52000,
         coolingDeltaC: -3.2,
       },
-      imageUrl: "/specimens/patio_retrofit_after.webp",
+      imageUrl: generatedImageUrl,
       promptUsed:
         sanitizedPrompt ||
         `Photorealistic architectural eco-retrofit with monocrystalline solar panels, vertical biophilic wall, and modular rainwater cistern for Köppen ${koppenCode} climate.`,
       telemetry: {
         provider: "meta-model-api",
-        model: process.env.META_MODEL_IMAGE || "muse-image",
+        model: process.env.META_MODEL_IMAGE || "muse-image-1.0",
         latencyMs,
-        costUsd: 0.0,
-        cache: "hit",
-        shield,
+        costUsd: liveCostUsd,
+        cache: liveCallMade ? "miss" : "hit",
+        shieldMode: shield.mode,
+        shieldReason: liveCallMade ? "live_muse_image_generated" : shield.reason,
       },
     });
   } catch (err) {

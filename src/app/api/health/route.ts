@@ -17,11 +17,12 @@ export async function GET() {
     version: "3.0.0",
     timestamp: new Date().toISOString(),
     metaModels: {
-      spark: process.env.META_MODEL_SPARK || "muse-spark",
-      sam: process.env.META_MODEL_SAM || "sam-3-1",
-      image: process.env.META_MODEL_IMAGE || "muse-image",
-      voice: process.env.META_MODEL_VOICE || "muse-voice-transcribe",
-      openWeight: process.env.META_MODEL_OPEN || "muse-spark-open",
+      spark: process.env.META_MODEL_SPARK || "muse-spark-1.3",
+      sam: process.env.META_MODEL_SAM || "sam-3.1",
+      image: process.env.META_MODEL_IMAGE || "muse-image-1.0",
+      voice: process.env.META_MODEL_VOICE || "muse-voice-transcribe-1.0",
+      openWeight: process.env.META_MODEL_OPEN || "muse-spark-1.3-contributor",
+      wonder: process.env.META_MODEL_WONDER || "muse-wonder-1.0",
     },
     creditShield: {
       ...cfg,
