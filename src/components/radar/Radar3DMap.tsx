@@ -16,118 +16,9 @@ export interface Radar3DMapProps {
   locale?: "en" | "id";
 }
 
-// 1. CARTO Voyager Inline Style (Daytime Vibrant)
-const VOYAGER_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  name: "Carto Voyager",
-  sources: {
-    "carto-voyager": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "OpenStreetMap, CARTO",
-    },
-  },
-  layers: [
-    {
-      id: "background-base",
-      type: "background",
-      paint: {
-        "background-color": "#E6EDE8",
-      },
-    },
-    {
-      id: "carto-voyager-layer",
-      type: "raster",
-      source: "carto-voyager",
-      minzoom: 0,
-      maxzoom: 20,
-      paint: {
-        "raster-opacity": 1.0,
-      },
-    },
-  ],
-};
-
-// 2. OpenStreetMap Standard Inline Style (100% Reliable Worldwide Fallback)
-const OSM_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  name: "OpenStreetMap Standard",
-  sources: {
-    "osm-tiles": {
-      type: "raster",
-      tiles: [
-        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "OpenStreetMap contributors",
-    },
-  },
-  layers: [
-    {
-      id: "background-base",
-      type: "background",
-      paint: {
-        "background-color": "#F2F0E8",
-      },
-    },
-    {
-      id: "osm-layer",
-      type: "raster",
-      source: "osm-tiles",
-      minzoom: 0,
-      maxzoom: 19,
-      paint: {
-        "raster-opacity": 1.0,
-      },
-    },
-  ],
-};
-
-// 3. CARTO Dark Matter Inline Style (Cyberpunk Dark Mode)
-const DARK_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  name: "Carto Dark Matter",
-  sources: {
-    "carto-dark": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "OpenStreetMap, CARTO",
-    },
-  },
-  layers: [
-    {
-      id: "background-base",
-      type: "background",
-      paint: {
-        "background-color": "#0F1412",
-      },
-    },
-    {
-      id: "carto-dark-layer",
-      type: "raster",
-      source: "carto-dark",
-      minzoom: 0,
-      maxzoom: 20,
-      paint: {
-        "raster-opacity": 1.0,
-      },
-    },
-  ],
-};
-
 type BasemapType = "voyager" | "osm" | "dark";
 
-// Procedural 3D building generator around target coordinates
+// Procedural 3D building polygon generator around center coordinates
 function generateProceduralBuildings(centerLat: number, centerLng: number) {
   const features = [];
   const offsets = [
@@ -180,6 +71,92 @@ function generateProceduralBuildings(centerLat: number, centerLng: number) {
   };
 }
 
+// Atomic style specification with inline procedural 3D buildings & raster background
+function createStyleSpecification(
+  tileType: BasemapType,
+  geoJsonData: ReturnType<typeof generateProceduralBuildings>
+): maplibregl.StyleSpecification {
+  const isDark = tileType === "dark";
+  const bgHex = isDark ? "#0D1411" : "#E8ECE9";
+
+  const tiles =
+    tileType === "voyager"
+      ? [
+          "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        ]
+      : tileType === "osm"
+      ? [
+          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        ]
+      : [
+          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        ];
+
+  return {
+    version: 8,
+    name: `Verdara 3D Map (${tileType})`,
+    sources: {
+      "verdara-raster-base": {
+        type: "raster",
+        tiles,
+        tileSize: 256,
+        attribution: "OpenStreetMap, CARTO",
+      },
+      "verdara-procedural-buildings": {
+        type: "geojson",
+        data: geoJsonData,
+      },
+    },
+    layers: [
+      {
+        id: "background-base",
+        type: "background",
+        paint: {
+          "background-color": bgHex,
+        },
+      },
+      {
+        id: "verdara-raster-layer",
+        type: "raster",
+        source: "verdara-raster-base",
+        minzoom: 0,
+        maxzoom: 20,
+        paint: {
+          "raster-opacity": 1.0,
+        },
+      },
+      {
+        id: "verdara-procedural-buildings-layer",
+        type: "fill-extrusion",
+        source: "verdara-procedural-buildings",
+        paint: {
+          "fill-extrusion-color": [
+            "interpolate",
+            ["linear"],
+            ["coalesce", ["get", "height"], 20],
+            16,
+            "#10b981", // Emerald
+            22,
+            "#0284c7", // Sky blue
+            30,
+            "#eab308", // Solar amber
+            40,
+            "#8b5cf6", // Purple
+          ],
+          "fill-extrusion-height": ["coalesce", ["get", "height"], 20],
+          "fill-extrusion-base": 0,
+          "fill-extrusion-opacity": 0.92,
+          "fill-extrusion-vertical-gradient": true,
+        },
+      },
+    ],
+  };
+}
+
 export default function Radar3DMap({
   lat,
   lng,
@@ -210,61 +187,16 @@ export default function Radar3DMap({
 
   const isId = locale === "id";
 
-  // Setup procedural 3D extruded buildings
-  const setupBuildingsLayer = useCallback((map: maplibregl.Map, targetLat: number, targetLng: number) => {
-    try {
-      const geojsonData = generateProceduralBuildings(targetLat, targetLng);
-      const sourceName = "verdara-procedural-buildings";
-      const layerName = "verdara-procedural-buildings-layer";
-
-      if (!map.getSource(sourceName)) {
-        map.addSource(sourceName, {
-          type: "geojson",
-          data: geojsonData,
-        });
-      } else {
-        const src = map.getSource(sourceName) as maplibregl.GeoJSONSource;
-        src.setData(geojsonData);
-      }
-
-      if (!map.getLayer(layerName)) {
-        map.addLayer({
-          id: layerName,
-          source: sourceName,
-          type: "fill-extrusion",
-          paint: {
-            "fill-extrusion-color": [
-              "interpolate",
-              ["linear"],
-              ["get", "height"],
-              16,
-              "#10b981", // Emerald
-              22,
-              "#0284c7", // Sky blue
-              30,
-              "#eab308", // Solar amber
-              40,
-              "#8b5cf6", // Purple
-            ],
-            "fill-extrusion-height": ["get", "height"],
-            "fill-extrusion-base": 0,
-            "fill-extrusion-opacity": 0.88,
-            "fill-extrusion-vertical-gradient": true,
-          },
-        });
-      }
-    } catch {
-      // Safe fallback
-    }
-  }, []);
-
-  // Initialize MapLibre on mount
+  // Initialize MapLibre cleanly on mount
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    const initialBuildings = generateProceduralBuildings(lat, lng);
+    const initialStyle = createStyleSpecification("voyager", initialBuildings);
+
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: VOYAGER_STYLE,
+      style: initialStyle,
       center: [lng, lat],
       zoom: 15.4,
       pitch: 58,
@@ -279,20 +211,28 @@ export default function Radar3DMap({
     );
 
     map.on("load", () => {
-      setupBuildingsLayer(map, lat, lng);
       setMapLoaded(true);
       map.resize();
       setTimeout(() => map.resize(), 150);
       setTimeout(() => map.resize(), 500);
     });
 
+    // Hover cursor feedback on 3D buildings
+    map.on("mouseenter", "verdara-procedural-buildings-layer", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", "verdara-procedural-buildings-layer", () => {
+      map.getCanvas().style.cursor = "";
+    });
+
+    // Click inspection handler
     map.on("click", (e) => {
       const clickLat = Number(e.lngLat.lat.toFixed(5));
       const clickLng = Number(e.lngLat.lng.toFixed(5));
 
       const bbox: [maplibregl.PointLike, maplibregl.PointLike] = [
-        [e.point.x - 8, e.point.y - 8],
-        [e.point.x + 8, e.point.y + 8],
+        [e.point.x - 10, e.point.y - 10],
+        [e.point.x + 10, e.point.y + 10],
       ];
 
       let estimatedArea = 0;
@@ -359,7 +299,7 @@ export default function Radar3DMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update center and procedural buildings when location coordinates change
+  // Smoothly reposition camera & 3D buildings on city change
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -373,10 +313,12 @@ export default function Radar3DMap({
       essential: true,
     });
 
-    if (map.isStyleLoaded()) {
-      setupBuildingsLayer(map, lat, lng);
+    const newBuildings = generateProceduralBuildings(lat, lng);
+    const src = map.getSource("verdara-procedural-buildings") as maplibregl.GeoJSONSource | undefined;
+    if (src && typeof src.setData === "function") {
+      src.setData(newBuildings);
     }
-  }, [lat, lng, is3DPitch, setupBuildingsLayer]);
+  }, [lat, lng, is3DPitch]);
 
   // Update Home and Hub Markers
   useEffect(() => {
@@ -391,7 +333,7 @@ export default function Radar3DMap({
       homeMarkerRef.current = null;
     }
 
-    // Home location pin
+    // Home location pulse pin
     const homeEl = document.createElement("div");
     homeEl.className =
       "flex items-center gap-1.5 rounded-full border-2 border-[#c6f432] bg-[#08090c]/95 px-3 py-1 font-mono text-xs font-bold text-[#c6f432] shadow-2xl backdrop-blur-md";
@@ -485,16 +427,10 @@ export default function Radar3DMap({
     if (!map || style === activeStyle) return;
 
     setActiveStyle(style);
-    const targetStyle =
-      style === "voyager"
-        ? VOYAGER_STYLE
-        : style === "osm"
-        ? OSM_STYLE
-        : DARK_STYLE;
-
-    map.setStyle(targetStyle);
-    map.once("style.load", () => {
-      setupBuildingsLayer(map, lat, lng);
+    const buildingsData = generateProceduralBuildings(lat, lng);
+    const newStyle = createStyleSpecification(style, buildingsData);
+    map.setStyle(newStyle);
+    map.once("styledata", () => {
       map.resize();
     });
   };
@@ -502,9 +438,13 @@ export default function Radar3DMap({
   return (
     <div
       data-lenis-prevent
-      className="relative h-full w-full overflow-hidden rounded-2xl border border-[#1D3328] bg-[#E6EDE8]"
+      className="relative h-full w-full overflow-hidden rounded-2xl border border-[#1D3328] bg-[#E8ECE9]"
     >
-      <div ref={containerRef} className="h-full w-full" style={{ minHeight: "440px" }} />
+      <div
+        ref={containerRef}
+        className="h-full w-full"
+        style={{ minHeight: "440px", width: "100%", height: "100%", position: "relative" }}
+      />
 
       {/* Top HUD: Telemetry Pills and Style / Camera Controls */}
       <div className="pointer-events-none absolute top-3 right-3 left-3 z-10 flex flex-wrap items-start justify-between gap-2">
