@@ -20,7 +20,16 @@ const Radar3DMap = dynamic(() => import("@/components/radar/Radar3DMap"), {
   ssr: false,
   loading: () => (
     <div className="flex h-full w-full items-center justify-center border border-[#1D3328] bg-[#0E1914] p-6 font-mono text-xs text-[#A3BEB0]">
-      Loading MapLibre GL 3D Urban Terrain (55° Pitch)...
+      Loading 3D Urban Map Terrain...
+    </div>
+  ),
+});
+
+const EcoIslandCanvas = dynamic(() => import("@/components/three/EcoIslandCanvas"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center border border-[#1D3328] bg-[#0E1914] p-6 font-mono text-xs text-[#A3BEB0]">
+      Loading 3D District Spatial Twin Engine...
     </div>
   ),
 });
@@ -59,6 +68,7 @@ export default function RadarPage() {
   const [savedToast, setSavedToast] = useState<boolean>(false);
   const [showWorldPicker, setShowWorldPicker] = useState<boolean>(false);
   const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"gis_map" | "district_twin">("gis_map");
 
   const isId = locale === "id";
   const isLight = theme === "light";
@@ -201,25 +211,78 @@ export default function RadarPage() {
                   : "border-[#1D3328] bg-[#0E1914]"
               }`}
             >
-              <div className="mb-2.5 flex items-center justify-between px-1 font-mono text-xs">
+              <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 px-1 font-mono text-xs">
                 <span>
-                  {isId
-                    ? "// MAPLIBRE GL 3D TERRAIN · KEMIRINGAN 55° · KLIK GEDUNG MANA PUN"
-                    : "// MAPLIBRE GL 3D TERRAIN · PITCH 55° · CLICK ANY BUILDING"}
+                  {viewMode === "gis_map"
+                    ? isId
+                      ? "// RADAR 3D MAP · KEMIRINGAN 58° · KLIK ATAP MANA PUN"
+                      : "// 3D URBAN MAP · PITCH 58° · CLICK ANY ROOF"
+                    : isId
+                    ? "// KEMBAR 3D DISTRIK (THREE.JS) · SIMULASI FISIKA SURYA & AIR"
+                    : "// 3D DISTRICT TWIN (THREE.JS) · SOLAR & HYDRO PHYSICS"}
                 </span>
-                <span>{filteredHubs.length} {isId ? "hub OSM" : "OSM hubs"}</span>
+                <div className="flex items-center gap-1 rounded-full border border-current/20 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("gis_map")}
+                    className={`min-h-[28px] cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] font-bold transition ${
+                      viewMode === "gis_map"
+                        ? isLight
+                          ? "bg-[#14532D] text-white"
+                          : "bg-[#A3E635] text-[#070D0A]"
+                        : "opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    {isId ? "🗺️ Peta 3D GIS" : "🗺️ 3D GIS Map"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("district_twin")}
+                    className={`min-h-[28px] cursor-pointer rounded-full px-2.5 py-0.5 text-[10px] font-bold transition ${
+                      viewMode === "district_twin"
+                        ? isLight
+                          ? "bg-[#14532D] text-white"
+                          : "bg-[#A3E635] text-[#070D0A]"
+                        : "opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    {isId ? "🏙️ Distrik 3D Twin" : "🏙️ 3D District Twin"}
+                  </button>
+                </div>
               </div>
 
-              <div className="h-[420px] w-full overflow-hidden rounded-xl">
-                <Radar3DMap
-                  lat={geo.lat}
-                  lng={geo.lng}
-                  city={geo.city}
-                  hubs={filteredHubs}
-                  selectedHubId={activeHub?.id ?? null}
-                  onSelectHub={(hub) => setSelectedHub(hub)}
-                  onSelectBuildingFootprint={handleBuildingClickOnMap}
-                />
+              <div className="h-[430px] w-full overflow-hidden rounded-xl">
+                {viewMode === "gis_map" ? (
+                  <Radar3DMap
+                    lat={geo.lat}
+                    lng={geo.lng}
+                    city={geo.city}
+                    hubs={filteredHubs}
+                    selectedHubId={activeHub?.id ?? null}
+                    onSelectHub={(hub) => setSelectedHub(hub)}
+                    onSelectBuildingFootprint={handleBuildingClickOnMap}
+                    locale={locale}
+                  />
+                ) : (
+                  <div className="relative h-full w-full rounded-xl overflow-hidden bg-[#0a0a0c]">
+                    <EcoIslandCanvas
+                      biome={geo.koppen.biome}
+                      level={10}
+                      isNight={theme === "dark"}
+                      unlockedItems={["solar_array", "rain_cistern", "compost_dome", "sorting_station"]}
+                      solarKwp={housingCalc.solar.kwp}
+                      solarKwhYear={housingCalc.solar.kwhYear}
+                      rainLitersYear={housingCalc.rainwater.litersYear}
+                      bioporeUnits={housingCalc.infiltration.bioporeUnits}
+                      tciScore={housingCalc.thermal.tciScore}
+                      city={geo.city}
+                      koppenCode={geo.koppen.code}
+                      locale={locale}
+                      compact
+                      hideHudOverlays
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
