@@ -223,6 +223,10 @@ export default function RadarPage() {
                   onSelectHub={(hub) => setSelectedHub(hub)}
                   onSelectBuildingFootprint={handleBuildingClickOnMap}
                   locale={locale}
+                  usableRoofRatio={usableRoofRatio}
+                  currentFootprintM2={customFootprintM2}
+                  currentKwp={housingCalc.solar.kwp}
+                  currency={housingCalc.solar.currency}
                 />
               </div>
             </div>
@@ -378,6 +382,19 @@ export default function RadarPage() {
                     ? "Parameter Fisika Atap Rumah"
                     : "Adjustable Roof Physics Parameters"}
                 </h2>
+                <div className="mt-2.5 flex items-center justify-between rounded-lg border border-[#c6f432]/35 bg-[#c6f432]/10 px-3 py-1.5 font-mono text-[11px] font-semibold text-[#c6f432]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-[#c6f432] animate-pulse" />
+                    <span>
+                      {isId
+                        ? `Terhubung ke Peta 3D: ${geo.city} (${customFootprintM2} m²)`
+                        : `Live 3D Map Link: ${geo.city} (${customFootprintM2} m²)`}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-[#A3E635] opacity-80">
+                    NREL PVWatts v8
+                  </span>
+                </div>
               </div>
 
               {/* 3 Interactive Physics Sliders */}
@@ -394,9 +411,9 @@ export default function RadarPage() {
                   <input
                     id="roof-area-slider"
                     type="range"
-                    min={30}
-                    max={450}
-                    step={5}
+                    min={20}
+                    max={Math.max(600, Math.ceil((customFootprintM2 * 1.3) / 50) * 50)}
+                    step={customFootprintM2 > 500 ? 10 : 5}
                     value={customFootprintM2}
                     onChange={(e) =>
                       updateCalculatorAssumptions({

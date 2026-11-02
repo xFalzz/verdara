@@ -14,6 +14,10 @@ export interface Radar3DMapProps {
   onSelectBuildingCoord?: (lat: number, lng: number, estFootprintM2: number) => void;
   onSelectBuildingFootprint?: (lat: number, lng: number, estFootprintM2: number) => void;
   locale?: "en" | "id";
+  usableRoofRatio?: number;
+  currentFootprintM2?: number;
+  currentKwp?: number;
+  currency?: string;
 }
 
 type BasemapType = "streets" | "dark" | "satellite" | "osm";
@@ -97,6 +101,10 @@ export default function Radar3DMap({
   onSelectBuildingCoord,
   onSelectBuildingFootprint,
   locale = "en",
+  usableRoofRatio = 0.6,
+  currentFootprintM2,
+  currentKwp,
+  currency = "USD",
 }: Radar3DMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -118,6 +126,17 @@ export default function Radar3DMap({
   } | null>(null);
 
   const isId = locale === "id";
+
+  // Bi-directional sync: Update marker when right-hand physics sliders change
+  useEffect(() => {
+    if (!inspectedRoof || !inspectMarkerRef.current) return;
+    const currentArea = currentFootprintM2 ?? inspectedRoof.areaM2;
+    const currentSolarKwp = currentKwp ?? inspectedRoof.kwp;
+    const pinEl = inspectMarkerRef.current.getElement();
+    if (pinEl) {
+      pinEl.innerHTML = `<div>ROOF AUDIT: ${currentArea} m²</div><div style="color:#f2f1ec;font-weight:500">${currentSolarKwp} kWp Solar Potential</div><div style="color:#a3e635;font-size:9px">${city} : NREL PVWatts v8</div>`;
+    }
+  }, [currentFootprintM2, currentKwp, city]);
 
   // Helper to configure native MapTiler 3D buildings cleanly
   const configure3DLayer = useCallback(
@@ -344,7 +363,8 @@ export default function Radar3DMap({
         estimatedArea = Math.round(110 + seed * 165);
       }
 
-      estKwp = Number((estimatedArea * 0.72 * 0.208).toFixed(1));
+      const currentRatio = usableRoofRatio || 0.60;
+      estKwp = Number((estimatedArea * currentRatio * 0.20).toFixed(1));
 
       // Highlight the clicked real building polygon in Verdara Neon Lime
       if (clickedFeatureGeometry) {
@@ -406,7 +426,7 @@ export default function Radar3DMap({
       const pinEl = document.createElement("div");
       pinEl.className =
         "rounded-xl border border-[#c6f432] bg-[#08090c]/95 px-3 py-1.5 font-mono text-[10px] font-bold text-[#c6f432] shadow-2xl backdrop-blur-md";
-      pinEl.innerHTML = `<div>ROOF AUDIT: ${estimatedArea} m²</div><div style="color:#f2f1ec;font-weight:500">${estKwp} kWp Solar Potential</div>`;
+      pinEl.innerHTML = `<div>ROOF AUDIT: ${estimatedArea} m²</div><div style="color:#f2f1ec;font-weight:500">${estKwp} kWp Solar (${Math.round(currentRatio * 100)}% usable)</div><div style="color:#a3e635;font-size:9px">${city} : NREL PVWatts v8</div>`;
 
       inspectMarkerRef.current = new maplibregl.Marker({ element: pinEl })
         .setLngLat([clickLng, clickLat])
