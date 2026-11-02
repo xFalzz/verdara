@@ -213,7 +213,7 @@ export default function RadarPage() {
                 </span>
               </div>
 
-              <div className="h-[440px] w-full overflow-hidden rounded-xl">
+              <div className="h-[340px] sm:h-[440px] w-full overflow-hidden rounded-xl">
                 <Radar3DMap
                   lat={geo.lat}
                   lng={geo.lng}
@@ -420,7 +420,7 @@ export default function RadarPage() {
                         footprintM2: Number(e.target.value),
                       })
                     }
-                    className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
+                    className="mt-2 h-7 w-full cursor-pointer accent-[#A3E635]"
                   />
                 </div>
 
@@ -447,7 +447,7 @@ export default function RadarPage() {
                         usableRoofRatio: Number(e.target.value) / 100,
                       })
                     }
-                    className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
+                    className="mt-2 h-7 w-full cursor-pointer accent-[#A3E635]"
                   />
                 </div>
 
@@ -474,7 +474,7 @@ export default function RadarPage() {
                         runoffCoefficient: Number(e.target.value) / 100,
                       })
                     }
-                    className="mt-2 h-2 w-full cursor-pointer accent-[#A3E635]"
+                    className="mt-2 h-7 w-full cursor-pointer accent-[#A3E635]"
                   />
                 </div>
               </div>
@@ -487,20 +487,20 @@ export default function RadarPage() {
                     : "border-[#1D3328] bg-[#070D0A]"
                 }`}
               >
-                <div className="flex justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
                   <span>{isId ? "Kapasitas Surya (kWp):" : "Solar Capacity (kWp):"}</span>
                   <strong className="tabular-nums">
                     {housingCalc.solar.kwp} kWp ({housingCalc.solar.panelCountEst}{" "}
                     {isId ? "panel" : "panels"})
                   </strong>
                 </div>
-                <div className="flex justify-between" suppressHydrationWarning>
+                <div className="flex flex-wrap items-center justify-between gap-1.5" suppressHydrationWarning>
                   <span>{isId ? "Output Surya Tahunan:" : "Annual Solar Output:"}</span>
                   <strong className="tabular-nums" suppressHydrationWarning>
                     {formatNumber(housingCalc.solar.kwhYear, { maximumFractionDigits: 1 }, locale)} {isId ? "kWh/thn" : "kWh/yr"}
                   </strong>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
                   <span>{isId ? "Penghematan Tagihan Tahunan:" : "Annual Bill Savings:"}</span>
                   <strong
                     className={`tabular-nums ${
@@ -515,19 +515,19 @@ export default function RadarPage() {
                     /{isId ? "thn" : "yr"}
                   </strong>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
                   <span>{isId ? "Emisi Jaringan Dihindari:" : "Grid CO2e Avoided:"}</span>
                   <strong className="tabular-nums">
                     {housingCalc.solar.co2eKgYear} {isId ? "kg/thn" : "kg/yr"}
                   </strong>
                 </div>
-                <div className="flex justify-between border-t pt-2 border-current/15">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 border-t pt-2 border-current/15">
                   <span>{isId ? "Tangkapan Air Hujan:" : "Rainwater Capture:"}</span>
                   <strong className="tabular-nums">
                     {formatVolume(housingCalc.rainwater.litersYear, units, locale)}/{isId ? "thn" : "yr"}
                   </strong>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
                   <span>{isId ? "Tangki & Lubang Biopori:" : "Cistern & Biopores:"}</span>
                   <strong className="tabular-nums">
                     {formatVolume(

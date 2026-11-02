@@ -289,7 +289,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`min-h-screen px-3 pt-4 pb-28 transition-colors duration-200 sm:px-8 sm:pt-5 ${
+      className={`min-h-screen px-3 pt-4 pb-36 sm:pb-32 transition-colors duration-200 sm:px-8 sm:pt-5 ${
         isLight
           ? "bg-[#f5f5f3] text-[#111111]"
           : "bg-[#0b0c0e] text-[#f2f1ec]"

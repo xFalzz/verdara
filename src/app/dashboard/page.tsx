@@ -119,7 +119,7 @@ export default function DashboardPage() {
                 ? `01 / Kembaran Spasial 3D · ${displayName}`
                 : `01 / Living Town Map · ${displayName}`}
             </p>
-            <h1 className="dovv-wordmark mt-1 text-5xl sm:text-7xl">
+            <h1 className="dovv-wordmark mt-1 text-3xl sm:text-5xl lg:text-7xl break-words">
               {geo.city} ({geo.koppen.code})
             </h1>
           </div>
@@ -338,7 +338,7 @@ export default function DashboardPage() {
                   <span>{isId ? `TARIF ${geo.policy.currency}` : `${geo.policy.currency} TARIFF`}</span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-[#111317] p-4 shadow-[inset_0_0_0_1px_#252830]">
                     <span className="font-mono text-[10px] text-[#aaa9ad]">
                       {isId ? "PENGHEMATAN SURYA TAHUNAN" : "ANNUAL SOLAR SAVINGS"}

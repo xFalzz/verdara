@@ -129,7 +129,7 @@ export default function DocsPage() {
 
   return (
     <div
-      className={`min-h-screen pb-28 transition-colors duration-200 ${
+      className={`min-h-screen pb-36 sm:pb-32 transition-colors duration-200 ${
         isLight
           ? "bg-[#f5f5f3] text-[#111111]"
           : "bg-[#0b0c0e] text-[#f2f1ec]"

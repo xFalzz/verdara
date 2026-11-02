@@ -837,12 +837,14 @@ export function CompactWorldCityPicker({
           }`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
               isLight ? "bg-[#15803d]" : "bg-[#c6f432]"
             }`}
           />
-          <span>{isId ? "195+ Negara" : "195+ Countries"}</span>
-          <span aria-hidden="true" className="opacity-60 font-mono text-[10px]">
+          <span className="truncate max-w-[130px] sm:max-w-none font-semibold">
+            {geo.city} ({geo.countryCode})
+          </span>
+          <span aria-hidden="true" className="opacity-60 font-mono text-[10px] shrink-0">
             {open ? "^" : "v"}
           </span>
         </button>

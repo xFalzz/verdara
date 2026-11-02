@@ -802,7 +802,7 @@ export default function LensPage() {
                         setFilterCategory("waste");
                         handleStageSampleImage(SAMPLE_COCONUT_SHELL_IMAGE, "sample-waste-01");
                       }}
-                      className={`cursor-pointer rounded-full border px-3 py-1 font-mono text-xs transition ${
+                      className={`min-h-[44px] inline-flex items-center cursor-pointer rounded-full border px-3.5 py-1.5 font-mono text-xs transition ${
                         isLight
                           ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
                           : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
@@ -817,7 +817,7 @@ export default function LensPage() {
                         setFilterCategory("waste");
                         handleStageSampleImage(SAMPLE_PET_BOTTLE_IMAGE, "sample-waste-01");
                       }}
-                      className={`cursor-pointer rounded-full border px-3 py-1 font-mono text-xs transition ${
+                      className={`min-h-[44px] inline-flex items-center cursor-pointer rounded-full border px-3.5 py-1.5 font-mono text-xs transition ${
                         isLight
                           ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
                           : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
@@ -832,7 +832,7 @@ export default function LensPage() {
                         setFilterCategory("waste");
                         handleStageSampleImage(SAMPLE_CARDBOARD_IMAGE, "sample-waste-01");
                       }}
-                      className={`cursor-pointer rounded-full border px-3 py-1 font-mono text-xs transition ${
+                      className={`min-h-[44px] inline-flex items-center cursor-pointer rounded-full border px-3.5 py-1.5 font-mono text-xs transition ${
                         isLight
                           ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
                           : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"
@@ -847,7 +847,7 @@ export default function LensPage() {
                         setFilterCategory("plant");
                         handleStageSampleImage(SAMPLE_PLANT_LEAF_IMAGE, "sample-plant-01");
                       }}
-                      className={`cursor-pointer rounded-full border px-3 py-1 font-mono text-xs transition ${
+                      className={`min-h-[44px] inline-flex items-center cursor-pointer rounded-full border px-3.5 py-1.5 font-mono text-xs transition ${
                         isLight
                           ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-[#EAE5D9]"
                           : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4] hover:border-[#88AC9B]"

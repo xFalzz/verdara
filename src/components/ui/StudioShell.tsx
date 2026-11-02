@@ -297,7 +297,7 @@ export default function StudioShell({
 
   return (
     <div
-      className={`min-h-screen pb-28 transition-colors duration-200 ${
+      className={`min-h-screen pb-36 sm:pb-32 transition-colors duration-200 ${
         isLight
           ? "bg-[#f5f5f3] text-[#111111]"
           : "bg-[#0b0c0e] text-[#f2f1ec]"
@@ -479,6 +479,17 @@ export default function StudioShell({
             aria-label={isId ? "Menu Geser Ruang Kerja" : "Draggable Workspace Menu"}
             className="country-pill-rail flex flex-nowrap items-center gap-1.5 overflow-x-auto"
           >
+            {/* Mobile-accessible World City Selection Pill (< sm) */}
+            <div className="sm:hidden shrink-0">
+              <CompactWorldCityPicker
+                isLight={isLight}
+                isId={isId}
+                variant="header"
+                align="left"
+              />
+            </div>
+            <span className="sm:hidden h-3.5 w-px bg-current/15 shrink-0" />
+
             {topLinks.map((item) => {
               const active = pathname === item.href;
               return (

@@ -603,7 +603,7 @@ export default function Radar3DMap({
         ref={containerRef}
         className="h-full w-full"
         style={{
-          minHeight: "440px",
+          minHeight: "340px",
           width: "100%",
           height: "100%",
           position: "relative",
@@ -731,7 +731,7 @@ export default function Radar3DMap({
       </div>
 
       {/* Bottom hint banner */}
-      <div className="pointer-events-none absolute right-14 bottom-3 left-3 rounded-2xl sm:rounded-full border border-white/15 bg-[#08090c]/90 px-3.5 py-1.5 font-mono text-[10px] sm:text-[11px] text-[#c9c7c0] backdrop-blur-md">
+      <div className="pointer-events-none absolute right-14 bottom-3 left-3 rounded-2xl sm:rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1.5 font-mono text-[9px] sm:text-[11px] leading-tight text-[#c9c7c0] backdrop-blur-md">
         {isId
           ? "Scroll untuk Zoom 3D : Klik-kanan/Ctrl+geser untuk rotasi 360° : Klik atap bangunan mana pun untuk audit surya."
           : "Scroll to 3D Zoom : Right-click/Ctrl+drag to orbit 360° : Click any building roof to audit solar potential."}

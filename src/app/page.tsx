@@ -3230,7 +3230,7 @@ export default function LandingPage() {
 
         {/* Bottom Utility Bar: Copyright & Attribution */}
         <div
-          className={`mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-4 border-t px-6 sm:px-8 py-5 text-xs transition-colors ${
+          className={`mx-auto flex max-w-[1440px] flex-col sm:flex-row items-center justify-between gap-4 border-t px-6 sm:px-8 pt-5 pb-28 sm:pb-20 text-xs transition-colors ${
             isLight
               ? "border-black/10 text-[#52525b]"
               : "border-white/10 text-[#a1a1aa]"

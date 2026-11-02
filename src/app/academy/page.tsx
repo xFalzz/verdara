@@ -335,7 +335,7 @@ export default function AcademyPage() {
                       {(isId ? q.optionsId : q.optionsEn).map((opt, oIdx) => (
                         <label
                           key={oIdx}
-                          className="flex min-h-[38px] cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1"
+                          className="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-current/5"
                         >
                           <input
                             type="radio"

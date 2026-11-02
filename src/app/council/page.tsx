@@ -335,7 +335,7 @@ export default function CouncilPage() {
                   >
                     {item.label}
                   </span>
-                  <strong className="mt-1 block truncate tabular-nums text-xs font-black">
+                  <strong className="mt-1 block tabular-nums text-[11px] sm:text-xs font-black break-words leading-tight">
                     {item.value}
                   </strong>
                 </div>
@@ -821,7 +821,7 @@ export default function CouncilPage() {
               </div>
 
               <div
-                className={`mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 font-mono text-xs shadow-xs ${elevatedCard}`}
+                className={`mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3 sm:px-4 py-3 font-mono text-[11px] sm:text-xs shadow-xs ${elevatedCard}`}
               >
                 <span>
                   PROVIDER: <strong className={isLight ? "text-[#101D16]" : "text-white"}>{sessionResult.telemetry.provider}</strong> / MODEL:{" "}
