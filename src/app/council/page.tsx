@@ -81,7 +81,7 @@ export default function CouncilPage() {
   }, [geo, housingCalc, isId, locale]);
 
   const handleProtectedAction = useCallback(
-    (actionCallback: () => void) => {
+    (actionCallback: () => void, _customMsg?: string) => {
       // In live evaluation mode with META_API_KEY connected, allow immediate council access
       actionCallback();
     },
