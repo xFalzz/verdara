@@ -15,14 +15,14 @@ from eval.material_ontology import MaterialOntologyEngine
 class TestSpatialAndClimateSuite(unittest.TestCase):
 
     def test_voronoi_shoelace_area(self):
-        mesh = SpatialVoronoiMesh(width=100.0, height=100.0)
+        mesh = SpatialVoronoiMesh(bounds_width=100.0, bounds_height=100.0)
         # Unit square: 10 x 10 = 100 area
         square = [Point2D(0, 0), Point2D(10, 0), Point2D(10, 10), Point2D(0, 10)]
         area = mesh.compute_polygon_area(square)
         self.assertEqual(area, 100.0)
 
     def test_voronoi_setback_clipping(self):
-        mesh = SpatialVoronoiMesh(width=200.0, height=200.0)
+        mesh = SpatialVoronoiMesh(bounds_width=200.0, bounds_height=200.0)
         square = [Point2D(0, 0), Point2D(20, 0), Point2D(20, 20), Point2D(0, 20)]
         setback = mesh.compute_setback_polygon(square, setback_distance=2.0)
         self.assertEqual(len(setback), 4)

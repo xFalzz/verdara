@@ -35,9 +35,15 @@ class SpatialVoronoiMesh:
     for Verdara's 3D Eco-District and Urban Radar representations.
     """
 
-    def __init__(self, bounds_width: float = 800.0, bounds_height: float = 600.0):
-        self.width = bounds_width
-        self.height = bounds_height
+    def __init__(
+        self,
+        bounds_width: float = 800.0,
+        bounds_height: float = 600.0,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
+    ):
+        self.width = width if width is not None else bounds_width
+        self.height = height if height is not None else bounds_height
         self.seed_sites: List[Point2D] = []
 
     def add_seed_site(self, x: float, y: float) -> None:
