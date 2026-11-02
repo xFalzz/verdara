@@ -19,7 +19,7 @@ import { WorldCityExplorer } from "@/components/ui/InteractiveEffects";
 const Radar3DMap = dynamic(() => import("@/components/radar/Radar3DMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full w-full items-center justify-center border border-[#1D3328] bg-[#0E1914] p-6 font-mono text-xs text-[#A3BEB0]">
+    <div className="flex h-full w-full items-center justify-center border border-[#1D3328] bg-[#E8ECE9] min-h-[440px] p-6 font-mono text-xs text-[#2C4438]">
       Loading 3D Urban Map Terrain...
     </div>
   ),
