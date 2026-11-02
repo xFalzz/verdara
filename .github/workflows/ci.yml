@@ -62,7 +62,9 @@ jobs:
           pip install -r services/climate_eval/requirements.txt || true
 
       - name: Run Python evaluation unit tests
-        run: python -m unittest eval/test_eval_suite.py
+        run: |
+          python -m unittest eval/test_eval_suite.py
+          python -m unittest eval/test_spatial_and_climate.py
 
       - name: Run Meta SAM 3.1 quantitative evaluation
         run: python -m eval.benchmark_sam_metrics
