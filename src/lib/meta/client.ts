@@ -98,9 +98,9 @@ export function validateCouncilTopic(query?: string): CouncilTopicValidation {
   const explicitOffTopic =
     /\b(presiden|president|politik|politics|pemilu|election|menteri|partai|dpr|parlemen|sepak\s*bola|football|soccer|champions\s*league|liga|ronaldo|messi|puisi|poem|poetry|lagu|song|lirik|lyrics|film|movie|artis|celebrity|selebriti|resep|recipe|masak|cooking|makanan|cake|kue|nasi\s*goreng|restoran|restaurant|koding|coding|python|javascript|typescript|java|c\+\+|html|css|sql|react|vue|angular|docker|kubernetes|hack|retas|exploit|crypto|bitcoin|ethereum|saham|stock\s*market|forex|judi|casino|pacar|cinta|love|zodiak|horoscope|humor|joke|lelucon|game|gaming|dota|mobile\s*legends|valorant|ff|free\s*fire|genshin)\b/i;
 
-  // On-topic keywords across Verdara domains
+  // On-topic keywords across Verdara domains: solar, water, microclimate, botany, plant care & pathology, nature, sustainability & circular waste
   const onTopic =
-    /\b(solar|surya|pv|panel|inverter|baterai|battery|listrik|daya|kwh|kwp|atap|roof|tilt|plts|pln|kemiringan|energi|energy|grid|tarif|tariff|rain|hujan|air|water|resapan|infiltrasi|biopori|biopore|cistern|tandon|talang|downspout|drainase|drainage|macropore|permeabilitas|limpasan|runoff|banjir|flood|plant|tanaman|pohon|tree|daun|leaf|flora|botani|botany|kanopi|canopy|tci|thermal|comfort|panas|heat|suhu|temperature|iklim|climate|k[oö]ppen|kompos|compost|aerobik|pupuk|biophilic|greenery|peneduh|shade|evapotranspirasi|sampah|waste|daur\s*ulang|recycle|recycling|pet|hdpe|plastik|plastic|aluminium|aluminum|kaca|glass|kardus|cardboard|kertas|paper|organik|anorganik|anorganic|sirkular|circular|bank\s*sampah|tpa|emisi|co2|karbon|carbon|drop-off|hub|tapak|site|bangunan|building|rumah|house|home|m2|footprint|arsitektur|architecture|retrofit|renovasi|renovation|biaya|cost|hemat|saving|savings|roi|anggaran|investasi)\b/i;
+    /\b(solar|surya|pv|panel|inverter|baterai|battery|listrik|daya|kwh|kwp|atap|roof|tilt|plts|pln|kemiringan|energi|energy|grid|tarif|tariff|rain|hujan|air|water|resapan|infiltrasi|biopori|biopore|cistern|tandon|talang|downspout|drainase|drainage|macropore|permeabilitas|limpasan|runoff|banjir|flood|sumur\s*resapan|plant|tanaman|tumbuhan|tumbuh|merawat|rawat|perawatan|pemeliharaan|pruning|pangkas|pohon|tree|daun|leaf|flora|botani|botany|vegetasi|vegetation|akar|root|batang|stem|bunga|flower|buah|fruit|benih|seed|bibit|sprout|tunas|hama|pest|penyakit|disease|jamur|fungus|fungal|lesi|lesion|bakteri|bacteria|layu|wilt|kuning|yellowing|busuk|rot|bercak|spot|kebun|garden|gardening|taman|perkebunan|tanah|soil|humus|pupuk|fertilizer|kompos|compost|aerobik|biophilic|greenery|peneduh|shade|evapotranspirasi|kanopi|canopy|urban\s*farming|hidroponik|aeroponik|permakultur|agroforestri|alam|nature|natural|hayati|biodiversitas|biodiversity|ekosistem|ecosystem|ekologi|ecology|habitat|konservasi|conservation|lingkungan|environment|environmental|satwa|fauna|lebah|bee|polinator|pollinator|burung|bird|hutan|forest|penghijauan|greening|sustainability|sustainable|keberlanjutan|berkelanjutan|lestari|kelestarian|ramah\s*lingkungan|eco[- ]?friendly|eco|green\s*living|zero\s*waste|net\s*zero|jejak\s*karbon|carbon\s*footprint|karbon|carbon|emisi|emission|dekarbonisasi|polusi|pollution|kualitas\s*udara|sampah|waste|daur\s*ulang|recycle|recycling|reuse|reduce|upcycle|pet|hdpe|plastik|plastic|aluminium|aluminum|kaca|glass|kardus|cardboard|kertas|paper|organik|anorganik|anorganic|sirkular|circular|bank\s*sampah|tpa|drop-off|hub|tci|thermal|comfort|panas|heat|suhu|temperature|iklim|climate|pemanasan\s*global|global\s*warming|perubahan\s*iklim|climate\s*change|k[oö]ppen|tapak|site|bangunan|building|rumah|house|home|m2|footprint|arsitektur|architecture|retrofit|renovasi|renovation|biaya|cost|hemat|saving|savings|roi|anggaran|investasi)\b/i;
 
   const matchesStrictOffTopic = explicitOffTopic.test(q);
   const matchesOnTopic = onTopic.test(q);
@@ -130,11 +130,11 @@ export function validateCouncilTopic(query?: string): CouncilTopicValidation {
   let domain: CouncilTopicValidation["domain"] = "general_site";
   if (/\b(solar|surya|pv|panel|inverter|baterai|battery|kwh|kwp|plts)\b/i.test(q)) {
     domain = "solar_physics";
-  } else if (/\b(rain|hujan|air|water|biopori|biopore|cistern|tandon|talang|banjir|flood)\b/i.test(q)) {
+  } else if (/\b(rain|hujan|air|water|biopori|biopore|cistern|tandon|talang|banjir|flood|drainase|drainage)\b/i.test(q)) {
     domain = "hydrology";
-  } else if (/\b(plant|tanaman|pohon|tree|daun|leaf|flora|tci|panas|heat|suhu|kanopi|shade|peneduh|kompos)\b/i.test(q)) {
+  } else if (/\b(plant|tanaman|tumbuhan|merawat|rawat|penyakit|hama|jamur|fungus|lesion|bercak|pohon|tree|daun|leaf|flora|botani|botany|kebun|taman|vegetasi|alam|nature|tci|panas|heat|suhu|kanopi|shade|peneduh|kompos|pupuk|soil|tanah)\b/i.test(q)) {
     domain = "microclimate_botany";
-  } else if (/\b(sampah|waste|daur\s*ulang|recycle|pet|hdpe|plastik|aluminium|kaca|kardus|bank\s*sampah|sirkular)\b/i.test(q)) {
+  } else if (/\b(sampah|waste|daur\s*ulang|recycle|sustainability|sustainable|keberlanjutan|lestari|pet|hdpe|plastik|aluminium|kaca|kardus|bank\s*sampah|sirkular)\b/i.test(q)) {
     domain = "circular_waste";
   }
 
@@ -276,14 +276,30 @@ export async function executeVerdaraCouncil(
     queryFocus.includes("biopori") ||
     queryFocus.includes("banjir") ||
     queryFocus.includes("cistern");
+  const hasDiseaseQuery =
+    queryFocus.includes("penyakit") ||
+    queryFocus.includes("sakit") ||
+    queryFocus.includes("hama") ||
+    queryFocus.includes("jamur") ||
+    queryFocus.includes("fungus") ||
+    queryFocus.includes("lesion") ||
+    queryFocus.includes("bercak") ||
+    queryFocus.includes("layu");
+
   const hasPlantQuery =
     queryFocus.includes("plant") ||
     queryFocus.includes("tanaman") ||
+    queryFocus.includes("tumbuhan") ||
+    queryFocus.includes("merawat") ||
+    queryFocus.includes("rawat") ||
     queryFocus.includes("pohon") ||
     queryFocus.includes("kompos") ||
     queryFocus.includes("panas") ||
     queryFocus.includes("tci") ||
-    queryFocus.includes("suhu");
+    queryFocus.includes("suhu") ||
+    queryFocus.includes("alam") ||
+    queryFocus.includes("nature") ||
+    hasDiseaseQuery;
 
   // Step 2: Live Meta Model API Call (with strict topic boundary guardrail)
   let liveCustomNote: string | null = null;
@@ -303,11 +319,11 @@ export async function executeVerdaraCouncil(
 
       const systemPrompt =
         "You are the lead synthesizer for The Verdara Specialist Council:\n" +
-        "1. Dr. Flora Daniswara: Urban botany, native canopy, Thermal Comfort Index (TCI), aerobic composting.\n" +
-        "2. Ir. Arka Mahendra: Rooftop solar PV (kWp & kWh), optimal tilt angles, rainwater harvesting, and biopores.\n" +
-        "3. Sirkula Hidayat, M.Env: Circular economy, waste sorting (PET, aluminium, glass), avoided CO2e, and Bank Sampah.\n\n" +
+        "1. Dr. Flora Daniswara: Urban botany, plant pathology, plant care, native canopy, biodiversity, nature, Thermal Comfort Index (TCI), and aerobic composting.\n" +
+        "2. Ir. Arka Mahendra: Rooftop solar PV (kWp & kWh), optimal tilt angles, rainwater harvesting, site hydrology, and biopores.\n" +
+        "3. Sirkula Hidayat, M.Env: Sustainability, circular economy, waste sorting (PET, aluminium, glass), avoided CO2e, and Bank Sampah.\n\n" +
         "STRICT TOPIC BOUNDARY RULE:\n" +
-        "If the user asks an off-topic question (e.g. general chit-chat, politics, celebrities, sports, food recipes, coding/programming, or anything outside residential site ecology, solar, hydrology, or circular waste), YOU MUST REPLY EXACTLY:\n" +
+        "If the user asks an off-topic question (e.g. general chit-chat, politics, celebrities, sports, food recipes, coding/programming, or anything outside site ecology, botany/plants, nature, sustainability, solar, hydrology, or circular waste), YOU MUST REPLY EXACTLY:\n" +
         "REJECTED_OFF_TOPIC\n\n" +
         "Otherwise, synthesize a concise 2-sentence technical summary addressing the user query using ONLY numbers from SITE_BRIEF.";
 
@@ -574,9 +590,16 @@ export async function executeVerdaraCouncil(
     ? `Directly addressing your consultation question: "${opts.userQuery}". `
     : "";
 
+  const diseaseNoteId = hasDiseaseQuery
+    ? " Terkait perawatan tumbuhan terinfeksi penyakit: 1) Segera isolasi tanaman agar spora patogen tidak menular ke kanopi lain. 2) Pangkas daun/ranting berpenyakit dengan gunting steril alkohol 70% dan musnahkan (jangan masukkan ke komposter agar siklus pupuk tidak tercemar). 3) Semprotkan biofungisida organik (minyak mimba/neem oil) di pagi hari. 4) Perbaiki aerasi tanah dan hindari genangan air."
+    : "";
+  const diseaseNoteEn = hasDiseaseQuery
+    ? " Regarding plant disease care: 1) Immediately isolate infected specimens to halt spore dispersal. 2) Prune diseased foliage with 70% alcohol-sterilized shears and dispose safely outside compost bins. 3) Apply organic cold-pressed neem bio-fungicide in early morning. 4) Ensure root substrate aeration and eliminate waterlogging."
+    : "";
+
   const floraText = isId
-    ? `${queryPreambleId}Berdasarkan profil iklim Köppen ${brief.koppenCode} (${brief.koppenName}) di ${brief.city} pada ${brief.season}, kenyamanan termal bangunan berada pada skor TCI ${brief.tciScore}/100. Dengan luas atap ${brief.footprintM2} m², penanaman kanopi peneduh lokal di sisi barat serta konversi kompos aerobik akan menurunkan suhu mikro permukaan dan menyerap limpasan air.${hasPlantQuery ? " Vegetasi peneduh berdaun lebat direkomendasikan untuk menahan radiasi sinar matahari langsung." : ""}`
-    : `${queryPreambleEn}Based on the ${brief.koppenCode} (${brief.koppenName}) climate profile in ${brief.city} during ${brief.season}, the building's Thermal Comfort Index sits at ${brief.tciScore}/100. Across the ${brief.footprintM2} m² footprint, establishing native west-facade shade canopy and aerobic composting directly buffers microclimate heat and soil moisture.${hasPlantQuery ? " Dense-canopy native foliage is recommended to mitigate direct solar radiation." : ""}`;
+    ? `${queryPreambleId}Berdasarkan profil iklim Köppen ${brief.koppenCode} (${brief.koppenName}) di ${brief.city} pada ${brief.season}, kenyamanan termal bangunan berada pada skor TCI ${brief.tciScore}/100. Dengan luas atap ${brief.footprintM2} m², penanaman kanopi peneduh lokal di sisi barat serta konversi kompos aerobik akan menurunkan suhu mikro permukaan dan menyerap limpasan air.${hasDiseaseQuery ? diseaseNoteId : (hasPlantQuery ? " Vegetasi peneduh berdaun lebat direkomendasikan untuk menahan radiasi sinar matahari langsung." : "")}`
+    : `${queryPreambleEn}Based on the ${brief.koppenCode} (${brief.koppenName}) climate profile in ${brief.city} during ${brief.season}, the building's Thermal Comfort Index sits at ${brief.tciScore}/100. Across the ${brief.footprintM2} m² footprint, establishing native west-facade shade canopy and aerobic composting directly buffers microclimate heat and soil moisture.${hasDiseaseQuery ? diseaseNoteEn : (hasPlantQuery ? " Dense-canopy native foliage is recommended to mitigate direct solar radiation." : "")}`;
 
   const arkaText = isId
     ? `${queryPreambleId}Audit fisika atap ${brief.footprintM2} m² menunjukkan kapasitas surya ${brief.solarKwp} kWp (rasio atap layak 60%) yang memproduksi ${fmtNum(brief.solarKwhYear)} kWh/tahun dan menghindari emisi ${fmtNum(brief.co2eKgYear)} kg CO2e/tahun. Dari curah hujan lokal, atap ini mampu memanen ${fmtNum(brief.rainLitersYear)} Liter/tahun yang wajib diimbangi dengan ${brief.bioporeUnits} unit lubang resapan biopori.${hasSolarQuery ? " Sudut kemiringan modul surya dioptimalkan sesuai garis lintang lokal." : ""}`

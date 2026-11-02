@@ -47,9 +47,32 @@ describe("Verdara Council Topic Guardrail & Deterministic Validator", () => {
     expect(plantCheck.isAllowed).toBe(true);
     expect(plantCheck.domain).toBe("microclimate_botany");
 
+    const plantDiseaseCheck = validateCouncilTopic("Bagaimana cara merawat tumbuhan yang sudah terkena penyakit langka?");
+    expect(plantDiseaseCheck.isAllowed).toBe(true);
+    expect(plantDiseaseCheck.domain).toBe("microclimate_botany");
+
+    const sustainabilityCheck = validateCouncilTopic("Bagaimana prinsip sustainability dan daur ulang untuk hunian?");
+    expect(sustainabilityCheck.isAllowed).toBe(true);
+    expect(sustainabilityCheck.domain).toBe("circular_waste");
+
     const wasteCheck = validateCouncilTopic("Bagaimana memilah sampah plastik PET untuk Bank Sampah terdekat?");
     expect(wasteCheck.isAllowed).toBe(true);
     expect(wasteCheck.domain).toBe("circular_waste");
+  });
+
+  it("deliberates plant care and rare disease queries through Dr. Flora", async () => {
+    const result = await executeVerdaraCouncil(dummyBrief, {
+      userId: "test-resident",
+      ipHash: "127.0.0.1",
+      isJudge: true,
+      userQuery: "Bagaimana cara merawat tumbuhan yang sudah terkena penyakit langka",
+    });
+
+    expect(result.isOffTopic).toBe(false);
+    expect(result.messages).toHaveLength(3);
+    expect(result.messages[0].content).toContain("perawatan tumbuhan");
+    expect(result.messages[0].content).toContain("isolasi");
+    expect(result.messages[0].content).toContain("biofungisida");
   });
 
   it("strictly rejects off-topic queries outside site ecology and physics", () => {

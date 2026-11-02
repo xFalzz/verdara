@@ -406,8 +406,8 @@ export default function CouncilPage() {
 
             <p className={`mt-2 font-mono text-[10px] ${textMuted}`}>
               {isId
-                ? "🛡️ Pagar Pembatas AI: Dewan Spesialis secara ketat menolak pertanyaan di luar topik energi surya, air hujan, iklim mikro (TCI), dan Bank Sampah."
-                : "🛡️ AI Topic Boundary: The Council strictly declines queries outside rooftop solar, hydrology, microclimate (TCI), and circular waste."}
+                ? "🛡️ Cakupan Topik AI: Dewan Spesialis siap berdiskusi seputar kesehatan tumbuhan & botani, alam & biodiversitas, iklim mikro (TCI), energi surya, tata air, serta kelestarian sirkular."
+                : "🛡️ AI Domain Scope: The Specialist Council deliberates botanical & plant care, nature & biodiversity, microclimate (TCI), rooftop solar, hydrology, and circular sustainability."}
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
