@@ -89,9 +89,10 @@ export function checkAiCreditShield(opts: {
   const cfg = getShieldConfig();
   const isPrivileged = Boolean(opts.isJudge);
   const isStarterOrGuest =
-    opts.userId.includes("starter") ||
-    opts.userId.includes("guest") ||
-    Boolean(opts.isStarter);
+    !isPrivileged &&
+    (opts.userId.includes("starter") ||
+      opts.userId.includes("guest") ||
+      Boolean(opts.isStarter));
   const now = Date.now();
   const startOfUtcDay = new Date().setUTCHours(0, 0, 0, 0);
 
@@ -115,7 +116,7 @@ export function checkAiCreditShield(opts: {
     Math.max(0, cfg.lifetimeCapUsd - totalSpendUsd).toFixed(2)
   );
 
-  const quotaSpec = USER_DAILY_QUOTAS[opts.op] ?? { public: 15, judge: 40 };
+  const quotaSpec = USER_DAILY_QUOTAS[opts.op] ?? { public: 20, judge: 50 };
   const maxUserQuota = isPrivileged ? quotaSpec.judge : quotaSpec.public;
   const userTodayCount = todayEntries.filter(
     (e) => e.userId === opts.userId && e.op === opts.op && !e.cacheHit

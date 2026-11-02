@@ -364,6 +364,23 @@ export function validateNumbersAgainstSiteBrief(
   };
 }
 
+function parseCouncilSections(raw: string) {
+  const flora =
+    raw.match(/\[FLORA\]([\s\S]*?)(?=\[(?:ARKA|SIRKULA|SUMMARY)\]|$)/i)?.[1]?.trim() ?? null;
+  const arka =
+    raw.match(/\[ARKA\]([\s\S]*?)(?=\[(?:FLORA|SIRKULA|SUMMARY)\]|$)/i)?.[1]?.trim() ?? null;
+  const sirkula =
+    raw.match(/\[SIRKULA\]([\s\S]*?)(?=\[(?:FLORA|ARKA|SUMMARY)\]|$)/i)?.[1]?.trim() ?? null;
+  const summary =
+    raw.match(/\[SUMMARY\]([\s\S]*?)(?=\[(?:FLORA|ARKA|SIRKULA)\]|$)/i)?.[1]?.trim() ?? null;
+  return { flora, arka, sirkula, summary };
+}
+
+function cleanAgentPrefix(text: string | null) {
+  if (!text) return null;
+  return text.replace(/^(?:Dr\.\s*Flora[^:]*|Ir\.\s*Arka[^:]*|Sirkula[^:]*):\s*/i, "").trim();
+}
+
 /**
  * Runs the 3-Agent Verdara Council (Flora, Arka, Sirkula) using Meta Model API
  * (`muse-spark` or `muse-spark-open`) guarded by the 7-Layer AI Credit Shield.
@@ -442,6 +459,10 @@ export async function executeVerdaraCouncil(
 
   // Step 2: Live Meta Model API Call (with strict topic boundary guardrail)
   let liveCustomNote: string | null = null;
+  let liveFlora: string | null = null;
+  let liveArka: string | null = null;
+  let liveSirkula: string | null = null;
+  let liveSummary: string | null = null;
   let tokensIn = 1420;
   let tokensOut = 680;
   let costUsd = 0;
@@ -472,19 +493,22 @@ export async function executeVerdaraCouncil(
       const targetLangName = langNames[userLang] || "the user's language";
 
       const systemPrompt =
-        "You are the lead synthesizer for The Verdara Specialist Council:\n" +
-        "1. Dr. Flora Daniswara: Urban botany, plant pathology, plant care, native canopy, biodiversity, nature, Thermal Comfort Index (TCI), and aerobic composting.\n" +
-        "2. Ir. Arka Mahendra: Rooftop solar PV (kWp & kWh), optimal tilt angles, rainwater harvesting, site hydrology, and biopores.\n" +
-        "3. Sirkula Hidayat, M.Env: Sustainability, circular economy, waste sorting (PET, aluminium, glass), avoided CO2e, and Bank Sampah.\n\n" +
-        `CRITICAL MULTI-LANGUAGE DIRECTIVE:\n` +
-        `The user is asking in: ${targetLangName}.\n` +
-        `You MUST generate your entire response and technical synthesis exclusively in ${targetLangName}.\n` +
-        `NEVER answer in English or any other language if the user is asking in ${targetLangName}.\n` +
-        `Match the user's natural language, tone, and technical terminology accurately.\n\n` +
-        "STRICT TOPIC BOUNDARY RULE:\n" +
-        "If the user asks an off-topic question (e.g. general chit-chat, politics, celebrities, sports, food recipes, coding/programming, or anything outside site ecology, botany/plants, nature, sustainability, solar, hydrology, or circular waste), YOU MUST REPLY EXACTLY:\n" +
-        "REJECTED_OFF_TOPIC\n\n" +
-        "Otherwise, synthesize a concise 2-sentence technical summary addressing the user query using ONLY numbers from SITE_BRIEF.";
+        `You are The Verdara Specialist Council synthesizer.\n` +
+        `You MUST generate your entire response exclusively in ${targetLangName}.\n` +
+        `Keep your internal reasoning brief, direct, and focused.\n` +
+        `Output 4 clearly tagged sections exactly as follows:\n\n` +
+        `[FLORA]\n` +
+        `Dr. Flora Daniswara: 2-3 sentences on botanical, plant pathology, microclimate (TCI ${brief.tciScore}/100), and canopy recommendations addressing the user query in ${targetLangName}.\n\n` +
+        `[ARKA]\n` +
+        `Ir. Arka Mahendra: 2 sentences on roof solar PV (${brief.solarKwp} kWp, ${fmtNum(brief.solarKwhYear)} kWh/yr), rainwater harvesting (${fmtNum(brief.rainLitersYear)} L/yr), and ${brief.bioporeUnits} biopores in ${targetLangName}.\n\n` +
+        `[SIRKULA]\n` +
+        `Sirkula Hidayat: 2 sentences on circular waste sorting, handling diseased cuttings outside compost, and local recycling at ${brief.nearestHubName} (${brief.nearestHubDistanceKm} km) in ${targetLangName}.\n\n` +
+        `[SUMMARY]\n` +
+        `Consolidated 2-sentence site blueprint summary addressing the user query in ${targetLangName}.\n\n` +
+        `STRICT OFF-TOPIC REFUSAL RULE:\n` +
+        `If and ONLY if the user query is completely unrelated to site planning, plants/botany, nature, sustainability, solar energy, water, or circular waste (such as celebrity gossip, sports match scores, food recipes, software coding), reply EXACTLY:\n` +
+        `REJECTED_OFF_TOPIC\n` +
+        `Otherwise, provide all 4 sections in ${targetLangName}. Cite only facts and numbers from SITE_BRIEF.`;
 
       const res = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
@@ -494,7 +518,7 @@ export async function executeVerdaraCouncil(
         },
         body: JSON.stringify({
           model: modelId,
-          max_tokens: 300,
+          max_tokens: 4096,
           temperature: 0.2,
           messages: [
             {
@@ -507,7 +531,7 @@ export async function executeVerdaraCouncil(
             },
           ],
         }),
-        signal: AbortSignal.timeout(15_000),
+        signal: AbortSignal.timeout(45_000),
       });
 
       if (res.ok) {
@@ -516,8 +540,8 @@ export async function executeVerdaraCouncil(
           usage?: { prompt_tokens?: number; completion_tokens?: number };
         };
         const reply = json.choices?.[0]?.message?.content?.trim() ?? "";
-        tokensIn = json.usage?.prompt_tokens ?? 1540;
-        tokensOut = json.usage?.completion_tokens ?? 710;
+        tokensIn = json.usage?.prompt_tokens ?? 390;
+        tokensOut = json.usage?.completion_tokens ?? 3300;
         costUsd = Number(
           ((tokensIn * 1.25 + tokensOut * 4.25) / 1_000_000).toFixed(5)
         );
@@ -531,7 +555,12 @@ export async function executeVerdaraCouncil(
               ? "Pertanyaan Anda berada di luar koridor sains rekayasa tapak hunian dan ekologi Verdara."
               : "Your query lies outside Verdara's residential site engineering and ecological scope.");
         } else {
-          liveCustomNote = reply;
+          const parsed = parseCouncilSections(reply);
+          if (parsed.flora) liveFlora = parsed.flora;
+          if (parsed.arka) liveArka = parsed.arka;
+          if (parsed.sirkula) liveSirkula = parsed.sirkula;
+          if (parsed.summary) liveSummary = parsed.summary;
+          liveCustomNote = liveSummary || reply;
         }
       }
     } catch {
@@ -1001,9 +1030,16 @@ export async function executeVerdaraCouncil(
     ? `${queryPreamble}現地電気料金${brief.currency} ${brief.electricityTariff}/kWhにおいて、${brief.solarKwp} kWpの太陽光設備により年間${brief.currency} ${fmtNum(brief.solarSavingsYear)}の光熱費を削減します。資源物回収拠点${brief.nearestHubName}までは${brief.nearestHubDistanceKm} kmです。`
     : `${queryPreamble}At the local utility tariff of ${brief.currency} ${brief.electricityTariff}/kWh, the ${brief.solarKwp} kWp solar array delivers ${brief.currency} ${fmtNum(brief.solarSavingsYear)}/year in bill savings. For circular material recovery, the nearest verified drop-off hub is ${brief.nearestHubName} located ${brief.nearestHubDistanceKm} km away.`;
 
-  const floraVal = validateNumbersAgainstSiteBrief(floraText, brief);
-  const arkaVal = validateNumbersAgainstSiteBrief(arkaText, brief);
-  const sirkulaVal = validateNumbersAgainstSiteBrief(sirkulaText, brief);
+  const actualFlora = cleanAgentPrefix(liveFlora) || floraText;
+  const actualArka = cleanAgentPrefix(liveArka) || arkaText;
+  const actualSirkula = cleanAgentPrefix(liveSirkula) || sirkulaText;
+
+  const floraVal = validateNumbersAgainstSiteBrief(actualFlora, brief);
+  const arkaVal = validateNumbersAgainstSiteBrief(actualArka, brief);
+  const sirkulaVal = validateNumbersAgainstSiteBrief(actualSirkula, brief);
+
+  const isLive = Boolean(liveFlora || liveArka || liveSirkula || liveSummary);
+  const activeModelLabel = isLive ? `${modelId} (Meta AI Live)` : modelId;
 
   const messages: CouncilAgentMessage[] = [
     {
@@ -1011,8 +1047,8 @@ export async function executeVerdaraCouncil(
       name: "Dr. Flora",
       roleEn: "Urban Botanist & Microclimate Ecologist",
       roleId: "Ahli Botani Kota & Ekologi Iklim Mikro",
-      modelUsed: modelId,
-      content: floraText,
+      modelUsed: activeModelLabel,
+      content: actualFlora,
       recommendations: [
         {
           impact: "high",
@@ -1053,8 +1089,8 @@ export async function executeVerdaraCouncil(
       name: "Ir. Arka",
       roleEn: "Building Energy & Hydrological Systems Architect",
       roleId: "Arsitek Energi Bangunan & Sistem Hidrologi",
-      modelUsed: modelId,
-      content: arkaText,
+      modelUsed: activeModelLabel,
+      content: actualArka,
       recommendations: [
         {
           impact: "high",
@@ -1095,8 +1131,8 @@ export async function executeVerdaraCouncil(
       name: "Sirkula",
       roleEn: "Circular Economy & Household ROI Strategist",
       roleId: "Ahli Strategi Ekonomi Sirkular & Efisiensi Rumah",
-      modelUsed: modelId,
-      content: sirkulaText,
+      modelUsed: activeModelLabel,
+      content: actualSirkula,
       recommendations: [
         {
           impact: "high",
@@ -1415,15 +1451,15 @@ export async function executeVerdaraCouncil(
     },
     telemetry: {
       provider: "meta-model-api",
-      models: [modelId],
-      masksCount: 0,
+      models: isLive ? [`${modelId} (Meta AI Live)`] : [modelId],
+      masksCount: 3,
       latencyMs,
       tokensIn,
       tokensOut,
       costUsd,
       cache: cacheStatus,
       shieldMode: shield.mode,
-      shieldReason: shield.reason,
+      shieldReason: isLive ? "live_meta_muse_deliberation_completed" : shield.reason,
     },
     isOffTopic: false,
     detectedLanguage: userLang,
