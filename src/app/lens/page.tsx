@@ -173,7 +173,10 @@ export default function LensPage() {
     }
   };
 
-  const handleRunAnalysis = async (imgToAnalyze?: string) => {
+  const handleRunAnalysis = async (
+    imgToAnalyze?: string,
+    overrideMode?: "auto" | "waste" | "plant" | "retrofit"
+  ) => {
     const targetUrl = imgToAnalyze || stagedImageUrl;
     if (!targetUrl) return;
 
@@ -191,40 +194,48 @@ export default function LensPage() {
     setScanError(null);
 
     try {
-      const mode = filterCategory === "plant" ? "plant" : filterCategory === "retrofit" ? "retrofit" : "auto";
-      const result = await analyzeImageLocally(targetUrl, mode);
+      const activeMode =
+        overrideMode ||
+        (filterCategory === "plant"
+          ? "plant"
+          : filterCategory === "retrofit"
+          ? "retrofit"
+          : "waste");
+      const result = await analyzeImageLocally(targetUrl, activeMode);
       setCustomClassification(result);
       setCustomSample(result.sample);
       setCustomImageUrl(targetUrl);
       setSelectedObjId(result.sample.objects[0]?.id ?? null);
       setHasScanned(true);
 
-      // Award XP & show Verdara EcoScore toast
-      awardXp(25, "sorting_station");
-      setEcoScoreToast(
-        isId
-          ? `+10 EcoScore (+25 XP) · ${result.detectedNameId} Teridentifikasi!`
-          : `+10 EcoScore (+25 XP) · ${result.detectedNameEn} Identified!`
-      );
-      setTimeout(() => setEcoScoreToast(null), 4500);
+      // Only award XP and record scan if photo is a recognized circular specimen
+      if (!result.isUnrelated) {
+        awardXp(25, "sorting_station");
+        setEcoScoreToast(
+          isId
+            ? `+10 EcoScore (+25 XP) · ${result.detectedNameId} Teridentifikasi!`
+            : `+10 EcoScore (+25 XP) · ${result.detectedNameEn} Identified!`
+        );
+        setTimeout(() => setEcoScoreToast(null), 4500);
 
-      recordScanCompleted(
-        {
-          id: `scan-${Date.now()}`,
-          sampleId: result.sample.id,
-          titleEn: result.sample.titleEn,
-          titleId: result.sample.titleId,
-          mode: result.sample.mode,
-          objectCount: result.sample.objects.length,
-          valueTotal: totals.valueMax,
-          currency: geo.policy.currency,
-          co2eAvoidedG: totals.co2eG,
-          createdAt: "Just now",
-        },
-        true
-      );
+        recordScanCompleted(
+          {
+            id: `scan-${Date.now()}`,
+            sampleId: result.sample.id,
+            titleEn: result.sample.titleEn,
+            titleId: result.sample.titleId,
+            mode: result.sample.mode,
+            objectCount: result.sample.objects.length,
+            valueTotal: totals.valueMax,
+            currency: geo.policy.currency,
+            co2eAvoidedG: totals.co2eG,
+            createdAt: "Just now",
+          },
+          true
+        );
+      }
 
-      if (voiceActive) {
+      if (voiceActive && !result.isUnrelated) {
         const speechText = isId
           ? `Teridentifikasi: ${result.detectedNameId}. Kategori ${result.categoryTagId}. Nilai estimasi ${formatCurrency(totals.valueMax, totals.currency, locale)}. ${result.descriptionId}`
           : `Identified: ${result.detectedNameEn}. Category: ${result.categoryTagEn}. Estimated value: ${formatCurrency(totals.valueMax, totals.currency, locale)}. ${result.descriptionEn}`;
@@ -238,6 +249,16 @@ export default function LensPage() {
       );
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleSwitchToSuggestedCategory = (
+    cat: "waste" | "plant" | "retrofit"
+  ) => {
+    setFilterCategory(cat);
+    const targetUrl = customImageUrl || stagedImageUrl;
+    if (targetUrl) {
+      handleRunAnalysis(targetUrl, cat);
     }
   };
 
@@ -913,160 +934,215 @@ export default function LensPage() {
             ) : (
               // ACTIVE SCANNED VISOR: Interactive SAM 3.1 Polygons Over Image
               <>
-                <div
-                  className={`border p-4 rounded-2xl ${
-                    isLight
-                      ? "border-[#C7C0B0] bg-white shadow-sm"
-                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
-                  }`}
-                >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                    <div>
-                      <span
-                        className={
-                          isLight
-                            ? "font-bold text-[#14532D]"
-                            : "font-bold text-[#A3E635]"
-                        }
-                      >
-                        {isId ? "// VISOR POLIGON SAM 3.1" : "// SAM 3.1 POLYGON VISOR"}
-                      </span>{" "}
-                      <span>
-                        ({activeSample.objects.length} {isId ? "objek" : "instances"} · IoU &lt; 0.85)
-                      </span>
+                {/* Category Mismatch Warning Banner with 1-Click Redirect */}
+                {customClassification?.isMismatch && customClassification.suggestedCategory && (
+                  <div className="rounded-2xl border border-amber-500/60 bg-amber-950/30 p-4 font-mono text-xs text-amber-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-lg">
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-xl">⚠️</span>
+                      <div>
+                        <p className="font-bold text-amber-400">
+                          {isId ? "PERINGATAN: KATEGORI FOTO TIDAK SESUAI" : "WARNING: CATEGORY MISMATCH DETECTED"}
+                        </p>
+                        <p className="mt-0.5 text-xs text-amber-200/90 leading-relaxed">
+                          {isId ? customClassification.mismatchMessageId : customClassification.mismatchMessageEn}
+                        </p>
+                      </div>
                     </div>
-
                     <button
                       type="button"
-                      onClick={handleResetScanner}
-                      className="cursor-pointer underline text-[11px] opacity-75 hover:opacity-100"
+                      onClick={() => handleSwitchToSuggestedCategory(customClassification.suggestedCategory!)}
+                      className="shrink-0 min-h-[40px] cursor-pointer rounded-xl bg-amber-400 px-4 py-2 font-mono text-xs font-bold text-black hover:bg-amber-300 transition shadow-md"
                     >
-                      {isId ? "✕ Pindai Objek Lain" : "✕ Scan Another Object"}
+                      {customClassification.suggestedCategory === "plant"
+                        ? (isId ? "🌿 Pindah ke Mode Dokter Tanaman →" : "🌿 Switch to Plant Doctor Mode →")
+                        : customClassification.suggestedCategory === "waste"
+                        ? (isId ? "🗑️ Pindah ke Mode Waste & Bank Sampah →" : "🗑️ Switch to Waste Mode →")
+                        : (isId ? "🏡 Pindah ke Mode Retrofit →" : "🏡 Switch to Retrofit Mode →")}
                     </button>
                   </div>
+                )}
 
-                  <SpatialMaskViewer
-                    sample={activeSample}
-                    selectedObjectId={selectedObj.id}
-                    onSelectObject={(obj) => setSelectedObjId(obj.id)}
-                    xrayLevel={xrayLevel}
-                    retrofitCurtainPct={retrofitCurtainPct}
-                    onRetrofitCurtainChange={(pct) => setRetrofitCurtainPct(pct)}
-                    showRetrofitComparison={showRetrofitComparison}
-                    objectValuations={objectValuations}
-                    customImageUrl={customImageUrl}
-                    locale={locale}
-                  />
+                {customClassification?.isUnrelated ? (
+                  /* Off-Domain / Unrelated Photo Alert */
+                  <div className={`rounded-2xl border p-6 text-center shadow-lg ${
+                    isLight ? "border-rose-300 bg-rose-50 text-rose-950" : "border-rose-500/60 bg-rose-950/30 text-rose-200"
+                  }`}>
+                    <div className="text-4xl">🚫</div>
+                    <h3 className="mt-2.5 font-serif text-xl font-bold text-rose-500">
+                      {isId ? "Objek Tidak Dikenali / Di Luar Kategori Sirkular" : "Unrecognized Specimen / Off-Domain Image"}
+                    </h3>
+                    <p className="mx-auto mt-2 max-w-lg text-xs leading-relaxed opacity-90">
+                      {isId ? customClassification.unrelatedMessageId : customClassification.unrelatedMessageEn}
+                    </p>
 
-                  {/* Scrubber Controls Bar */}
-                  <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-                    <div className="flex items-center gap-2">
-                      <span>X-RAY:</span>
-                      <input
-                        type="range"
-                        aria-label={
-                          isId
-                            ? "Tingkat Transparansi X-Ray"
-                            : "X-Ray Transparency Level"
-                        }
-                        min={0}
-                        max={100}
-                        value={xrayLevel}
-                        onChange={(e) => setXrayLevel(Number(e.target.value))}
-                        className="h-2 w-28 cursor-pointer accent-[#A3E635]"
-                      />
-                      <span className="tabular-nums font-bold">{xrayLevel}%</span>
+                    <div className="mt-5 flex flex-wrap justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleResetScanner}
+                        className="min-h-[44px] cursor-pointer rounded-xl bg-rose-500 px-6 py-2.5 font-mono text-xs font-bold text-white hover:bg-rose-600 transition shadow-md"
+                      >
+                        🔄 {isId ? "Pindai Ulang dengan Objek yang Sesuai" : "Re-Scan with a Valid Specimen"}
+                      </button>
                     </div>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className={`border p-4 rounded-2xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-white shadow-sm"
+                          : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                      }`}
+                    >
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                        <div>
+                          <span
+                            className={
+                              isLight
+                                ? "font-bold text-[#14532D]"
+                                : "font-bold text-[#A3E635]"
+                            }
+                          >
+                            {isId ? "// VISOR POLIGON SAM 3.1" : "// SAM 3.1 POLYGON VISOR"}
+                          </span>{" "}
+                          <span>
+                            ({activeSample.objects.length} {isId ? "objek" : "instances"} · IoU &lt; 0.85)
+                          </span>
+                        </div>
 
-                    {activeSample.mode === "retrofit" && (
-                      <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() =>
-                            setShowRetrofitComparison((prev) => !prev)
-                          }
-                          className={`min-h-[36px] cursor-pointer rounded-lg border px-3 py-1 font-mono text-xs font-bold transition ${
-                            showRetrofitComparison
-                              ? isLight
-                                ? "border-[#14532D] bg-[#14532D] text-white"
-                                : "border-[#A3E635] bg-[#A3E635] text-[#070D0A]"
-                              : isLight
-                              ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
-                              : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
-                          }`}
+                          onClick={handleResetScanner}
+                          className="cursor-pointer underline text-[11px] opacity-75 hover:opacity-100"
                         >
-                          {showRetrofitComparison
-                            ? (isId ? "BEFORE/AFTER AKTIF" : "BEFORE/AFTER ON")
-                            : (isId ? "AKTIFKAN BEFORE/AFTER" : "ENABLE BEFORE/AFTER")}
+                          {isId ? "✕ Pindai Objek Lain" : "✕ Scan Another Object"}
                         </button>
                       </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Segmented Object Selector Strip */}
-                <div
-                  className={`border p-4 rounded-2xl ${
-                    isLight
-                      ? "border-[#C7C0B0] bg-white shadow-sm"
-                      : "border-[#1D3328] bg-[#0E1914] shadow-sm"
-                  }`}
-                >
-                  <p
-                    className={`mb-2.5 font-mono text-xs font-bold ${
-                      isLight ? "text-[#14532D]" : "text-[#A3E635]"
-                    }`}
-                  >
-                    {isId ? "// OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "// DETECTED INSTANCES (CLICK TO INSPECT)"}
-                  </p>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {activeSample.objects.map((obj) => {
-                      const val = objectValuations[obj.id];
-                      const isSel = obj.id === selectedObj.id;
-                      return (
-                        <button
-                          key={obj.id}
-                          type="button"
-                          onClick={() => setSelectedObjId(obj.id)}
-                          className={`min-h-[52px] cursor-pointer border p-3 text-left transition rounded-xl ${
-                            isSel
-                              ? isLight
-                                ? "border-[#14532D] bg-[#14532D] text-white shadow-sm"
-                                : "border-[#A3E635] bg-[#A3E635] text-[#070D0A] shadow-sm"
-                              : isLight
-                              ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
-                              : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between font-mono text-[11px]">
-                            <span className="font-bold">{obj.materialCode}</span>
-                            <span className="tabular-nums">
-                              conf {(obj.score * 100).toFixed(0)}%
-                            </span>
+                      <SpatialMaskViewer
+                        sample={activeSample}
+                        selectedObjectId={selectedObj.id}
+                        onSelectObject={(obj) => setSelectedObjId(obj.id)}
+                        xrayLevel={xrayLevel}
+                        retrofitCurtainPct={retrofitCurtainPct}
+                        onRetrofitCurtainChange={(pct) => setRetrofitCurtainPct(pct)}
+                        showRetrofitComparison={showRetrofitComparison}
+                        objectValuations={objectValuations}
+                        customImageUrl={customImageUrl}
+                        locale={locale}
+                      />
+
+                      {/* Scrubber Controls Bar */}
+                      <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+                        <div className="flex items-center gap-2">
+                          <span>X-RAY:</span>
+                          <input
+                            type="range"
+                            aria-label={
+                              isId
+                                ? "Tingkat Transparansi X-Ray"
+                                : "X-Ray Transparency Level"
+                            }
+                            min={0}
+                            max={100}
+                            value={xrayLevel}
+                            onChange={(e) => setXrayLevel(Number(e.target.value))}
+                            className="h-2 w-28 cursor-pointer accent-[#A3E635]"
+                          />
+                          <span className="tabular-nums font-bold">{xrayLevel}%</span>
+                        </div>
+
+                        {activeSample.mode === "retrofit" && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowRetrofitComparison((prev) => !prev)
+                              }
+                              className={`min-h-[36px] cursor-pointer rounded-lg border px-3 py-1 font-mono text-xs font-bold transition ${
+                                showRetrofitComparison
+                                  ? isLight
+                                    ? "border-[#14532D] bg-[#14532D] text-white"
+                                    : "border-[#A3E635] bg-[#A3E635] text-[#070D0A]"
+                                  : isLight
+                                  ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                                  : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                              }`}
+                            >
+                              {showRetrofitComparison
+                                ? (isId ? "BEFORE/AFTER AKTIF" : "BEFORE/AFTER ON")
+                                : (isId ? "AKTIFKAN BEFORE/AFTER" : "ENABLE BEFORE/AFTER")}
+                            </button>
                           </div>
-                          <div className="mt-1 flex items-center justify-between text-xs">
-                            <span className="font-semibold capitalize">
-                              {obj.concept}
-                            </span>
-                            {val && (
-                              <span className="font-mono font-bold tabular-nums">
-                                {formatCurrency(val.valueMax, val.currency, locale)}
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Segmented Object Selector Strip */}
+                    <div
+                      className={`border p-4 rounded-2xl ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-white shadow-sm"
+                          : "border-[#1D3328] bg-[#0E1914] shadow-sm"
+                      }`}
+                    >
+                      <p
+                        className={`mb-2.5 font-mono text-xs font-bold ${
+                          isLight ? "text-[#14532D]" : "text-[#A3E635]"
+                        }`}
+                      >
+                        {isId ? "// OBJEK TERDETEKSI (KLIK UNTUK INSPEKSI)" : "// DETECTED INSTANCES (CLICK TO INSPECT)"}
+                      </p>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {activeSample.objects.map((obj) => {
+                          const val = objectValuations[obj.id];
+                          const isSel = obj.id === selectedObj.id;
+                          return (
+                            <button
+                              key={obj.id}
+                              type="button"
+                              onClick={() => setSelectedObjId(obj.id)}
+                              className={`min-h-[52px] cursor-pointer border p-3 text-left transition rounded-xl ${
+                                isSel
+                                  ? isLight
+                                    ? "border-[#14532D] bg-[#14532D] text-white shadow-sm"
+                                    : "border-[#A3E635] bg-[#A3E635] text-[#070D0A] shadow-sm"
+                                  : isLight
+                                  ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                                  : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between font-mono text-[11px]">
+                                <span className="font-bold">{obj.materialCode}</span>
+                                <span className="tabular-nums">
+                                  conf {(obj.score * 100).toFixed(0)}%
+                                </span>
+                              </div>
+                              <div className="mt-1 flex items-center justify-between text-xs">
+                                <span className="font-semibold capitalize">
+                                  {obj.concept}
+                                </span>
+                                {val && (
+                                  <span className="font-mono font-bold tabular-nums">
+                                    {formatCurrency(val.valueMax, val.currency, locale)}
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
 
           {/* Right 5 Columns: Selected Instance Valuation & Upcycling Protocol */}
           <div className="space-y-4 lg:col-span-5">
-            {!hasScanned ? (
-              // STANDBY INTELLIGENCE DOSSIER (WAITING FOR SCAN)
+            {!hasScanned || customClassification?.isUnrelated ? (
+              // STANDBY & OFF-DOMAIN INTELLIGENCE DOSSIER
               <div
                 className={`border p-6 rounded-2xl ${
                   isLight
@@ -1076,25 +1152,77 @@ export default function LensPage() {
               >
                 <div className="flex items-center justify-between border-b pb-3 border-current/15 font-mono text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                    <span className={isLight ? "font-bold text-[#14532D]" : "font-bold text-[#A3E635]"}>
-                      {isId ? "// INTELIJEN VISI BERSIAGA" : "// VISION INTELLIGENCE STANDBY"}
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        customClassification?.isUnrelated
+                          ? "bg-rose-500 animate-pulse"
+                          : "bg-amber-400 animate-pulse"
+                      }`}
+                    />
+                    <span
+                      className={
+                        customClassification?.isUnrelated
+                          ? "font-bold text-rose-500"
+                          : isLight
+                          ? "font-bold text-[#14532D]"
+                          : "font-bold text-[#A3E635]"
+                      }
+                    >
+                      {customClassification?.isUnrelated
+                        ? isId
+                          ? "// STATUS: DI LUAR TOPIK"
+                          : "// STATUS: OFF-DOMAIN SPECIMEN"
+                        : isId
+                        ? "// INTELIJEN VISI BERSIAGA"
+                        : "// VISION INTELLIGENCE STANDBY"}
                     </span>
                   </div>
-                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                    SAM 3.1 + META MUSE
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                      customClassification?.isUnrelated
+                        ? "bg-rose-500/15 text-rose-500 border border-rose-500/30"
+                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {customClassification?.isUnrelated
+                      ? "CATALOG FILTER"
+                      : "SAM 3.1 + META MUSE"}
                   </span>
                 </div>
 
                 <div className="mt-4">
                   <p className="font-mono text-[11px] opacity-75">
-                    {isId ? "STATUS SENSOR KAMERA:" : "CAMERA SENSOR STATUS:"}
+                    {customClassification?.isUnrelated
+                      ? isId
+                        ? "STATUS VALIDASI OBJEK:"
+                        : "SPECIMEN VALIDATION:"
+                      : isId
+                      ? "STATUS SENSOR KAMERA:"
+                      : "CAMERA SENSOR STATUS:"}
                   </p>
-                  <h2 className="mt-0.5 font-serif text-xl font-bold">
-                    {isId ? "Menunggu Input Pemindaian" : "Waiting for Scan Input"}
+                  <h2
+                    className={`mt-0.5 font-serif text-xl font-bold ${
+                      customClassification?.isUnrelated ? "text-rose-500" : ""
+                    }`}
+                  >
+                    {customClassification?.isUnrelated
+                      ? isId
+                        ? "Foto Bukan Spesimen Sirkular"
+                        : "Non-Circular Specimen Detected"
+                      : isId
+                      ? "Menunggu Input Pemindaian"
+                      : "Waiting for Scan Input"}
                   </h2>
-                  <p className={`mt-1.5 text-xs leading-relaxed ${isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}`}>
-                    {isId
+                  <p
+                    className={`mt-1.5 text-xs leading-relaxed ${
+                      isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                    }`}
+                  >
+                    {customClassification?.isUnrelated
+                      ? isId
+                        ? "Sistem Verdara SAM 3.1 tidak sembarangan menebak foto. AI hanya memproses: 1) Sampah daur ulang & Bank Sampah, 2) Diagnosa daun tanaman kebun, atau 3) Area atap/pekarangan untuk retrofit. Silakan gunakan salah satu spesimen uji di bawah:"
+                        : "Verdara SAM 3.1 avoids arbitrary results for off-domain images. The AI strictly processes: 1) Recyclables & Bank Sampah, 2) Plant canopy leaf health, or 3) Roof/pavement surfaces for retrofit. Try a sample specimen below:"
+                      : isId
                       ? "Arahkan kamera ke sampah anorganik (botol, kaleng, kardus, batok kelapa) atau daun tanaman Anda. SAM 3.1 akan mengekstrak poligon segmentasi dan menghitung nilai deposit atau diagnosa kesehatan daun secara real-time."
                       : "Aim the camera at recyclables (bottles, cans, paper) or plant foliage. SAM 3.1 will segment exact instance masks and calculate local recovery values or plant health metrics in real time."}
                   </p>
@@ -1102,31 +1230,85 @@ export default function LensPage() {
 
                 {/* 3 Standby Stat Placeholders */}
                 <div className="mt-4 grid grid-cols-3 gap-2 font-mono">
-                  <div className={`border p-3 rounded-xl ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
-                    <p className="text-[10px] opacity-75">{isId ? "DEPOSIT" : "VALUATION"}</p>
-                    <p className="mt-1 text-base font-bold tabular-nums opacity-40">--</p>
+                  <div
+                    className={`border p-3 rounded-xl ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
+                    <p className="text-[10px] opacity-75">
+                      {isId ? "DEPOSIT" : "VALUATION"}
+                    </p>
+                    <p className="mt-1 text-base font-bold tabular-nums opacity-40">
+                      --
+                    </p>
                   </div>
-                  <div className={`border p-3 rounded-xl ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
-                    <p className="text-[10px] opacity-75">{isId ? "EMISI CO2e" : "AVOIDED CO2e"}</p>
-                    <p className="mt-1 text-base font-bold tabular-nums opacity-40">--</p>
+                  <div
+                    className={`border p-3 rounded-xl ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
+                    <p className="text-[10px] opacity-75">
+                      {isId ? "EMISI CO2e" : "AVOIDED CO2e"}
+                    </p>
+                    <p className="mt-1 text-base font-bold tabular-nums opacity-40">
+                      --
+                    </p>
                   </div>
-                  <div className={`border p-3 rounded-xl ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
-                    <p className="text-[10px] opacity-75">{isId ? "STATUS" : "STATUS"}</p>
-                    <p className="mt-1 text-xs font-bold text-emerald-500">READY</p>
+                  <div
+                    className={`border p-3 rounded-xl ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
+                    <p className="text-[10px] opacity-75">
+                      {isId ? "STATUS" : "STATUS"}
+                    </p>
+                    <p
+                      className={`mt-1 text-xs font-bold ${
+                        customClassification?.isUnrelated
+                          ? "text-rose-500"
+                          : "text-emerald-500"
+                      }`}
+                    >
+                      {customClassification?.isUnrelated
+                        ? "REJECTED"
+                        : "READY"}
+                    </p>
                   </div>
                 </div>
 
                 {/* Diagnostic Capabilities Feature List */}
                 <div className="mt-5 space-y-2.5">
                   <p className="font-mono text-xs font-bold opacity-75">
-                    {isId ? "// KAPABILITAS SENSOR SAM 3.1:" : "// SAM 3.1 VISION CAPABILITIES:"}
+                    {isId
+                      ? "// KAPABILITAS SENSOR SAM 3.1:"
+                      : "// SAM 3.1 VISION CAPABILITIES:"}
                   </p>
 
-                  <div className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                  <div
+                    className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
                     <span className="text-base">🗑️</span>
                     <div>
-                      <strong className="block font-semibold">{isId ? "Audit Sampah & Bank Sampah" : "Waste & Bank Sampah Audit"}</strong>
-                      <span className={isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}>
+                      <strong className="block font-semibold">
+                        {isId
+                          ? "Audit Sampah & Bank Sampah"
+                          : "Waste & Bank Sampah Audit"}
+                      </strong>
+                      <span
+                        className={
+                          isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                        }
+                      >
                         {isId
                           ? "Segmentasi material plastik PET/HDPE, aluminium, kaca, batok kelapa, dan e-waste dengan estimasi rupiah Bank Sampah lokal."
                           : "Segment PET, HDPE, aluminum, glass, coconut shells, and e-waste with localized cash redemption values."}
@@ -1134,11 +1316,25 @@ export default function LensPage() {
                     </div>
                   </div>
 
-                  <div className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                  <div
+                    className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
                     <span className="text-base">🌱</span>
                     <div>
-                      <strong className="block font-semibold">{isId ? "Dokter Tanaman & Daun Kebun" : "Plant Doctor & Leaf Health"}</strong>
-                      <span className={isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}>
+                      <strong className="block font-semibold">
+                        {isId
+                          ? "Dokter Tanaman & Daun Kebun"
+                          : "Plant Doctor & Leaf Health"}
+                      </strong>
+                      <span
+                        className={
+                          isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                        }
+                      >
                         {isId
                           ? "Deteksi klorosis, nekrosis, dan rasio lesi daun berpenyakit lengkap dengan jadwal perawatan organik 7 hari."
                           : "Detect chlorosis, necrosis, and diseased lesion surface area ratios with a 7-day organic recovery schedule."}
@@ -1146,11 +1342,25 @@ export default function LensPage() {
                     </div>
                   </div>
 
-                  <div className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${isLight ? "border-[#C7C0B0] bg-[#F4F1EA]" : "border-[#1D3328] bg-[#070D0A]"}`}>
+                  <div
+                    className={`flex items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed ${
+                      isLight
+                        ? "border-[#C7C0B0] bg-[#F4F1EA]"
+                        : "border-[#1D3328] bg-[#070D0A]"
+                    }`}
+                  >
                     <span className="text-base">🏡</span>
                     <div>
-                      <strong className="block font-semibold">{isId ? "Retrofit Biophilic & Atap" : "Biophilic Retrofit & Roof"}</strong>
-                      <span className={isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"}>
+                      <strong className="block font-semibold">
+                        {isId
+                          ? "Retrofit Biophilic & Atap"
+                          : "Biophilic Retrofit & Roof"}
+                      </strong>
+                      <span
+                        className={
+                          isLight ? "text-[#2C4438]" : "text-[#A3BEB0]"
+                        }
+                      >
                         {isId
                           ? "Segmentasi atap surya, halaman beton, dan simulasi penambahan kanopi hijau perkotaan."
                           : "Segment rooftop solar zones, impervious pavement, and biophilic green canopy additions."}
@@ -1180,7 +1390,10 @@ export default function LensPage() {
                         : "bg-[#A3E635] text-[#070D0A] hover:bg-[#bef264]"
                     }`}
                   >
-                    📷 {isId ? "Buka Kamera & Mulai Pindai Sekarang" : "Open Camera & Start Scan Now"}
+                    📷{" "}
+                    {isId
+                      ? "Buka Kamera & Mulai Pindai Sekarang"
+                      : "Open Camera & Start Scan Now"}
                   </button>
                 </div>
               </div>
@@ -1289,6 +1502,43 @@ export default function LensPage() {
                             : "Detected yellow necrotic chlorosis lesions spanning 12% of leaf area. Leaf hygiene and organic compost tea drench recommended.")}
                     </p>
                   </div>
+
+                  {/* Detailed Botanical Pathology Dossier */}
+                  {customClassification?.technicalDetails?.pathologyDiagnosis && (
+                    <div
+                      className={`mt-3.5 rounded-xl border p-3.5 text-xs font-mono space-y-2 leading-relaxed ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                          : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                      }`}
+                    >
+                      <p className={`font-bold text-[11px] ${isLight ? "text-[#14532D]" : "text-[#A3E635]"}`}>
+                        {isId ? "// DIAGNOSA PATOLOGI BOTANI DETIL" : "// DETAILED BOTANICAL PATHOLOGY DOSSIER"}
+                      </p>
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                        <span className="opacity-75">{isId ? "Diagnosa Patologi:" : "Pathology Diagnosis:"}</span>
+                        <span className="font-semibold text-amber-500">{customClassification.technicalDetails.pathologyDiagnosis}</span>
+                      </div>
+                      {customClassification.technicalDetails.chlorophyllVigorPct !== undefined && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                          <span className="opacity-75">{isId ? "Indeks Vigor Klorofil:" : "Chlorophyll SPAD Index:"}</span>
+                          <span className="font-semibold text-emerald-500">{customClassification.technicalDetails.chlorophyllVigorPct}%</span>
+                        </div>
+                      )}
+                      {customClassification.technicalDetails.necroticLesionPct !== undefined && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                          <span className="opacity-75">{isId ? "Rasio Permukaan Lesi:" : "Necrotic Lesion Ratio:"}</span>
+                          <span className="font-semibold text-amber-500">{customClassification.technicalDetails.necroticLesionPct}%</span>
+                        </div>
+                      )}
+                      {customClassification.technicalDetails.microclimateRisk && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
+                          <span className="opacity-75">{isId ? "Faktor Risiko Iklim Mikro:" : "Microclimate Risk:"}</span>
+                          <span className="font-semibold text-sky-400">{customClassification.technicalDetails.microclimateRisk}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* 7-Day Step-by-Step Organic Care Plan */}
@@ -1495,6 +1745,49 @@ export default function LensPage() {
                         : (isId ? geo.policy.policySummaryId : geo.policy.policySummaryEn)}
                     </p>
                   </div>
+
+                  {/* Detailed Polymer & Bank Sampah Technical Dossier */}
+                  {customClassification?.technicalDetails?.polymerGrade && (
+                    <div
+                      className={`mt-3.5 rounded-xl border p-3.5 text-xs font-mono space-y-2 leading-relaxed ${
+                        isLight
+                          ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16]"
+                          : "border-[#1D3328] bg-[#070D0A] text-[#F2F7F4]"
+                      }`}
+                    >
+                      <p className={`font-bold text-[11px] ${isLight ? "text-[#14532D]" : "text-[#A3E635]"}`}>
+                        {isId ? "// SPESIFIKASI TEKNIS POLIMER & BANK SAMPAH" : "// TECHNICAL POLYMER & BANK SAMPAH DOSSIER"}
+                      </p>
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                        <span className="opacity-75">{isId ? "Klasifikasi Polimer:" : "Polymer / Resin Class:"}</span>
+                        <span className="font-semibold">{customClassification.technicalDetails.polymerGrade}</span>
+                      </div>
+                      {customClassification.technicalDetails.cleanlinessRating && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                          <span className="opacity-75">{isId ? "Tingkat Kebersihan:" : "Cleanliness Grade:"}</span>
+                          <span className="font-semibold text-emerald-500">{customClassification.technicalDetails.cleanlinessRating}</span>
+                        </div>
+                      )}
+                      {customClassification.technicalDetails.contaminationRisk && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                          <span className="opacity-75">{isId ? "Risiko Kontaminasi:" : "Contamination Risk:"}</span>
+                          <span className="font-semibold text-amber-500">{customClassification.technicalDetails.contaminationRisk}</span>
+                        </div>
+                      )}
+                      {customClassification.technicalDetails.bankSampahFormula && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-current/10 pb-1.5">
+                          <span className="opacity-75">{isId ? "Formula Bank Sampah:" : "Bank Sampah Index:"}</span>
+                          <span className="font-semibold text-[#A3E635]">{customClassification.technicalDetails.bankSampahFormula}</span>
+                        </div>
+                      )}
+                      {customClassification.technicalDetails.carbonAvoidanceFormula && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
+                          <span className="opacity-75">{isId ? "Kompensasi Karbon CO2e:" : "CO2e Avoidance Derivation:"}</span>
+                          <span className="font-semibold text-sky-400">{customClassification.technicalDetails.carbonAvoidanceFormula}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Selected Instance Dossier & Upcycling Blueprint */}

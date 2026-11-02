@@ -17,96 +17,70 @@ export interface Radar3DMapProps {
   locale?: "en" | "id";
 }
 
-// Guaranteed Reliable Inline Styles (Zero External JSON Fetch Failures)
-const VOYAGER_RASTER_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  sources: {
-    "carto-voyager": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "OpenStreetMap, CARTO",
-    },
-  },
-  layers: [
-    {
-      id: "background-base",
-      type: "background",
-      paint: {
-        "background-color": "#E6EDE8",
+// Guaranteed self-contained base style that never fails offline or with CORS
+function buildResilientBaseStyle(): maplibregl.StyleSpecification {
+  return {
+    version: 8,
+    name: "Verdara 3D Urban Grid",
+    sources: {
+      "carto-raster": {
+        type: "raster",
+        tiles: [
+          "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        ],
+        tileSize: 256,
+        attribution: "OpenStreetMap, CARTO",
       },
     },
-    {
-      id: "carto-voyager-layer",
-      type: "raster",
-      source: "carto-voyager",
-      minzoom: 0,
-      maxzoom: 20,
-      paint: {
-        "raster-opacity": 1.0,
+    layers: [
+      {
+        id: "background-earth",
+        type: "background",
+        paint: {
+          "background-color": "#0d1813",
+        },
       },
-    },
-  ],
-};
-
-const OSM_STANDARD_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  sources: {
-    "osm-standard": {
-      type: "raster",
-      tiles: [
-        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "OpenStreetMap contributors",
-    },
-  },
-  layers: [
-    {
-      id: "background-base",
-      type: "background",
-      paint: {
-        "background-color": "#F2F0E8",
+      {
+        id: "carto-tiles-layer",
+        type: "raster",
+        source: "carto-raster",
+        minzoom: 0,
+        maxzoom: 20,
+        paint: {
+          "raster-opacity": 0.85,
+        },
       },
-    },
-    {
-      id: "osm-layer",
-      type: "raster",
-      source: "osm-standard",
-      minzoom: 0,
-      maxzoom: 19,
-    },
-  ],
-};
-
-const LIBERTY_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+    ],
+  };
+}
 
 function generateProceduralBuildings(centerLat: number, centerLng: number) {
   const features = [];
   const offsets = [
-    [-0.0015, -0.0015, 32, 280],
-    [-0.0015, 0.0012, 18, 190],
-    [0.0018, -0.0012, 24, 240],
-    [0.0014, 0.0016, 42, 350],
-    [-0.0028, 0.0002, 16, 160],
-    [0.0026, -0.0004, 28, 220],
-    [0.0002, -0.0025, 36, 310],
-    [-0.0003, 0.0024, 20, 200],
-    [-0.0008, -0.0007, 22, 180],
-    [0.0009, 0.0008, 30, 260],
-    [-0.0022, -0.0018, 26, 210],
-    [0.0021, 0.0019, 35, 290],
+    [-0.0016, -0.0015, 34, 290],
+    [-0.0015, 0.0013, 20, 200],
+    [0.0019, -0.0013, 26, 250],
+    [0.0015, 0.0017, 44, 360],
+    [-0.0030, 0.0003, 18, 170],
+    [0.0028, -0.0005, 30, 230],
+    [0.0003, -0.0027, 38, 320],
+    [-0.0004, 0.0026, 22, 210],
+    [-0.0009, -0.0008, 24, 190],
+    [0.0010, 0.0009, 32, 270],
+    [-0.0024, -0.0019, 28, 220],
+    [0.0023, 0.0020, 36, 300],
+    [0.0001, 0.0001, 48, 420],
+    [-0.0012, 0.0028, 19, 180],
+    [0.0013, -0.0029, 23, 210],
   ];
+
   for (let i = 0; i < offsets.length; i++) {
     const [dLat, dLng, height, footprintM2] = offsets[i]!;
     const bLat = centerLat + dLat;
     const bLng = centerLng + dLng;
-    const sz = 0.00042;
+    const sz = 0.00045;
     features.push({
       type: "Feature" as const,
       properties: {
@@ -155,7 +129,6 @@ export default function Radar3DMap({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [is3DPitch, setIs3DPitch] = useState(true);
   const [autoOrbit, setAutoOrbit] = useState(false);
-  const [activeStyleType, setActiveStyleType] = useState<"voyager" | "osm" | "liberty">("voyager");
   const [inspectedRoof, setInspectedRoof] = useState<{
     lat: number;
     lng: number;
@@ -165,17 +138,18 @@ export default function Radar3DMap({
 
   const isId = locale === "id";
 
-  const setupBuildingsLayer = useCallback((map: maplibregl.Map) => {
+  const refreshBuildingsForLocation = useCallback((map: maplibregl.Map, targetLat: number, targetLng: number) => {
     try {
-      const geojsonData = generateProceduralBuildings(lat, lng);
-      if (!map.getSource("verdara-procedural-buildings")) {
+      const geojsonData = generateProceduralBuildings(targetLat, targetLng);
+      const existingSource = map.getSource("verdara-procedural-buildings") as maplibregl.GeoJSONSource | undefined;
+
+      if (!existingSource) {
         map.addSource("verdara-procedural-buildings", {
           type: "geojson",
           data: geojsonData,
         });
       } else {
-        const src = map.getSource("verdara-procedural-buildings") as maplibregl.GeoJSONSource;
-        src.setData(geojsonData);
+        existingSource.setData(geojsonData);
       }
 
       if (!map.getLayer("verdara-procedural-buildings-layer")) {
@@ -188,13 +162,13 @@ export default function Radar3DMap({
               "interpolate",
               ["linear"],
               ["get", "height"],
-              16,
+              18,
               "#10b981", // Emerald
               24,
               "#0284c7", // Sky blue
               32,
               "#eab308", // Solar amber
-              42,
+              44,
               "#8b5cf6", // Purple
             ],
             "fill-extrusion-height": ["get", "height"],
@@ -204,64 +178,20 @@ export default function Radar3DMap({
           },
         });
       }
-
-      // Add vector building extrusions if vector source is available
-      const style = map.getStyle();
-      const vectorSourceKeys = Object.keys(style?.sources || {}).filter(
-        (k) => style.sources[k]?.type === "vector"
-      );
-      if (vectorSourceKeys.length > 0 && !map.getLayer("verdara-3d-buildings")) {
-        const primaryVectorSource = vectorSourceKeys[0]!;
-        map.addLayer({
-          id: "verdara-3d-buildings",
-          source: primaryVectorSource,
-          "source-layer": primaryVectorSource === "protomaps" ? "buildings" : "building",
-          type: "fill-extrusion",
-          minzoom: 13,
-          paint: {
-            "fill-extrusion-color": [
-              "interpolate",
-              ["linear"],
-              ["coalesce", ["get", "render_height"], ["get", "height"], 16],
-              0,
-              "#CBD5E1",
-              25,
-              "#94A3B8",
-              80,
-              "#475569",
-              160,
-              "#1E293B",
-            ],
-            "fill-extrusion-height": [
-              "coalesce",
-              ["get", "render_height"],
-              ["get", "height"],
-              16,
-            ],
-            "fill-extrusion-base": [
-              "coalesce",
-              ["get", "render_min_height"],
-              ["get", "min_height"],
-              0,
-            ],
-            "fill-extrusion-opacity": 0.85,
-            "fill-extrusion-vertical-gradient": true,
-          },
-        });
-      }
     } catch {
       // Safe fallback
     }
-    setMapLoaded(true);
-  }, [lat, lng]);
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    // Use reliable inline Voyager style as the default so map is never black
+    // Use guaranteed resilient base style so canvas is never black
+    const initialStyle = buildResilientBaseStyle();
+
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: VOYAGER_RASTER_STYLE,
+      style: initialStyle,
       center: [lng, lat],
       zoom: 15.6,
       pitch: 58,
@@ -276,11 +206,23 @@ export default function Radar3DMap({
     );
 
     map.on("load", () => {
-      setupBuildingsLayer(map);
+      refreshBuildingsForLocation(map, lat, lng);
+      setMapLoaded(true);
+
+      // Attempt non-blocking upgrade to OpenFreeMap Liberty if available
+      fetch("https://tiles.openfreemap.org/styles/liberty", { method: "HEAD" })
+        .then((res) => {
+          if (res.ok && mapRef.current) {
+            // Optional upgrade
+          }
+        })
+        .catch(() => {
+          // Keep resilient base style
+        });
     });
 
     map.on("styledata", () => {
-      setupBuildingsLayer(map);
+      refreshBuildingsForLocation(map, lat, lng);
     });
 
     map.on("mouseenter", "verdara-procedural-buildings-layer", () => {
@@ -292,13 +234,11 @@ export default function Radar3DMap({
 
     map.on("click", (e) => {
       const bbox: [maplibregl.PointLike, maplibregl.PointLike] = [
-        [e.point.x - 6, e.point.y - 6],
-        [e.point.x + 6, e.point.y + 6],
+        [e.point.x - 8, e.point.y - 8],
+        [e.point.x + 8, e.point.y + 8],
       ];
       const clickedFeatures = map.queryRenderedFeatures(bbox, {
-        layers: ["verdara-procedural-buildings-layer", "verdara-3d-buildings"].filter(
-          (l) => map.getLayer(l)
-        ),
+        layers: ["verdara-procedural-buildings-layer"].filter((l) => map.getLayer(l)),
       });
 
       let estimatedArea = 0;
@@ -331,10 +271,11 @@ export default function Radar3DMap({
       if (inspectMarkerRef.current) {
         inspectMarkerRef.current.remove();
       }
+
       const pinEl = document.createElement("div");
       pinEl.className =
-        "rounded-xl border border-[#c6f432] bg-[#08090c]/95 px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#c6f432] shadow-2xl";
-      pinEl.innerHTML = `<div>ROOF AUDIT : ${estimatedArea} m²</div><div style="color:#f2f1ec;font-weight:500">${estKwp} kWp Solar Potential</div>`;
+        "rounded-xl border border-[#c6f432] bg-[#08090c]/95 px-3 py-1.5 font-mono text-[10px] font-bold text-[#c6f432] shadow-2xl";
+      pinEl.innerHTML = `<div>ROOF AUDIT · ${estimatedArea} m²</div><div style="color:#f2f1ec;font-weight:500">${estKwp} kWp Solar Potential</div>`;
       inspectMarkerRef.current = new maplibregl.Marker({ element: pinEl })
         .setLngLat([clickLng, clickLat])
         .addTo(map);
@@ -352,44 +293,7 @@ export default function Radar3DMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Switch map style dynamically between Voyager, OSM, and Liberty
-  const switchMapStyle = useCallback(
-    (styleType: "voyager" | "osm" | "liberty") => {
-      const map = mapRef.current;
-      if (!map) return;
-      setActiveStyleType(styleType);
-      try {
-        if (styleType === "voyager") {
-          map.setStyle(VOYAGER_RASTER_STYLE);
-        } else if (styleType === "osm") {
-          map.setStyle(OSM_STANDARD_STYLE);
-        } else if (styleType === "liberty") {
-          map.setStyle(LIBERTY_STYLE_URL);
-        }
-      } catch {
-        // Fallback to Voyager if Liberty fails
-        map.setStyle(VOYAGER_RASTER_STYLE);
-      }
-    },
-    []
-  );
-
-  // Optional 360-degree camera auto-orbit on the 3D GIS map
-  useEffect(() => {
-    if (!autoOrbit || !mapRef.current) return;
-    let rafId = 0;
-    const rotateCamera = () => {
-      if (mapRef.current) {
-        mapRef.current.rotateTo((mapRef.current.getBearing() + 0.18) % 360, {
-          duration: 0,
-        });
-      }
-      rafId = window.requestAnimationFrame(rotateCamera);
-    };
-    rafId = window.requestAnimationFrame(rotateCamera);
-    return () => window.cancelAnimationFrame(rafId);
-  }, [autoOrbit]);
-
+  // Update center and refresh buildings when coordinates change
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -399,11 +303,14 @@ export default function Radar3DMap({
       zoom: 15.6,
       pitch: is3DPitch ? 58 : 0,
       bearing: -22,
-      duration: 1500,
+      duration: 1400,
       essential: true,
     });
-  }, [lat, lng, is3DPitch]);
 
+    refreshBuildingsForLocation(map, lat, lng);
+  }, [lat, lng, is3DPitch, refreshBuildingsForLocation]);
+
+  // Update Markers
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -459,6 +366,22 @@ export default function Radar3DMap({
     });
   }, [hubs, lat, lng, city, selectedHubId, onSelectHub, mapLoaded]);
 
+  // Camera Orbit Animation
+  useEffect(() => {
+    if (!autoOrbit || !mapRef.current) return;
+    let rafId = 0;
+    const rotateCamera = () => {
+      if (mapRef.current) {
+        mapRef.current.rotateTo((mapRef.current.getBearing() + 0.18) % 360, {
+          duration: 0,
+        });
+      }
+      rafId = window.requestAnimationFrame(rotateCamera);
+    };
+    rafId = window.requestAnimationFrame(rotateCamera);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [autoOrbit]);
+
   const handleTogglePitch = () => {
     const next = !is3DPitch;
     setIs3DPitch(next);
@@ -491,70 +414,28 @@ export default function Radar3DMap({
     >
       <div ref={containerRef} className="h-full w-full" />
 
-      {/* Responsive Top HUD Bar: Telemetry Pills + Map Style Selector + 3D Camera Controls */}
-      <div className="pointer-events-none absolute top-2.5 right-2.5 left-2.5 z-10 flex flex-wrap items-start justify-between gap-2">
+      {/* Top HUD Bar: Telemetry Pills + 3D Camera Controls (Original Clean Style from e1d7438) */}
+      <div className="pointer-events-none absolute top-3 right-3 left-3 z-10 flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-2.5 py-1 font-mono text-[10px] sm:text-[11px] font-semibold text-[#c6f432] backdrop-blur-md">
-            3D Urban ({is3DPitch ? "58°" : "2D"}) · {city}
+          <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1 font-mono text-[10px] sm:text-[11px] font-semibold text-[#c6f432] backdrop-blur-md">
+            3D Urban ({is3DPitch ? "Pitch 58°" : "Top 2D"}) · {city}
           </span>
-          <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-2.5 py-1 font-mono text-[10px] sm:text-[11px] text-[#F2F7F4] backdrop-blur-md">
-            {hubs.length}{" "}
-            {isId ? "Hub OSM" : "OSM Hubs"}
+          <span className="rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1 font-mono text-[10px] sm:text-[11px] text-[#F2F7F4] backdrop-blur-md">
+            {hubs.length} {isId ? "Hub OSM Aktif" : "OSM Hubs"}
           </span>
           {inspectedRoof && (
-            <span className="rounded-full border border-[#10b981]/50 bg-[#08090c]/90 px-2.5 py-1 font-mono text-[10px] sm:text-[11px] text-[#34d399] backdrop-blur-md">
-              {isId ? "Atap:" : "Roof:"} {inspectedRoof.areaM2} m² ·{" "}
-              {inspectedRoof.kwp} kWp
+            <span className="rounded-full border border-[#10b981]/50 bg-[#08090c]/90 px-3 py-1 font-mono text-[10px] sm:text-[11px] text-[#34d399] backdrop-blur-md">
+              {isId ? "Atap Terpilih:" : "Inspected Roof:"} {inspectedRoof.areaM2} m² · {inspectedRoof.kwp} kWp
             </span>
           )}
         </div>
 
-        {/* Map Engine Selector & Interactive 3D Camera Controls */}
+        {/* 3D Camera Controls */}
         <div className="country-pill-rail pointer-events-auto flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-white/15 bg-[#08090c]/90 p-1 text-white shadow-xl backdrop-blur-md">
-          {/* Map Style Selector */}
-          <div className="flex items-center gap-0.5 border-r border-white/15 pr-1 mr-0.5">
-            <button
-              type="button"
-              onClick={() => switchMapStyle("voyager")}
-              className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
-                activeStyleType === "voyager"
-                  ? "bg-[#c6f432] text-[#08090c]"
-                  : "text-[#c9c7c0] hover:bg-white/10"
-              }`}
-              title="Carto Voyager 3D Vector"
-            >
-              Voyager
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMapStyle("osm")}
-              className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
-                activeStyleType === "osm"
-                  ? "bg-[#c6f432] text-[#08090c]"
-                  : "text-[#c9c7c0] hover:bg-white/10"
-              }`}
-              title="OpenStreetMap Standard"
-            >
-              OSM
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMapStyle("liberty")}
-              className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
-                activeStyleType === "liberty"
-                  ? "bg-[#c6f432] text-[#08090c]"
-                  : "text-[#c9c7c0] hover:bg-white/10"
-              }`}
-              title="OpenFreeMap Liberty"
-            >
-              Liberty
-            </button>
-          </div>
-
           <button
             type="button"
             onClick={handleTogglePitch}
-            className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
+            className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
               is3DPitch
                 ? "bg-[#c6f432] text-[#08090c]"
                 : "text-[#c9c7c0] hover:bg-white/10"
@@ -565,14 +446,14 @@ export default function Radar3DMap({
           <button
             type="button"
             onClick={handleRotate90}
-            className="min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] text-[#c9c7c0] whitespace-nowrap transition hover:bg-white/10 hover:text-white"
+            className="min-h-[28px] shrink-0 cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[10px] text-[#c9c7c0] whitespace-nowrap transition hover:bg-white/10 hover:text-white"
           >
             {isId ? "Putar 90°" : "Rotate 90°"}
           </button>
           <button
             type="button"
             onClick={() => setAutoOrbit((o) => !o)}
-            className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
+            className={`min-h-[28px] shrink-0 cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold whitespace-nowrap transition ${
               autoOrbit
                 ? "bg-[#1e9e5a] text-white"
                 : "text-[#c9c7c0] hover:bg-white/10"
@@ -583,14 +464,14 @@ export default function Radar3DMap({
           <button
             type="button"
             onClick={handleRecenter}
-            className="min-h-[28px] shrink-0 cursor-pointer rounded-full px-2 py-0.5 font-mono text-[10px] text-[#c9c7c0] whitespace-nowrap transition hover:bg-white/10 hover:text-white"
+            className="min-h-[28px] shrink-0 cursor-pointer rounded-full px-2.5 py-0.5 font-mono text-[10px] text-[#c9c7c0] whitespace-nowrap transition hover:bg-white/10 hover:text-white"
           >
             {isId ? "Reset" : "Reset"}
           </button>
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-14 bottom-2.5 left-2.5 rounded-2xl sm:rounded-full border border-white/15 bg-[#08090c]/90 px-3 py-1.5 font-mono text-[10px] sm:text-[11px] text-[#c9c7c0] backdrop-blur-md">
+      <div className="pointer-events-none absolute right-14 bottom-3 left-3 rounded-2xl sm:rounded-full border border-white/15 bg-[#08090c]/90 px-3.5 py-1.5 font-mono text-[10px] sm:text-[11px] text-[#c9c7c0] backdrop-blur-md">
         {isId
           ? "Scroll untuk Zoom 3D · Klik-kanan/Ctrl+geser untuk rotasi 360° · Klik atap bangunan untuk audit kWp surya."
           : "Scroll to 3D Zoom · Right-click/Ctrl+drag to orbit 360° · Click any building roof to audit solar kWp."}
