@@ -1,0 +1,21 @@
+# Alias to compose.yaml for legacy docker-compose CLI compatibility
+# See compose.yaml for full multi-service architecture
+version: "3.9"
+
+services:
+  verdara-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: verdara-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - verdara-network
+
+networks:
+  verdara-network:
+    driver: bridge
