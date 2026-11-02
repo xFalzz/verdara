@@ -9,9 +9,10 @@ Computer vision sees the site, deterministic engineering equations compute the n
 
 [![Meta AI](https://img.shields.io/badge/Meta%20AI-SAM%203.1%20%7C%20Muse%20Spark-0668E1?style=for-the-badge&logo=meta&logoColor=white)](#4-ai-layer)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](#10-getting-started)
-[![Coverage](https://img.shields.io/badge/Climate%20Coverage-195%2B%20Countries-f59e0b?style=for-the-badge&logo=googleearth&logoColor=white)](#7-global-climate-coverage)
-[![Stars](https://img.shields.io/github/stars/xFalzz/verdara?style=for-the-badge&logo=github&color=c6f432&labelColor=0b0c0e)](https://github.com/xFalzz/verdara/stargazers)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%20FastAPI%20%7C%20LoRA-3776AB?style=for-the-badge&logo=python&logoColor=white)](#10-getting-started)
+[![Docker](https://img.shields.io/badge/Docker-Multi--Stage%20Container-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#10-getting-started)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](#10-getting-started)
+[![Tests](https://img.shields.io/badge/Tests-22%2F22%20Passing-10b981?style=for-the-badge&logo=vitest&logoColor=white)](#10-getting-started)
 [![License](https://img.shields.io/badge/License-MIT-gray?style=for-the-badge)](LICENSE)
 
 [Live Application](https://verdara.space) &nbsp;|&nbsp; [Architecture](#2-system-architecture) &nbsp;|&nbsp; [Scientific Engine](#5-scientific-engine) &nbsp;|&nbsp; [Getting Started](#10-getting-started) &nbsp;|&nbsp; [Limitations](#12-assumptions-and-limitations)
@@ -405,25 +406,46 @@ A submission with $D_H \le 8$ bits is rejected as a duplicate. This is a duplica
 - Node.js and npm (use a current LTS release)
 - Git
 
-### Installation
+### Installation & Developer Workflow
 
+#### Option A: Quickstart with Makefile
 ```bash
-# 1. Clone the repository
+# 1. Clone repository
 git clone https://github.com/xFalzz/verdara.git
 cd verdara
 
-# 2. Install dependencies
-npm install --legacy-peer-deps
+# 2. View developer targets
+make help
 
-# 3. Create your local environment file
-cp .env.example .env.local
+# 3. Setup and launch local studio
+make setup
+make dev
+make test
+```
 
-# 4. Type-check and run the test suite
-npx tsc --noEmit
-npm test
+#### Option B: Production Containerization with Docker Compose
+```bash
+# 1. Launch Next.js web application + Python climate eval microservice + Redis
+docker compose up -d
 
-# 5. Start the development server at http://localhost:3000
-npm run dev
+# 2. View container logs
+docker compose logs -f
+
+# 3. Verify healthcheck endpoints
+curl -f http://localhost:3000/api/health
+curl -f http://localhost:8000/health
+```
+
+#### Option C: Python Meta AI Quantitative Evaluation & LoRA Training
+```bash
+# 1. Run SAM 3.1 segmentation benchmark (mIoU, BF1, latency)
+python -m eval.benchmark_sam_metrics
+
+# 2. Run Muse Spark reasoning benchmark
+python -m eval.benchmark_muse_reasoning
+
+# 3. Execute open-weights QLoRA fine-tuning distillation pipeline
+python -m eval.finetune_lora_muse_spark
 ```
 
 ### Configuration

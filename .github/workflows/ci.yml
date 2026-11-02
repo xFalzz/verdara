@@ -1,0 +1,84 @@
+name: Verdara CI & Multi-Language Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # Job 1: TypeScript & Next.js 15 Frontend Verification
+  # ----------------------------------------------------------------------------
+  frontend-verification:
+    name: TypeScript & Next.js Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run automated test suite (Vitest + Council Guard + Lens)
+        run: npx vitest run
+
+      - name: Build Next.js production bundle
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+
+  # ----------------------------------------------------------------------------
+  # Job 2: Python Meta AI Evaluation & Climate Physics Microservice
+  # ----------------------------------------------------------------------------
+  python-verification:
+    name: Python Evaluation & Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r eval/requirements.txt || true
+          pip install -r services/climate_eval/requirements.txt || true
+
+      - name: Run Python evaluation unit tests
+        run: python -m unittest eval/test_eval_suite.py
+
+      - name: Run Meta SAM 3.1 quantitative evaluation
+        run: python -m eval.benchmark_sam_metrics
+
+      - name: Run Meta Muse Spark reasoning evaluation
+        run: python -m eval.benchmark_muse_reasoning
+
+  # ----------------------------------------------------------------------------
+  # Job 3: Docker Containerization Validation
+  # ----------------------------------------------------------------------------
+  docker-validation:
+    name: Dockerfile & Compose Syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose specification
+        run: docker compose config
