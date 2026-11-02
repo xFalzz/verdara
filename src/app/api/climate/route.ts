@@ -64,6 +64,28 @@ export async function GET(req: NextRequest) {
     builtCoverRatio: geo.builtCoverRatio,
   });
 
+  // Query bound Vercel climate_eval internal microservice if available
+  const climateServiceUrl = process.env.CLIMATE_EVAL_URL;
+  if (climateServiceUrl) {
+    try {
+      const targetUrl = new URL("/api/v1/solar/audit", climateServiceUrl);
+      const res = await fetch(targetUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roof_footprint_m2: geo.defaultFootprintM2 }),
+        signal: AbortSignal.timeout(1200),
+      });
+      if (res.ok) {
+        const remoteSolar = (await res.json()) as { solar_capacity_kwp?: number };
+        if (remoteSolar?.solar_capacity_kwp) {
+          calc.solar.kwp = Number(remoteSolar.solar_capacity_kwp);
+        }
+      }
+    } catch {
+      // Fallback seamlessly to native TypeScript physics engine
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     source: "Open-Meteo ERA5 10-Year Climatology + NASA POWER GHI",
