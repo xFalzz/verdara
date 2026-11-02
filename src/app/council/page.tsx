@@ -627,6 +627,40 @@ export default function CouncilPage() {
               </div>
             )}
 
+            {sessionResult.detectedLanguage && (
+              <div className="flex flex-wrap items-center justify-between gap-2 px-1 font-mono text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className={textMuted}>
+                    {isId ? "Bahasa Konsultasi:" : "Deliberation Language:"}{" "}
+                    <strong className={isLight ? "text-[#14532D]" : "text-[#A3E635]"}>
+                      {sessionResult.detectedLanguage === "id"
+                        ? "Bahasa Indonesia"
+                        : sessionResult.detectedLanguage === "es"
+                        ? "Español"
+                        : sessionResult.detectedLanguage === "fr"
+                        ? "Français"
+                        : sessionResult.detectedLanguage === "de"
+                        ? "Deutsch"
+                        : sessionResult.detectedLanguage === "ja"
+                        ? "日本語"
+                        : sessionResult.detectedLanguage === "zh"
+                        ? "中文"
+                        : sessionResult.detectedLanguage === "ar"
+                        ? "العربية"
+                        : "English"}
+                    </strong>{" "}
+                    ({isId ? "Terdeteksi Otomatis" : "Auto-Detected"})
+                  </span>
+                </div>
+                <span className={`text-[11px] ${textMuted}`}>
+                  {isId
+                    ? "Dewan Pakar Meta AI merespons akurat dalam bahasa yang digunakan pengguna"
+                    : "Meta AI Council specialists adaptively answer in your exact language"}
+                </span>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {sessionResult.messages.map((msg, idx) => {
                 const isRevealed = activeRoundStep >= idx + 1;
