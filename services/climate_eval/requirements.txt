@@ -1,0 +1,2 @@
+# Verdara Climate Physics Microservice Dependencies
+dataclasses; python_version < "3.7"
