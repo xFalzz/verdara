@@ -1,0 +1,41 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "nextjs",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "climate_eval",
+          "format": "url",
+          "env": "CLIMATE_EVAL_URL"
+        },
+        {
+          "type": "service",
+          "service": "eval",
+          "format": "url",
+          "env": "EVAL_SERVICE_URL"
+        }
+      ]
+    },
+    "climate_eval": {
+      "root": "services/climate_eval",
+      "runtime": "python",
+      "entrypoint": "index.py"
+    },
+    "eval": {
+      "root": "eval",
+      "runtime": "python",
+      "entrypoint": "index.py"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
+  ]
+}
