@@ -157,21 +157,45 @@ export default function CouncilPage() {
     <StudioShell>
       <div className="space-y-6">
         <header className={`rounded-2xl border p-5 ${surfaceCard}`}>
-          <div className="mb-5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 font-mono text-xs text-emerald-200">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-emerald-400">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div
+            className={`mb-5 rounded-2xl border p-4 font-mono text-xs transition shadow-xs ${
+              isLight
+                ? "border-emerald-600/35 bg-emerald-50 text-emerald-950"
+                : "border-emerald-500/40 bg-emerald-950/40 text-emerald-200"
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div
+                className={`flex items-center gap-2.5 text-xs font-black uppercase tracking-wider ${
+                  isLight ? "text-[#0F3B24]" : "text-emerald-400"
+                }`}
+              >
+                <span
+                  className={`inline-block h-2.5 w-2.5 rounded-full animate-pulse ${
+                    isLight ? "bg-emerald-600 shadow-[0_0_8px_rgba(5,150,105,0.4)]" : "bg-emerald-400"
+                  }`}
+                />
                 <span>
                   {isId
                     ? "META MODEL API AKTIF · MUSE-SPARK-1.3 REAL-TIME"
                     : "META MODEL API LIVE · MUSE-SPARK-1.3 REAL-TIME"}
                 </span>
               </div>
-              <span className="rounded bg-emerald-400/20 px-2 py-0.5 text-[10px] text-emerald-300">
+              <span
+                className={`rounded-lg px-3 py-1 text-[11px] font-bold border transition ${
+                  isLight
+                    ? "border-emerald-700/30 bg-emerald-100 text-[#0F3B24] shadow-xs"
+                    : "border-emerald-500/40 bg-emerald-400/20 text-emerald-300"
+                }`}
+              >
                 {isId ? "Kredit Token Terhubung: dev.meta.ai" : "Token Credit Connected: dev.meta.ai"}
               </span>
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-emerald-100/90 font-sans">
+            <p
+              className={`mt-2.5 text-xs leading-relaxed font-sans ${
+                isLight ? "text-[#1B4D31] font-medium" : "text-emerald-100/90"
+              }`}
+            >
               {isId
                 ? "Sidang Dewan Spesialis Verdara terhubung langsung ke Meta Model API (muse-spark-1.3). Setiap konsultasi diproses secara live dengan memotong token dan kredit resmi dari META_API_KEY Anda."
                 : "The Verdara Specialist Council is connected directly to Meta Model API (muse-spark-1.3). Every deliberation is synthesized live with official Meta token credits deducted from your META_API_KEY."}
@@ -270,46 +294,52 @@ export default function CouncilPage() {
               </span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2.5 font-mono text-xs sm:grid-cols-3 lg:grid-cols-6">
-              <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>{isId ? "LUAS TAPAK" : "FOOTPRINT"}</span>
-                <strong className="mt-0.5 block tabular-nums">
-                  {formatArea(housingCalc.footprintM2, units, locale)}
-                </strong>
-              </div>
-              <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>{isId ? "PANEL SURYA" : "SOLAR PV"}</span>
-                <strong className="mt-0.5 block tabular-nums" suppressHydrationWarning>
-                  {housingCalc.solar.kwp} kWp ({formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh)
-                </strong>
-              </div>
-              <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>{isId ? "PENGHEMATAN / THN" : "SAVINGS / YR"}</span>
-                <strong className="mt-0.5 block tabular-nums">
-                  {formatCurrency(
-                    housingCalc.solar.savingsYear,
-                    housingCalc.solar.currency,
-                    locale
-                  )}
-                </strong>
-              </div>
-              <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>{isId ? "PANEN HUJAN" : "RAIN HARVEST"}</span>
-                <strong className="mt-0.5 block tabular-nums">
-                  {formatVolume(housingCalc.rainwater.litersYear, units, locale)}/{isId ? "thn" : "yr"}
-                </strong>
-              </div>
-              <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>{isId ? "BIOPORI / TCI" : "BIOPORES / TCI"}</span>
-                <strong className="mt-0.5 block tabular-nums">
-                  {housingCalc.infiltration.bioporeUnits} {isId ? "unit" : "units"} / TCI {housingCalc.thermal.tciScore}
-                </strong>
-              </div>
-              <div className={`rounded-lg border p-2.5 ${surfaceCard}`}>
-                <span className={`block text-[11px] ${textMuted}`}>{isId ? "HUB TERDEKAT" : "NEAREST HUB"}</span>
-                <strong className="mt-0.5 block truncate tabular-nums">
-                  {geo.hubs[0]?.distanceKm ?? 1.5} km ({geo.hubs[0]?.name.split(" ")[0]})
-                </strong>
-              </div>
+              {[
+                {
+                  label: isId ? "LUAS TAPAK" : "FOOTPRINT",
+                  value: formatArea(housingCalc.footprintM2, units, locale),
+                },
+                {
+                  label: isId ? "PANEL SURYA" : "SOLAR PV",
+                  value: `${housingCalc.solar.kwp} kWp (${formatNumber(Math.round(housingCalc.solar.kwhYear), undefined, locale)} kWh)`,
+                },
+                {
+                  label: isId ? "PENGHEMATAN / THN" : "SAVINGS / YR",
+                  value: formatCurrency(housingCalc.solar.savingsYear, housingCalc.solar.currency, locale),
+                },
+                {
+                  label: isId ? "PANEN HUJAN" : "RAIN HARVEST",
+                  value: `${formatVolume(housingCalc.rainwater.litersYear, units, locale)}/${isId ? "thn" : "yr"}`,
+                },
+                {
+                  label: isId ? "BIOPORI / TCI" : "BIOPORES / TCI",
+                  value: `${housingCalc.infiltration.bioporeUnits} ${isId ? "unit" : "units"} / TCI ${housingCalc.thermal.tciScore}`,
+                },
+                {
+                  label: isId ? "HUB TERDEKAT" : "NEAREST HUB",
+                  value: `${geo.hubs[0]?.distanceKm ?? 1.5} km (${geo.hubs[0]?.name.split(" ")[0]})`,
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className={`rounded-xl border p-2.5 transition ${
+                    isLight
+                      ? "border-[#D1C9BA] bg-[#FAF8F5] text-[#101D16] shadow-xs"
+                      : "border-[#1D3328] bg-[#0E1914] text-[#F2F7F4]"
+                  }`}
+                >
+                  <span
+                    className={`block text-[11px] font-bold tracking-wider ${
+                      isLight ? "text-[#244233]" : "text-[#88AC9B]"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                  <strong className="mt-1 block truncate tabular-nums text-xs font-black">
+                    {item.value}
+                  </strong>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -366,7 +396,7 @@ export default function CouncilPage() {
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
-              <span className={textMuted}>
+              <span className={`font-bold ${isLight ? "text-[#244233]" : textMuted}`}>
                 {isId ? "Topik Cepat:" : "Quick Focus:"}
               </span>
               {[
@@ -401,11 +431,11 @@ export default function CouncilPage() {
                         setUserPrompt(text);
                         awardXp(25);
                         handleRunCouncil(text);
-                      }, isId ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk menanyakan topik ini ke 3 Pakar AI." : "Meta AI features require a verified account. Please sign in first to query the 3 Meta AI Specialists on this topic.");
+                      });
                     }}
-                    className={`cursor-pointer rounded-lg border px-2.5 py-1 text-left transition ${
+                    className={`cursor-pointer rounded-lg border px-3 py-1.5 text-left font-medium transition ${
                       isLight
-                        ? "border-[#C7C0B0] bg-[#F4F1EA] text-[#101D16] hover:bg-white"
+                        ? "border-[#B8B0A2] bg-[#F7F5EE] text-[#142A1E] hover:bg-white hover:border-[#14532D] hover:text-[#14532D] shadow-xs"
                         : "border-[#1D3328] bg-[#070D0A] text-[#A3BEB0] hover:text-white hover:border-[#88AC9B]"
                     }`}
                   >
@@ -583,12 +613,18 @@ export default function CouncilPage() {
             )}
 
             {sessionResult.detectedLanguage && (
-              <div className="flex flex-wrap items-center justify-between gap-2 px-1 font-mono text-xs">
+              <div
+                className={`flex flex-wrap items-center justify-between gap-2.5 rounded-xl border px-4 py-2.5 font-mono text-xs shadow-xs ${
+                  isLight
+                    ? "border-[#C7C0B0] bg-[#FFFFFF] text-[#101D16]"
+                    : "border-[#1D3328] bg-[#0E1914] text-[#F2F7F4]"
+                }`}
+              >
                 <div className="flex items-center gap-2">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className={textMuted}>
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className={isLight ? "text-[#203D2F]" : "text-[#A3BEB0]"}>
                     {isId ? "Bahasa Konsultasi:" : "Deliberation Language:"}{" "}
-                    <strong className={isLight ? "text-[#14532D]" : "text-[#A3E635]"}>
+                    <strong className={isLight ? "text-[#14532D] font-extrabold" : "text-[#A3E635] font-extrabold"}>
                       {sessionResult.detectedLanguage === "id"
                         ? "Bahasa Indonesia"
                         : sessionResult.detectedLanguage === "es"
@@ -605,10 +641,10 @@ export default function CouncilPage() {
                         ? "العربية"
                         : "English"}
                     </strong>{" "}
-                    ({isId ? "Terdeteksi Otomatis" : "Auto-Detected"})
+                    <span className="opacity-80">({isId ? "Terdeteksi Otomatis" : "Auto-Detected"})</span>
                   </span>
                 </div>
-                <span className={`text-[11px] ${textMuted}`}>
+                <span className={`text-[11px] font-medium ${isLight ? "text-[#2E5440]" : "text-[#88AC9B]"}`}>
                   {isId
                     ? "Dewan Pakar Meta AI merespons akurat dalam bahasa yang digunakan pengguna"
                     : "Meta AI Council specialists adaptively answer in your exact language"}
@@ -629,7 +665,7 @@ export default function CouncilPage() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 font-mono text-xs">
-                        <span className="font-bold">
+                        <span className={`font-black tracking-wider ${isLight ? "text-[#102B1D]" : "text-[#F2F7F4]"}`}>
                           {msg.agent === "flora"
                             ? "// AGENT 01 : DR. FLORA"
                             : msg.agent === "arka"
@@ -637,12 +673,17 @@ export default function CouncilPage() {
                             : "// AGENT 03 : SIRKULA"}
                         </span>
                         <span
-                          className={`rounded px-2 py-0.5 text-[10px] ${
+                          className={`rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-tight border transition ${
                             msg.modelUsed.includes("Meta AI Live")
-                              ? "border border-emerald-500/40 bg-emerald-500/20 font-bold text-emerald-300"
-                              : textMuted
+                              ? isLight
+                                ? "border-emerald-700/35 bg-emerald-100 text-[#0E3D22] shadow-xs"
+                                : "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
+                              : isLight
+                              ? "border-black/15 bg-black/5 text-[#2C4438]"
+                              : "border-white/15 bg-white/5 text-[#88AC9B]"
                           }`}
                         >
+                          {msg.modelUsed.includes("Meta AI Live") ? "🟢 " : ""}
                           {msg.modelUsed}
                         </span>
                       </div>
@@ -780,11 +821,21 @@ export default function CouncilPage() {
               </div>
 
               <div
-                className={`mt-5 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2.5 font-mono text-xs ${elevatedCard}`}
+                className={`mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 font-mono text-xs shadow-xs ${elevatedCard}`}
               >
                 <span>
-                  PROVIDER: <strong>{sessionResult.telemetry.provider}</strong> / MODEL:{" "}
-                  <strong className={sessionResult.telemetry.models.some((m) => m.includes("Meta AI Live")) ? "text-emerald-400" : ""}>
+                  PROVIDER: <strong className={isLight ? "text-[#101D16]" : "text-white"}>{sessionResult.telemetry.provider}</strong> / MODEL:{" "}
+                  <strong
+                    className={
+                      sessionResult.telemetry.models.some((m) => m.includes("Meta AI Live"))
+                        ? isLight
+                          ? "text-[#0E3D22] font-black"
+                          : "text-emerald-400 font-black"
+                        : isLight
+                        ? "text-[#101D16]"
+                        : "text-white"
+                    }
+                  >
                     {sessionResult.telemetry.models.join(", ")}
                   </strong>
                 </span>
@@ -792,13 +843,22 @@ export default function CouncilPage() {
                   TOKENS: <strong>{sessionResult.telemetry.tokensIn} in / {sessionResult.telemetry.tokensOut} out</strong>
                 </span>
                 <span>
-                  COST: <strong>${sessionResult.telemetry.costUsd.toFixed(5)} USD</strong>
+                  COST:{" "}
+                  <strong
+                    className={
+                      isLight
+                        ? "text-[#0E3D22] font-black"
+                        : "text-emerald-400 font-black"
+                    }
+                  >
+                    ${sessionResult.telemetry.costUsd.toFixed(5)} USD
+                  </strong>
                 </span>
                 <span>
                   LATENCY: <strong>{sessionResult.telemetry.latencyMs} ms</strong>
                 </span>
                 <span>
-                  SHIELD: <strong>{sessionResult.telemetry.shieldReason.toUpperCase()}</strong>
+                  SHIELD: <strong className={isLight ? "text-[#101D16]" : "text-white"}>{sessionResult.telemetry.shieldReason.toUpperCase()}</strong>
                 </span>
               </div>
             </section>
