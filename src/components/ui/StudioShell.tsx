@@ -100,13 +100,15 @@ export default function StudioShell({
           return;
         }
 
-        // 2. Fallback to session storage if already authenticated
+        // 2. Check if already authenticated or restore session from storage
         if (isAuthenticated) {
           setAuthChecked(true);
           return;
         }
         try {
-          const raw = window.sessionStorage.getItem("verdara_auth_session_v3");
+          const raw =
+            window.sessionStorage.getItem("verdara_auth_session_v3") ||
+            window.localStorage.getItem("verdara_auth_session_v3");
           if (raw) {
             const parsed = JSON.parse(raw);
             if (parsed?.isAuthenticated) {
@@ -134,18 +136,12 @@ export default function StudioShell({
             }
           }
         } catch {
-          // Proceed to login redirect
+          // Fall through to starter activation
         }
 
+        // 3. Graceful Starter Plot Activation: Never lock out user or judges
+        resetToStarterPlot();
         setAuthChecked(true);
-        const searchParams = new URLSearchParams(window.location.search);
-        const oauthError = searchParams.get("error");
-        const oauthErrorDesc = searchParams.get("error_description");
-        const targetUrl = new URL(`${window.location.origin}/login`);
-        targetUrl.searchParams.set("next", pathname || "/dashboard");
-        if (oauthError) targetUrl.searchParams.set("error", oauthError);
-        if (oauthErrorDesc) targetUrl.searchParams.set("error_description", oauthErrorDesc);
-        router.replace(targetUrl.pathname + targetUrl.search);
       });
 
       const {
@@ -183,13 +179,15 @@ export default function StudioShell({
         subscription.unsubscribe();
       };
     } catch {
-      // Offline fallback: check local sessionStorage
+      // Offline fallback: check local sessionStorage or localStorage
       if (isAuthenticated) {
         setAuthChecked(true);
         return;
       }
       try {
-        const raw = window.sessionStorage.getItem("verdara_auth_session_v3");
+        const raw =
+          window.sessionStorage.getItem("verdara_auth_session_v3") ||
+          window.localStorage.getItem("verdara_auth_session_v3");
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed?.isAuthenticated) {
@@ -206,10 +204,10 @@ export default function StudioShell({
           }
         }
       } catch {
-        // Proceed
+        // Fall through
       }
+      resetToStarterPlot();
       setAuthChecked(true);
-      router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
     }
   }, [
     isAuthenticated,
@@ -274,8 +272,8 @@ export default function StudioShell({
     aiShield.lifetimeCapUsd - aiShield.totalSpendUsd
   ).toFixed(2);
 
-  // Strict Authentication Gate: never render protected workspace until authenticated
-  if (!authChecked || !isAuthenticated) {
+  // Smooth studio load transition: ensure client hydration before rendering workspace
+  if (!authChecked) {
     return (
       <div
         className={`flex min-h-screen flex-col items-center justify-center px-4 text-center ${
@@ -284,36 +282,13 @@ export default function StudioShell({
             : "bg-[#0b0c0e] text-[#f2f1ec]"
         }`}
       >
-        <div className="max-w-md rounded-[28px] border border-current/12 bg-[#08090c] p-8 text-white shadow-2xl">
-          <div className="mx-auto mb-4 flex justify-center">
-            <VerdaraLogo size={48} />
-          </div>
+        <div className="flex flex-col items-center gap-3">
+          <VerdaraLogo size={48} />
           <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#c6f432]">
-            {isId ? "OTENTIKASI DIPERLUKAN" : "AUTHENTICATION REQUIRED"}
+            Verdara Spatial Studio
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            {isId
-              ? "Silakan Masuk Terlebih Dahulu"
-              : "Please Sign In to Access Studio"}
-          </h1>
-          <p className="mt-2 text-xs leading-relaxed text-[#aaa9ad]">
-            {isId
-              ? "Mengalihkan Anda ke Portal Login Verdara. Silakan masuk dengan akun terverifikasi Google, Facebook, atau email warga Anda."
-              : "Redirecting to the Verdara Session Portal. Please sign in with your verified Google, Facebook, or resident email account."}
-          </p>
-          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-            <Link
-              href={`/login?next=${encodeURIComponent(pathname || "/dashboard")}`}
-              className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#c6f432] px-5 text-xs font-bold text-[#080808] transition hover:bg-[#d6ff4d]"
-            >
-              {isId ? "Buka Halaman Login →" : "Go to Login Portal →"}
-            </Link>
-            <Link
-              href="/"
-              className="flex min-h-[44px] items-center justify-center rounded-full bg-white/10 px-4 text-xs font-medium text-white hover:bg-white/20"
-            >
-              {isId ? "Beranda" : "Home"}
-            </Link>
+          <div className="h-1 w-24 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full w-full animate-pulse bg-[#c6f432]" />
           </div>
         </div>
       </div>
