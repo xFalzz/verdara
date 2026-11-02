@@ -142,12 +142,12 @@ const initialCalc = calculateHousingFootprint({
 export const useVerdaraStore = create<VerdaraState>()(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
-      authProvider: "email",
-      displayName: "Guest Resident",
-      email: "",
+      isAuthenticated: true,
+      authProvider: "starter",
+      displayName: "Starter Resident",
+      email: "guest@sandbox.verdara.local",
       avatarUrl: "",
-      userId: "",
+      userId: "starter-guest",
       memberSince: "2026-10-31",
 
       locale: "en",
