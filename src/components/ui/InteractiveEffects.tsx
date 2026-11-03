@@ -1229,7 +1229,7 @@ export function WorldCityExplorer({
 export function VerdaraBottomDock() {
   const pathname = usePathname();
   const router = useRouter();
-  const { locale, isAuthenticated, displayName, level } = useVerdaraStore();
+  const { locale, isAuthenticated, displayName, level, isStudioPanelOpen, setStudioPanelOpen } = useVerdaraStore();
   const [minimized, setMinimized] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const isId = locale === "id";
@@ -1368,6 +1368,22 @@ export function VerdaraBottomDock() {
           : "border border-white/12 bg-[#08090c]/92 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1),0_12px_36px_-8px_rgba(0,0,0,0.7)]"
       }`}
     >
+      {/* Quick Studio Panel Trigger (Garis 3 / Hamburger) for Mobile */}
+      <button
+        type="button"
+        onClick={() => setStudioPanelOpen(!isStudioPanelOpen)}
+        className={`flex min-h-[34px] sm:min-h-[36px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 sm:px-3 font-mono text-xs font-semibold transition ${
+          isStudioPanelOpen
+            ? "bg-[#c6f432] text-[#08090c] shadow-sm"
+            : "border border-white/12 bg-white/6 text-[#e5e5e0] hover:bg-[#c6f432]/10 hover:text-[#c6f432]"
+        }`}
+        title={isId ? "Buka Panel Ruang Kerja Studio (Garis 3)" : "Open Studio Panel (3-Bars)"}
+      >
+        <span className="font-mono text-xs">{isStudioPanelOpen ? "✕" : "☰"}</span>
+        <span className="text-[11px] font-bold">{isId ? "Menu" : "Menu"}</span>
+      </button>
+      <span className="mx-0.5 h-4 w-[1px] shrink-0 bg-white/15" />
+
       {/* Authenticated Resident Status Pill (Dashboard HUD Vibe) */}
       {isAuthenticated && (
         <>

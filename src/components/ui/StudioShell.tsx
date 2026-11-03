@@ -32,6 +32,8 @@ export default function StudioShell({
     level,
     xp,
     aiShield,
+    isStudioPanelOpen,
+    setStudioPanelOpen,
     setLocale,
     setUnits,
     setTheme,
@@ -45,7 +47,8 @@ export default function StudioShell({
   } = useVerdaraStore();
 
   const [authChecked, setAuthChecked] = useState(false);
-  const [notchOpen, setNotchOpen] = useState(false);
+  const notchOpen = isStudioPanelOpen;
+  const setNotchOpen = setStudioPanelOpen;
   const [notchSlide, setNotchSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchingGeo, setSearchingGeo] = useState(false);
@@ -510,11 +513,42 @@ export default function StudioShell({
         </div>
       </header>
 
-      {/* EXPANDABLE STUDIO PANEL WITH FULL MOBILE/DESKTOP NAVIGATION & MINI SLIDE CAROUSEL */}
+      {/* FIXED VIEWPORT MODAL OVERLAY: OPENS ANYWHERE USER IS SCROLLED */}
       {notchOpen && (
-        <div className="mx-auto mt-3 mb-4 max-w-[1440px] px-4 sm:px-8">
-          <div className="rounded-[24px] sm:rounded-[28px] bg-[#08090c] p-4 sm:p-6 text-white shadow-[inset_0_0_0_1.5px_#262932,0_20px_50px_-12px_rgba(0,0,0,0.65)]">
-            {/* Quick Workspace Navigation Grid for Mobile/Tablet (< 1280px) */}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={isId ? "Panel Studio Verdara" : "Verdara Studio Panel"}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setNotchOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-[1240px] max-h-[90vh] flex flex-col rounded-[24px] sm:rounded-[28px] bg-[#08090c] text-white shadow-[inset_0_0_0_1.5px_#262932,0_24px_60px_-12px_rgba(0,0,0,0.85)] border border-white/10 overflow-hidden">
+            {/* Modal Header Bar with Close Button */}
+            <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 bg-[#0e1015]">
+              <div className="flex items-center gap-2.5">
+                <VerdaraLogo size={24} />
+                <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-[#c6f432]">
+                  {isId ? "PANEL RUANG KERJA STUDIO" : "STUDIO WORKSPACE PANEL"}
+                </span>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 font-mono text-[10px] text-white/70">
+                  {xp} XP · Lv.{level}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotchOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition cursor-pointer font-mono text-sm"
+                aria-label={isId ? "Tutup panel" : "Close panel"}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Modal Content */}
+            <div className="overflow-y-auto p-4 sm:p-6">
+              {/* Quick Workspace Navigation Grid for Mobile/Tablet (< 1280px) */}
             <div className="mb-5 border-b border-white/10 pb-4 xl:hidden">
               <p className="mb-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#c6f432]">
                 {isId ? "00 / Navigasi Ruang Kerja Studio" : "00 / Studio Workspaces"}
@@ -719,6 +753,7 @@ export default function StudioShell({
             </div>
           </div>
         </div>
+      </div>
       )}
 
       {/* MAIN WORKSPACE CONTENT */}

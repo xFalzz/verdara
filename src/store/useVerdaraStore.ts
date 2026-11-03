@@ -124,6 +124,8 @@ export interface VerdaraState {
   ) => void;
   recordScanCompleted: (scan: UserScanRecord, isCacheHit: boolean) => void;
   toggleOpenWeightModel: () => void;
+  isStudioPanelOpen: boolean;
+  setStudioPanelOpen: (open: boolean) => void;
 }
 
 const initialGeo = resolvePresetGeoContext("menlo_park", 10);
@@ -184,6 +186,9 @@ export const useVerdaraStore = create<VerdaraState>()(
         liveApiCallsCount: 0,
         useOpenWeightModel: true,
       },
+
+      isStudioPanelOpen: false,
+      setStudioPanelOpen: (open) => set({ isStudioPanelOpen: open }),
 
       loadVerifiedSpecimenPlot: () => {
         const mpGeo = resolvePresetGeoContext("menlo_park", 10);
