@@ -55,6 +55,9 @@ export default function LoginPage() {
     description: string;
   } | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [registerSuccessMessage, setRegisterSuccessMessage] = useState<string | null>(null);
+  const [showResendButton, setShowResendButton] = useState<boolean>(false);
+  const [resendStatus, setResendStatus] = useState<string | null>(null);
   const [nextRoute, setNextRoute] = useState("/dashboard");
   const [isNightStage, setIsNightStage] = useState(false);
 
@@ -162,6 +165,36 @@ export default function LoginPage() {
     }
   };
 
+  const handleResendConfirmation = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setResendStatus(isId ? "Masukkan alamat email Anda terlebih dahulu." : "Please enter your email address first.");
+      return;
+    }
+    setResendStatus(isId ? "Mengirim ulang tautan verifikasi..." : "Resending verification email...");
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextRoute || "/dashboard")}`,
+        },
+      });
+      if (error) {
+        setResendStatus(error.message);
+      } else {
+        setResendStatus(
+          isId
+            ? "Tautan konfirmasi baru berhasil dikirim ke " + cleanEmail + "! Silakan periksa inbox atau spam."
+            : "A new confirmation link was sent to " + cleanEmail + "! Please check inbox or spam."
+        );
+      }
+    } catch {
+      setResendStatus(isId ? "Gagal mengirim ulang email." : "Failed to resend email.");
+    }
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setOauthNotice(null);
@@ -200,43 +233,46 @@ export default function LoginPage() {
       const supabase = createClient();
 
       if (isRegisterMode) {
-        // 1. REGISTER NEW REAL USER VIA DEDICATED AUTH API
+        // 1. REGISTER NEW REAL USER VIA SUPABASE SIGNUP (triggers Supabase email verification)
         try {
-          const res = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: cleanEmail,
-              password: cleanPassword,
-              displayName: displayName.trim() || cleanEmail.split("@")[0],
-            }),
-          });
-          const regData = await res.json();
+          setShowResendButton(false);
+          setResendStatus(null);
+          setRegisterSuccessMessage(null);
 
-          if (!res.ok || !regData.ok) {
-            setFormError(
-              regData.message ||
-                (isId ? "Pendaftaran gagal. Silakan coba lagi." : "Registration failed. Please try again.")
-            );
-            return;
-          }
-
-          // Immediately sign in with the new confirmed user credentials
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
             email: cleanEmail,
             password: cleanPassword,
+            options: {
+              data: {
+                full_name: displayName.trim() || cleanEmail.split("@")[0],
+                name: displayName.trim() || cleanEmail.split("@")[0],
+              },
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+                nextRoute || "/dashboard"
+              )}`,
+            },
           });
 
-          if (signInError) {
-            setFormError(signInError.message);
+          if (signUpError) {
+            setFormError(signUpError.message);
             return;
           }
 
-          if (signInData?.user) {
+          // Case A: Supabase project requires email confirmation (session is null)
+          if (signUpData?.user && !signUpData.session) {
+            setRegisterSuccessMessage(cleanEmail);
+            setIsRegisterMode(false);
+            setPassword("");
+            setFormError(null);
+            return;
+          }
+
+          // Case B: Supabase auto-confirmed or returned active session
+          if (signUpData?.user && signUpData.session) {
             loginWithEmail(
-              signInData.user.email || cleanEmail,
+              signUpData.user.email || cleanEmail,
               displayName.trim() || cleanEmail.split("@")[0],
-              { userId: signInData.user.id }
+              { userId: signUpData.user.id }
             );
             router.push(nextRoute);
             return;
@@ -251,17 +287,27 @@ export default function LoginPage() {
       } else {
         // 2. SIGN IN EXISTING REAL USER
         try {
+          setShowResendButton(false);
+          setResendStatus(null);
+
           const { data, error } = await supabase.auth.signInWithPassword({
             email: cleanEmail,
             password: cleanPassword,
           });
 
           if (error) {
-            if (error.message.toLowerCase().includes("invalid login credentials")) {
+            if (error.message.toLowerCase().includes("email not confirmed")) {
               setFormError(
                 isId
-                  ? "Email atau kata sandi tidak cocok. Jika belum mendaftar, silakan klik tab 'Daftar' di atas."
-                  : "Invalid email or password. If you haven't registered yet, please click the 'Register' tab above."
+                  ? "Email Anda belum diverifikasi! Silakan buka email Anda dan klik tautan konfirmasi pendaftaran sebelum masuk."
+                  : "Your email has not been verified yet! Please check your email inbox and click the verification link before signing in."
+              );
+              setShowResendButton(true);
+            } else if (error.message.toLowerCase().includes("invalid login credentials")) {
+              setFormError(
+                isId
+                  ? "Email atau kata sandi tidak cocok. Jika Anda belum pernah mendaftar akun Verdara, silakan klik tab 'Daftar' di atas terlebih dahulu."
+                  : "Invalid email or password. If you have not registered yet, please click the 'Register' tab above first."
               );
             } else {
               setFormError(error.message);
@@ -729,12 +775,44 @@ export default function LoginPage() {
                     ) : null}
                   </div>
 
+                  {registerSuccessMessage && (
+                    <div
+                      role="status"
+                      className="rounded-2xl border border-[#c6f432]/50 bg-[#c6f432]/10 p-4 font-mono text-xs text-[#c6f432] space-y-2"
+                    >
+                      <div className="flex items-center gap-2 font-bold text-sm text-[#c6f432]">
+                        <span>✉</span>
+                        <span>{isId ? "Pendaftaran Berhasil! Periksa Email Anda" : "Registration Successful! Check Your Email"}</span>
+                      </div>
+                      <p className="leading-relaxed text-white/90 text-xs">
+                        {isId
+                          ? `Tautan verifikasi telah dikirimkan ke ${registerSuccessMessage}. Silakan buka kotak masuk email Anda dan klik tautan konfirmasi untuk mengaktifkan akun sebelum masuk.`
+                          : `A confirmation link has been sent to ${registerSuccessMessage}. Please check your inbox and click the verification link to activate your account before signing in.`}
+                      </p>
+                    </div>
+                  )}
+
                   {formError && (
                     <div
                       role="alert"
-                      className="rounded-xl border border-rose-500/50 bg-rose-950/30 p-3 font-mono text-xs text-rose-300"
+                      className="rounded-xl border border-rose-500/50 bg-rose-950/30 p-3 font-mono text-xs text-rose-300 space-y-2"
                     >
-                      {formError}
+                      <div>{formError}</div>
+                      {showResendButton && (
+                        <div className="pt-1.5 border-t border-rose-500/30">
+                          <button
+                            type="button"
+                            onClick={handleResendConfirmation}
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#c6f432]/50 bg-[#c6f432]/15 px-3 py-1 font-mono text-[11px] font-semibold text-[#c6f432] transition hover:bg-[#c6f432]/25"
+                          >
+                            <span>↺</span>
+                            <span>{isId ? "Kirim Ulang Tautan Verifikasi" : "Resend Verification Link"}</span>
+                          </button>
+                          {resendStatus && (
+                            <p className="mt-1.5 font-mono text-[10px] text-amber-200">{resendStatus}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 
