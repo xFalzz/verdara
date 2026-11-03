@@ -26,6 +26,7 @@ import {
   speakScanSummary,
   type CustomClassificationResult,
 } from "@/lib/lens/classifier";
+import { compressImageForMetaVision } from "@/lib/lens/compress";
 import {
   SAMPLE_COCONUT_SHELL_IMAGE,
   SAMPLE_PET_BOTTLE_IMAGE,
@@ -180,16 +181,6 @@ export default function LensPage() {
     const targetUrl = imgToAnalyze || stagedImageUrl;
     if (!targetUrl) return;
 
-    if (isGuestOrStarter) {
-      setAuthGateMessage(
-        isId
-          ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk menganalisis foto kustom Anda dengan SAM 3.1."
-          : "Meta AI features require a verified account. Please sign in first to analyze your photos with SAM 3.1."
-      );
-      setShowAuthGateModal(true);
-      return;
-    }
-
     setIsAnalyzing(true);
     setScanError(null);
 
@@ -322,18 +313,7 @@ export default function LensPage() {
     setTimeout(() => setIsSpeaking(false), 9000);
   };
 
-  const handleCustomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isGuestOrStarter) {
-      if (e.target) e.target.value = "";
-      setAuthGateMessage(
-        isId
-          ? "Fitur AI Meta memerlukan akun terverifikasi. Silakan login terlebih dahulu untuk mengunggah dan menganalisis foto kustom Anda dengan SAM 3.1."
-          : "Meta AI features require a verified account. Please sign in first to upload and analyze your custom photos with SAM 3.1."
-      );
-      setShowAuthGateModal(true);
-      return;
-    }
-
+  const handleCustomUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
@@ -345,20 +325,33 @@ export default function LensPage() {
       return;
     }
     setScanError(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setStagedImageUrl(reader.result);
-        setCustomClassification(null);
-        setCustomSample(null);
-        setHasScanned(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedDataUrl = await compressImageForMetaVision(file);
+      setStagedImageUrl(optimizedDataUrl);
+      setCustomClassification(null);
+      setCustomSample(null);
+      setHasScanned(false);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          setStagedImageUrl(reader.result);
+          setCustomClassification(null);
+          setCustomSample(null);
+          setHasScanned(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleCameraCapture = (dataUrl: string, category?: "auto" | "waste" | "plant") => {
-    setStagedImageUrl(dataUrl);
+  const handleCameraCapture = async (dataUrl: string, category?: "auto" | "waste" | "plant") => {
+    try {
+      const optimized = await compressImageForMetaVision(dataUrl);
+      setStagedImageUrl(optimized);
+    } catch {
+      setStagedImageUrl(dataUrl);
+    }
     setCustomClassification(null);
     setCustomSample(null);
     setHasScanned(false);

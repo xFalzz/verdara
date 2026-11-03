@@ -170,8 +170,13 @@ export function verifySafeOrigin(req: Request): boolean {
   }
 
   try {
-    const originHost = new URL(origin).host;
-    return originHost === host;
+    const originHost = new URL(origin).host.toLowerCase();
+    const cleanHost = host.toLowerCase();
+    if (originHost === cleanHost) return true;
+    if (originHost.endsWith(".vercel.app") || originHost.includes("verdara") || originHost.includes("localhost") || originHost.includes("127.0.0.1")) {
+      return true;
+    }
+    return false;
   } catch {
     return false;
   }

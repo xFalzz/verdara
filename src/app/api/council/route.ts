@@ -9,6 +9,7 @@ import {
 } from "@/lib/security/guard";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const ipHash = req.headers.get("x-forwarded-for") || "127.0.0.1";
