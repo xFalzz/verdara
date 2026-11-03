@@ -213,15 +213,40 @@ export default function LensPage() {
           if (data.ok && data.classification && data.sample) {
             result = data.classification as CustomClassificationResult;
             result.sample = data.sample as GoldenLensSample;
+          } else if (!data.ok && data.error) {
+            setScanError(
+              isId
+                ? data.error.message || "Meta AI Vision gagal menganalisis gambar."
+                : data.error.message || "Meta AI Vision failed to analyze image."
+            );
+            setIsAnalyzing(false);
+            return;
           }
+        } else {
+          const errData = await res.json().catch(() => null);
+          setScanError(
+            errData?.error?.message ||
+              (isId
+                ? "Gagal terhubung ke Meta AI Vision Server. Silakan coba sesaat lagi."
+                : "Failed to connect to Meta AI Vision Server. Please try again.")
+          );
+          setIsAnalyzing(false);
+          return;
         }
       } catch (metaErr) {
-        console.warn("Live Meta AI endpoint call failed, using client fallback:", metaErr);
+        console.warn("Live Meta AI endpoint call failed:", metaErr);
+        // Only fall back to local analysis if network call totally threw an exception
+        result = await analyzeImageLocally(targetUrl, activeMode);
       }
 
-      // 2. Fallback to local heuristic classifier if offline/API unreachable
       if (!result) {
-        result = await analyzeImageLocally(targetUrl, activeMode);
+        setScanError(
+          isId
+            ? "Gagal menganalisis gambar. Silakan coba lagi."
+            : "Failed to analyze image. Please try again."
+        );
+        setIsAnalyzing(false);
+        return;
       }
 
       setCustomClassification(result);
@@ -230,7 +255,7 @@ export default function LensPage() {
       setSelectedObjId(result.sample.objects[0]?.id ?? null);
       setHasScanned(true);
 
-      // Only award XP and record scan if photo is a recognized circular specimen
+      // Strictly DO NOT award XP or EcoScore if photo is unrelated / non-ecological
       if (!result.isUnrelated) {
         awardXp(25, "sorting_station");
         setEcoScoreToast(
@@ -255,12 +280,19 @@ export default function LensPage() {
           },
           true
         );
+      } else {
+        setEcoScoreToast(null);
       }
 
       if (voiceActive && !result.isUnrelated) {
         const speechText = isId
           ? `Teridentifikasi: ${result.detectedNameId}. Kategori ${result.categoryTagId}. ${result.descriptionId}`
           : `Identified: ${result.detectedNameEn}. Category: ${result.categoryTagEn}. ${result.descriptionEn}`;
+        speakScanSummary(speechText, isId ? "id" : "en");
+      } else if (voiceActive && result.isUnrelated) {
+        const speechText = isId
+          ? `Objek terdeteksi: ${result.detectedNameId}. Ini bukan kategori limbah sirkular, tanaman, atau atap bangunan.`
+          : `Object detected: ${result.detectedNameEn}. This is not a circular waste, botanical, or rooftop category.`;
         speakScanSummary(speechText, isId ? "id" : "en");
       }
     } catch {
