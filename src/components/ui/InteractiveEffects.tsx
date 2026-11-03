@@ -439,6 +439,9 @@ export function TownhouseScrollRail({
   const [scrollPct, setScrollPct] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [isFooter, setIsFooter] = useState(false);
+  const isMountedRef = useRef(false);
+  const lastScrollYRef = useRef(0);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const [bounds, setBounds] = useState<{ top: number; bottom: number } | null>(
@@ -458,18 +461,33 @@ export function TownhouseScrollRail({
       );
       setScrollPct(curPct);
 
-      // Expand on scroll for a short duration (2.2s), then close automatically
-      // When nearing footer (curPct >= 88), close and hide immediately
-      if (curPct < 88) {
-        setIsScrolling(true);
-        if (scrollTimerRef.current) {
-          clearTimeout(scrollTimerRef.current);
-        }
-        scrollTimerRef.current = setTimeout(() => {
-          setIsScrolling(false);
-        }, 2200);
+      const isAtFooter =
+        curPct >= 85 ||
+        (typeof window !== "undefined" &&
+          window.innerHeight + scrollTop >=
+            document.documentElement.scrollHeight - 380);
+      setIsFooter(isAtFooter);
+
+      // On initial mount, measure scroll position silently without expanding
+      if (!isMountedRef.current) {
+        isMountedRef.current = true;
+        lastScrollYRef.current = scrollTop;
       } else {
-        setIsScrolling(false);
+        // Only expand when user actually scrolls
+        if (Math.abs(scrollTop - lastScrollYRef.current) > 3) {
+          lastScrollYRef.current = scrollTop;
+          if (!isAtFooter) {
+            setIsScrolling(true);
+            if (scrollTimerRef.current) {
+              clearTimeout(scrollTimerRef.current);
+            }
+            scrollTimerRef.current = setTimeout(() => {
+              setIsScrolling(false);
+            }, 1800);
+          } else {
+            setIsScrolling(false);
+          }
+        }
       }
 
       const triggerY = window.innerHeight * 0.38;
@@ -502,7 +520,6 @@ export function TownhouseScrollRail({
     };
   }, [chapters]);
 
-  const isFooter = scrollPct >= 88;
   const isExpanded = !isFooter && (isHovered || isScrolling);
 
   useEffect(() => {

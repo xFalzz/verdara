@@ -77,6 +77,9 @@ export const metadata: Metadata = {
       "Explore neighborhood-scale solar generation, stormwater runoff routing, and circular material recovery powered by Meta AI.",
     creator: "@VerdaraEco",
   },
+  verification: {
+    google: "google8cbfb42f0970a6b2",
+  },
   other: {
     "geo.region": "ID-JK",
     "geo.placename": "Jakarta",
