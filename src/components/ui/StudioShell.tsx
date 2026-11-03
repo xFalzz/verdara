@@ -664,6 +664,20 @@ export default function StudioShell({
                     >
                       FAQ
                     </Link>
+                    <Link
+                      href="/privacy"
+                      onClick={() => setNotchOpen(false)}
+                      className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-white hover:bg-white/20"
+                    >
+                      {isId ? "Privasi" : "Privacy"}
+                    </Link>
+                    <Link
+                      href="/terms"
+                      onClick={() => setNotchOpen(false)}
+                      className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-white hover:bg-white/20"
+                    >
+                      {isId ? "Ketentuan" : "Terms"}
+                    </Link>
                     <button
                       type="button"
                       onClick={() => {

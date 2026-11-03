@@ -61,6 +61,25 @@ export async function POST(req: NextRequest) {
 
     const resolvedUserId = sanitizeInputText(cleanBody.userId || "resident-live", 50);
 
+    const isStarterOrGuest =
+      !cleanBody.isJudge ||
+      resolvedUserId.includes("starter") ||
+      resolvedUserId.includes("guest");
+
+    // Strictly protect live Meta AI calls from starter/guest users when submitting custom queries
+    if (isStarterOrGuest && sanitizedPrompt) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "unverified_starter_account",
+            message:
+              "Fitur AI Council kustom memerlukan akun terverifikasi. Silakan login untuk berkonsultasi langsung dengan Meta Model API.",
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     const result = await executeVerdaraCouncil(brief, {
       userId: resolvedUserId,
       ipHash,

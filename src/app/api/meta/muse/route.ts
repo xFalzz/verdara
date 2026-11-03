@@ -58,8 +58,28 @@ export async function POST(req: NextRequest) {
     brief.bioporeUnits = clampNumber(brief.bioporeUnits, 0, 500, 8);
     brief.tciScore = clampNumber(brief.tciScore, 0, 100, 72);
 
+    const resolvedUserId = sanitizeInputText(cleanBody.userId || "resident-live", 50);
+    const isStarterOrGuest =
+      !cleanBody.isJudge ||
+      resolvedUserId.includes("starter") ||
+      resolvedUserId.includes("guest");
+
+    if (isStarterOrGuest && sanitizedPrompt) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "unverified_starter_account",
+            message:
+              "Fitur AI Council kustom memerlukan akun terverifikasi. Silakan login terlebih dahulu.",
+          },
+        },
+        { status: 403 }
+      );
+    }
+
     const result = await executeVerdaraCouncil(brief, {
-      userId: sanitizeInputText(cleanBody.userId || "judge-demo", 50),
+      userId: resolvedUserId,
       ipHash,
       isJudge: cleanBody.isJudge ?? true,
       useOpenWeightModel: cleanBody.useOpenWeightModel ?? false,

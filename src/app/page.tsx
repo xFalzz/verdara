@@ -3273,6 +3273,14 @@ export default function LandingPage() {
               FAQ
             </Link>
             <span>·</span>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">
+              {isId ? "Privasi" : "Privacy"}
+            </Link>
+            <span>·</span>
+            <Link href="/terms" className="hover:text-foreground transition-colors">
+              {isId ? "Ketentuan" : "Terms"}
+            </Link>
+            <span>·</span>
             <Link href="/dashboard" className="hover:text-foreground transition-colors">
               Studio
             </Link>

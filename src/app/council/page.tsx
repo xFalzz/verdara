@@ -81,15 +81,33 @@ export default function CouncilPage() {
   }, [geo, housingCalc, isId, locale]);
 
   const handleProtectedAction = useCallback(
-    (actionCallback: () => void, _customMsg?: string) => {
-      // In live evaluation mode with META_API_KEY connected, allow immediate council access
+    (actionCallback: () => void, customMsg?: string) => {
+      if (isGuestOrStarter) {
+        setAuthGateMessage(
+          customMsg ||
+            (isId
+              ? "Akun Starter / Tamu dibatasi untuk melindungi kuota token Meta AI. Silakan Masuk Akun terverifikasi untuk berkonsultasi langsung dengan 3 Pakar AI Dewan."
+              : "Starter / Guest accounts are restricted to protect Meta AI token credits. Please Sign In with a verified account to consult live with the 3 Council Specialists.")
+        );
+        setShowAuthGateModal(true);
+        return;
+      }
       actionCallback();
     },
-    []
+    [isGuestOrStarter, isId]
   );
 
   const handleRunCouncil = useCallback(
     async (overridePrompt?: string) => {
+      if (isGuestOrStarter) {
+        setAuthGateMessage(
+          isId
+            ? "Akun Starter / Tamu dibatasi untuk melindungi kuota token Meta AI. Silakan Masuk Akun terverifikasi untuk menjalankan sidang dewan langsung."
+            : "Starter / Guest accounts are restricted to protect Meta AI token credits. Please Sign In with a verified account to run live council deliberations."
+        );
+        setShowAuthGateModal(true);
+        return;
+      }
       setIsRunning(true);
       setErrorMessage(null);
       setActiveRoundStep(1);
@@ -107,8 +125,8 @@ export default function CouncilPage() {
           body: JSON.stringify({
             siteBrief: brief,
             prompt: promptToUse || undefined,
-            userId: userId || "resident-live",
-            isJudge: true,
+            userId: userId || "starter-guest",
+            isJudge: !isGuestOrStarter,
             useOpenWeightModel: aiShield.useOpenWeightModel,
           }),
         });
