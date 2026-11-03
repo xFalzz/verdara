@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import StudioShell from "@/components/ui/StudioShell";
 import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
@@ -11,7 +12,20 @@ import {
   formatNumber,
   formatVolume,
 } from "@/lib/science/units";
-import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
+const EcoIslandCanvas = dynamic(
+  () => import("@/components/three/EcoIslandCanvas"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-[#090b0e] text-white/40 font-mono text-xs">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#c6f432] animate-ping" />
+          <span>RENDERING LIVING TOWN...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 export default function DashboardPage() {
   const {

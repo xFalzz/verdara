@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -29,7 +30,20 @@ import {
   VerdaraBottomDock,
   type ScrollRailChapter,
 } from "@/components/ui/InteractiveEffects";
-import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
+const EcoIslandCanvas = dynamic(
+  () => import("@/components/three/EcoIslandCanvas"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[#090b0e] border border-white/8 text-white/50">
+        <div className="flex items-center gap-2.5 font-mono text-xs">
+          <span className="h-2 w-2 rounded-full bg-[#c6f432] animate-ping" />
+          <span>INITIALIZING 3D ECO-DISTRICT SIMULATION...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface CountryDeckSpecimen {
   slug: string;

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import {
@@ -10,7 +11,17 @@ import {
   CompactWorldCityPicker,
   VerdaraBottomDock,
 } from "@/components/ui/InteractiveEffects";
-import EcoIslandCanvas from "@/components/three/EcoIslandCanvas";
+const EcoIslandCanvas = dynamic(
+  () => import("@/components/three/EcoIslandCanvas"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-[#090b0e] text-white/40 font-mono text-xs">
+        LOADING 3D STAGE...
+      </div>
+    ),
+  }
+);
 
 export default function LoginPage() {
   const router = useRouter();

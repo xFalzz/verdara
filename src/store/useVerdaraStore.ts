@@ -142,13 +142,13 @@ const initialCalc = calculateHousingFootprint({
 export const useVerdaraStore = create<VerdaraState>()(
   persist(
     (set, get) => ({
-      isAuthenticated: true,
+      isAuthenticated: false,
       authProvider: "starter",
-      displayName: "Starter Resident",
-      email: "guest@sandbox.verdara.local",
+      displayName: "Guest Resident",
+      email: "",
       avatarUrl: "",
-      userId: "starter-guest",
-      memberSince: "2026-10-31",
+      userId: "",
+      memberSince: "2026-11-03",
 
       locale: "en",
       units: "metric",
@@ -162,23 +162,16 @@ export const useVerdaraStore = create<VerdaraState>()(
       runoffCoefficient: 0.85,
       selectedMaterialFilter: null,
 
-      xp: 1120,
-      level: 5,
-      progressPct: 24,
+      xp: 0,
+      level: 1,
+      progressPct: 0,
       streakDays: 1,
       totalCo2eAvoidedKg: 0,
       totalObjectsScanned: 0,
-      unlockedItems: [
-        "base_island",
-        "sorting_station",
-        "native_trees",
-        "compost_dome",
-        "rain_cistern",
-        "solar_array",
-      ],
-      passedQuizLessonIds: ["lesson-zw-1"],
+      unlockedItems: ["base_island"],
+      passedQuizLessonIds: [],
       verifiedProofLessonIds: [],
-      submittedDHashes: ["1010110011001010"],
+      submittedDHashes: [],
       scanHistory: [],
 
       aiShield: {

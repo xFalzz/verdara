@@ -205,10 +205,14 @@ export default function SmoothScroll() {
       capture: true,
     });
 
-    // Automatically recalculate Lenis dimensions when page content changes height
+    // Automatically recalculate Lenis dimensions when page content changes height (debounced to avoid hydration thrashing)
+    let resizeTimer: number | null = null;
     const resizeObserver = new ResizeObserver(() => {
-      lenis.resize();
-      ScrollTrigger.refresh();
+      if (resizeTimer !== null) window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        lenis.resize();
+        ScrollTrigger.refresh();
+      }, 160);
     });
     resizeObserver.observe(document.body);
 

@@ -139,8 +139,7 @@ export default function StudioShell({
           // Fall through to starter activation
         }
 
-        // 3. Graceful Starter Plot Activation: Never lock out user or judges
-        resetToStarterPlot();
+        // 3. Unauthenticated guest: preserve clean visitor state without forcing starter plot
         setAuthChecked(true);
       });
 
@@ -206,7 +205,7 @@ export default function StudioShell({
       } catch {
         // Fall through
       }
-      resetToStarterPlot();
+      // Offline fallback: preserve clean visitor state
       setAuthChecked(true);
     }
   }, [
@@ -445,8 +444,8 @@ export default function StudioShell({
               </span>
             </button>
 
-            {/* Sign In (Starter Mode) or Logout Button */}
-            {authProvider === "starter" ? (
+            {/* Sign In (Unauthenticated / Starter Mode) or Logout Button */}
+            {!isAuthenticated || authProvider === "starter" ? (
               <Link
                 href="/login"
                 className="min-h-[36px] sm:min-h-[38px] shrink-0 cursor-pointer rounded-full border border-amber-400 bg-amber-400/10 px-3 sm:px-4 text-[11px] sm:text-xs font-bold text-amber-400 hover:bg-amber-400 hover:text-black whitespace-nowrap transition inline-flex items-center"
