@@ -3,9 +3,9 @@ const path = require("path");
 const sharp = require("sharp");
 
 async function generateLogos() {
-  const publicDir = path.resolve("public");
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
+  const brandDir = path.resolve("brand-assets");
+  if (!fs.existsSync(brandDir)) {
+    fs.mkdirSync(brandDir, { recursive: true });
   }
   const artifactDir = "C:\\Users\\HP\\.gemini\\antigravity\\brain\\8e25bf67-24c0-461d-815f-02f2e7969e3b";
   if (!fs.existsSync(artifactDir)) {
@@ -120,21 +120,21 @@ async function generateLogos() {
   </svg>`;
 
   // A. Generate Transparent PNG (1024x1024)
-  const p1 = path.join(publicDir, "verdara-logo.png");
+  const p1 = path.join(brandDir, "verdara-logo.png");
   await sharp(Buffer.from(iconSvg)).png().toFile(p1);
 
   // B. Generate High-Res Dark Capsule PNG (1024x1024)
-  const p2 = path.join(publicDir, "verdara-logo-dark.png");
+  const p2 = path.join(brandDir, "verdara-logo-dark.png");
   await sharp(Buffer.from(iconDarkBackdropSvg)).png().toFile(p2);
 
   // C. Generate High-Res Dark JPG (1024x1024)
-  const p3 = path.join(publicDir, "verdara-logo-dark.jpg");
+  const p3 = path.join(brandDir, "verdara-logo-dark.jpg");
   await sharp(Buffer.from(iconDarkBackdropSvg)).jpeg({ quality: 96 }).toFile(p3);
 
   // D. Generate Full Horizontal Lockup PNG & JPG (2048x640)
-  const p4 = path.join(publicDir, "verdara-brand-banner.png");
+  const p4 = path.join(brandDir, "verdara-brand-banner.png");
   await sharp(Buffer.from(fullBrandSvg)).png().toFile(p4);
-  const p5 = path.join(publicDir, "verdara-brand-banner.jpg");
+  const p5 = path.join(brandDir, "verdara-brand-banner.jpg");
   await sharp(Buffer.from(fullBrandSvg)).jpeg({ quality: 96 }).toFile(p5);
 
   // Copy to artifacts directory
@@ -146,7 +146,7 @@ async function generateLogos() {
     fs.copyFileSync(p5, path.join(artifactDir, "verdara-brand-banner.jpg"));
   }
 
-  console.log("SUCCESS: All logo assets generated in public/ and artifacts directory!");
+  console.log("SUCCESS: All logo assets generated in brand-assets/ and artifacts directory!");
 }
 
 generateLogos().catch(console.error);
