@@ -15,7 +15,7 @@ Computer vision sees the site, deterministic engineering equations compute the n
 [![Tests](https://img.shields.io/badge/Tests-22%2F22%20Passing-10b981?style=for-the-badge&logo=vitest&logoColor=white)](#10-getting-started)
 [![License](https://img.shields.io/badge/License-MIT-gray?style=for-the-badge)](LICENSE)
 
-[Live Application](https://verdara.space) &nbsp;|&nbsp; [Architecture](#2-system-architecture) &nbsp;|&nbsp; [Scientific Engine](#5-scientific-engine) &nbsp;|&nbsp; [Getting Started](#10-getting-started) &nbsp;|&nbsp; [Limitations](#12-assumptions-and-limitations)
+[Live Application](https://verdaraa.vercel.app/) &nbsp;|&nbsp; [Architecture](#2-system-architecture) &nbsp;|&nbsp; [Scientific Engine](#5-scientific-engine) &nbsp;|&nbsp; [Getting Started](#10-getting-started) &nbsp;|&nbsp; [Limitations](#12-assumptions-and-limitations)
 
 </div>
 
