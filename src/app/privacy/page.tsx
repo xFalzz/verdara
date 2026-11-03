@@ -291,7 +291,15 @@ export default function PrivacyPage() {
               </p>
               <div className="rounded-xl bg-current/[0.04] p-4 font-mono text-xs space-y-1">
                 <p>Verdara Spatial Labs · Data Governance Team</p>
-                <p>Email: security@verdara.space / privacy@verdara.space</p>
+                <p>
+                  Email:{" "}
+                  <a
+                    href="mailto:nawfalirfan005@gmail.com"
+                    className="underline text-[#1e9e5a] dark:text-[#a3e635] hover:opacity-80"
+                  >
+                    nawfalirfan005@gmail.com
+                  </a>
+                </p>
                 <p>Jakarta, Indonesia · San Francisco, CA, USA</p>
               </div>
             </section>

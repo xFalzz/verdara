@@ -281,7 +281,15 @@ export default function TermsPage() {
               </p>
               <div className="rounded-xl bg-current/[0.04] p-4 font-mono text-xs space-y-1">
                 <p>Verdara Spatial Labs · Legal & Compliance</p>
-                <p>Dispute inquiries: legal@verdara.space</p>
+                <p>
+                  Dispute inquiries &amp; Legal:{" "}
+                  <a
+                    href="mailto:nawfalirfan005@gmail.com"
+                    className="underline text-[#1e9e5a] dark:text-[#a3e635] hover:opacity-80"
+                  >
+                    nawfalirfan005@gmail.com
+                  </a>
+                </p>
               </div>
             </section>
           </div>

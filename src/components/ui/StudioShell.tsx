@@ -678,6 +678,12 @@ export default function StudioShell({
                     >
                       {isId ? "Ketentuan" : "Terms"}
                     </Link>
+                    <a
+                      href="mailto:nawfalirfan005@gmail.com"
+                      className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] text-[#c6f432] hover:bg-white/20"
+                    >
+                      {isId ? "Kontak" : "Contact"}
+                    </a>
                     <button
                       type="button"
                       onClick={() => {

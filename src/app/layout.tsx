@@ -121,7 +121,8 @@ const jsonLd = {
       sameAs: ["https://github.com/verdara-space"],
       contactPoint: {
         "@type": "ContactPoint",
-        contactType: "technical support",
+        contactType: "technical support & developer inquiries",
+        email: "nawfalirfan005@gmail.com",
         availableLanguage: ["English", "Indonesian"],
       },
     },

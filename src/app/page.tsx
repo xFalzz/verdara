@@ -3236,6 +3236,18 @@ export default function LandingPage() {
               </a>
             </div>
 
+            <div className="pt-2 border-t border-current/10 font-mono text-[11px]">
+              <span className="text-[10px] uppercase opacity-60 block">
+                {isId ? "Kontak & Inkuiri:" : "Contact & Inquiries:"}
+              </span>
+              <a
+                href="mailto:nawfalirfan005@gmail.com"
+                className="font-medium text-[#1e9e5a] dark:text-[#c6f432] hover:underline"
+              >
+                nawfalirfan005@gmail.com
+              </a>
+            </div>
+
             <p className="font-mono text-[11px] opacity-60">
               Verdara Spatial Studio · 195+ Countries
             </p>
@@ -3265,7 +3277,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-4 text-xs font-mono opacity-80">
             <Link href="/docs" className="hover:text-foreground transition-colors">{isId ? "Dokumentasi" : "Docs"}</Link>
             <span>·</span>
-            <Link href="/docs" className="hover:text-foreground transition-colors">{isId ? "Dokumentasi" : "Docs"}</Link>
+            <a href="mailto:nawfalirfan005@gmail.com" className="hover:text-foreground transition-colors">{isId ? "Kontak" : "Contact"}</a>
             <span>·</span>
             <Link href="/academy" className="hover:text-foreground transition-colors">{isId ? "Akademi" : "Academy"}</Link>
             <span>·</span>
