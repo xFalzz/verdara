@@ -1020,6 +1020,7 @@ export default function LandingPage() {
       {/* 2. CHAPTER 01: CENTERED INTERACTIVE WORDMARK HERO WITH DRAGGABLE HOLO STICKERS */}
       <section
         id="chapter-hero"
+        style={{ contain: "layout paint" }}
         className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-6 pb-20 sm:pb-28 text-center sm:px-10 sm:pt-12"
       >
         {/* Compact Country & City Popover Pill (Small, Simple, Zero Page Clutter) */}
@@ -1152,7 +1153,7 @@ export default function LandingPage() {
       {/* 3. CHAPTER 02: GRAND 3D ECO-DISTRICT ("WATCH IT RUN, BREAK, AND HEAL") */}
       <section
         id="chapter-town"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-8"
+        className="content-auto scroll-mt-20 mx-auto max-w-[1440px] px-3 sm:px-8"
       >
         <div className="gsap-town-stage dovv-stage-frame h-[640px] w-full sm:h-[700px] lg:h-[750px]">
           {/* Grand Interactive 3D Eco-District */}

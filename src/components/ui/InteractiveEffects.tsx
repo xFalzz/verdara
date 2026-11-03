@@ -191,10 +191,12 @@ export function DovvInteractiveWordmark({
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
+    // Zero CPU/GPU overhead on touch devices (phones, tablets, touchpads)
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    if (prefersReduced) return;
+    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
+    if (prefersReduced || !hasFinePointer) return;
 
     let rafId = 0;
     let mouseX = -9999;
@@ -202,70 +204,123 @@ export function DovvInteractiveWordmark({
     let isPending = false;
     let isPointerActive = false;
 
-    // Cache character bounding centers to avoid layout thrashing
-    let cachedCenters: { x: number; y: number }[] = [];
-    let lastCachedTime = 0;
+    // Relative center coords within the container to avoid 32 layout thrashing calls
+    let cachedCoords: { x: number; y: number }[] = [];
+    let containerRect: DOMRect | null = null;
+    let lastMeasureTime = 0;
+    let isDirty = false;
+
+    // Track last applied values per character to avoid touching DOM when unchanged
+    const lastApplied: { wdth: number; wght: number }[] = [];
+
+    const measureLayout = () => {
+      const node = containerRef.current;
+      if (!node) return;
+      containerRect = node.getBoundingClientRect();
+      cachedCoords = charRefs.current.map((el) => {
+        if (!el) return { x: -9999, y: -9999 };
+        return {
+          x: el.offsetLeft + el.offsetWidth / 2,
+          y: el.offsetTop + el.offsetHeight / 2,
+        };
+      });
+      lastMeasureTime = performance.now();
+    };
+
+    const resetAll = () => {
+      for (let i = 0; i < charRefs.current.length; i++) {
+        const el = charRefs.current[i];
+        const prev = lastApplied[i];
+        if (el && prev && (prev.wdth !== 62 || prev.wght !== 900)) {
+          el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
+          lastApplied[i] = { wdth: 62, wght: 900 };
+        }
+      }
+      isDirty = false;
+    };
 
     const updateTypography = () => {
       isPending = false;
-      if (!isPointerActive) return;
+      if (!isPointerActive || !containerRef.current) return;
 
       const now = performance.now();
-      if (cachedCenters.length === 0 || now - lastCachedTime > 800) {
-        cachedCenters = charRefs.current.map((el) => {
-          if (!el) return { x: -9999, y: -9999 };
-          const rect = el.getBoundingClientRect();
-          return {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-          };
-        });
-        lastCachedTime = now;
+      if (!containerRect || cachedCoords.length === 0 || now - lastMeasureTime > 2500) {
+        measureLayout();
       }
 
-      const radius = 300;
+      if (!containerRect) return;
+
+      const radius = 220;
+      const relMouseX = mouseX - containerRect.left;
+      const relMouseY = mouseY - containerRect.top;
+
+      // Fast bounding box rejection: if mouse is outside wordmark radius boundary, reset & sleep
+      if (
+        relMouseX < -radius ||
+        relMouseX > containerRect.width + radius ||
+        relMouseY < -radius ||
+        relMouseY > containerRect.height + radius
+      ) {
+        if (isDirty) resetAll();
+        return;
+      }
+
       for (let i = 0; i < charRefs.current.length; i++) {
         const el = charRefs.current[i];
-        const center = cachedCenters[i];
+        const center = cachedCoords[i];
         if (!el || !center) continue;
 
-        const dist = Math.hypot(mouseX - center.x, mouseY - center.y);
+        const prev = lastApplied[i] || { wdth: 62, wght: 900 };
+        const dist = Math.hypot(relMouseX - center.x, relMouseY - center.y);
+
         if (dist < radius) {
+          isDirty = true;
           const t = 1 - dist / radius;
-          const wght = Math.round(900 - t * 560);
-          const wdth = Math.round(62 + t * 26);
-          el.style.fontVariationSettings = `"wdth" ${wdth}, "wght" ${wght}`;
+          const wght = Math.round(900 - t * 480);
+          const wdth = Math.round(62 + t * 24);
+
+          // Only modify DOM if changed significantly to avoid micro-reflows
+          if (Math.abs(wght - prev.wght) >= 12 || Math.abs(wdth - prev.wdth) >= 2) {
+            el.style.fontVariationSettings = `"wdth" ${wdth}, "wght" ${wght}`;
+            lastApplied[i] = { wdth, wght };
+          }
         } else {
-          el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
+          // If already at default, do NOT touch the DOM style
+          if (prev.wdth !== 62 || prev.wght !== 900) {
+            el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
+            lastApplied[i] = { wdth: 62, wght: 900 };
+          }
         }
       }
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType === "mouse" || e.pointerType === "touch") {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        isPointerActive = true;
-        if (!isPending) {
-          isPending = true;
-          rafId = requestAnimationFrame(updateTypography);
-        }
+      // Strictly mouse only: never hijack touch, pens, or trackpad swipes
+      if (e.pointerType !== "mouse") return;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      isPointerActive = true;
+      if (!isPending) {
+        isPending = true;
+        rafId = requestAnimationFrame(updateTypography);
       }
     };
 
     const onPointerLeave = () => {
       isPointerActive = false;
-      for (const el of charRefs.current) {
-        if (el) {
-          el.style.fontVariationSettings = `"wdth" 62, "wght" 900`;
-        }
-      }
+      resetAll();
+    };
+
+    const onResize = () => {
+      containerRect = null;
+      cachedCoords = [];
     };
 
     const node = containerRef.current;
     if (node) {
       node.addEventListener("pointermove", onPointerMove, { passive: true });
       node.addEventListener("pointerleave", onPointerLeave, { passive: true });
+      window.addEventListener("resize", onResize, { passive: true });
     }
 
     return () => {
@@ -274,6 +329,7 @@ export function DovvInteractiveWordmark({
         node.removeEventListener("pointermove", onPointerMove);
         node.removeEventListener("pointerleave", onPointerLeave);
       }
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
@@ -283,6 +339,7 @@ export function DovvInteractiveWordmark({
     <div
       ref={containerRef}
       aria-hidden="true"
+      style={{ contain: "layout" }}
       className={`dovv-wordmark max-w-full select-none text-center ${className}`}
     >
       {lines.map((line, lIdx) => (
@@ -298,7 +355,7 @@ export function DovvInteractiveWordmark({
                 ref={(el) => {
                   charRefs.current[idx] = el;
                 }}
-                className="inline-block whitespace-pre transition-[font-variation-settings] duration-75"
+                className="inline-block whitespace-pre"
               >
                 {ch}
               </span>
@@ -337,17 +394,17 @@ export function DovvHoloSticker({
 
   const variantStyles = {
     orange: {
-      card: "border-orange-500/40 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent shadow-[0_8px_24px_-4px_rgba(249,115,22,0.25)] dark:border-orange-400/50 dark:from-orange-500/25 dark:via-amber-500/15 dark:shadow-[0_10px_30px_-6px_rgba(249,115,22,0.35)] hover:border-orange-400/80",
+      card: "border-orange-500/40 bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent shadow-[0_4px_16px_-4px_rgba(249,115,22,0.22)] dark:border-orange-400/50 dark:from-orange-500/25 dark:via-amber-500/15 dark:shadow-[0_6px_20px_-6px_rgba(249,115,22,0.3)] hover:border-orange-400/80",
       label: "text-neutral-900 dark:text-neutral-100",
       sublabel: "text-orange-700 dark:text-orange-300 font-semibold",
     },
     lime: {
-      card: "border-[#c6f432]/60 bg-gradient-to-br from-[#c6f432]/20 via-[#10b981]/12 to-transparent shadow-[0_8px_24px_-4px_rgba(198,244,50,0.28)] dark:border-[#c6f432]/60 dark:from-[#c6f432]/25 dark:via-emerald-500/15 dark:shadow-[0_10px_30px_-6px_rgba(198,244,50,0.4)] hover:border-[#c6f432]",
+      card: "border-[#c6f432]/60 bg-gradient-to-br from-[#c6f432]/20 via-[#10b981]/12 to-transparent shadow-[0_4px_16px_-4px_rgba(198,244,50,0.25)] dark:border-[#c6f432]/60 dark:from-[#c6f432]/25 dark:via-emerald-500/15 dark:shadow-[0_6px_20px_-6px_rgba(198,244,50,0.35)] hover:border-[#c6f432]",
       label: "text-neutral-900 dark:text-neutral-100",
       sublabel: "text-emerald-700 dark:text-[#c6f432] font-semibold",
     },
     gold: {
-      card: "border-sky-400/50 bg-gradient-to-br from-sky-400/18 via-indigo-500/12 to-transparent shadow-[0_8px_24px_-4px_rgba(14,165,233,0.25)] dark:border-sky-400/50 dark:from-sky-500/25 dark:via-cyan-500/15 dark:shadow-[0_10px_30px_-6px_rgba(14,165,233,0.35)] hover:border-sky-400/80",
+      card: "border-sky-400/50 bg-gradient-to-br from-sky-400/18 via-indigo-500/12 to-transparent shadow-[0_4px_16px_-4px_rgba(14,165,233,0.22)] dark:border-sky-400/50 dark:from-sky-500/25 dark:via-cyan-500/15 dark:shadow-[0_6px_20px_-6px_rgba(14,165,233,0.3)] hover:border-sky-400/80",
       label: "text-neutral-900 dark:text-neutral-100",
       sublabel: "text-sky-700 dark:text-cyan-300 font-semibold",
     },
@@ -392,14 +449,15 @@ export function DovvHoloSticker({
       }}
       style={{
         transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${rotationDeg}deg)`,
-        willChange: "transform",
+        willChange: isDragging ? "transform" : "auto",
+        contain: "layout style",
       }}
       className={`group select-none cursor-grab active:cursor-grabbing transition-[box-shadow,transform] duration-150 ${
         isDragging ? "scale-[1.04] shadow-2xl z-50 !cursor-grabbing" : ""
       } ${className}`}
     >
       <div
-        className={`flex flex-col rounded-2xl border px-4 py-2.5 text-left backdrop-blur-xl transition-all duration-200 bg-white/92 dark:bg-[#0c0d12]/92 ${variantStyles.card}`}
+        className={`flex flex-col rounded-2xl border px-4 py-2.5 text-left backdrop-blur-sm transition-all duration-200 bg-white/96 dark:bg-[#0c0d12]/96 ${variantStyles.card}`}
       >
         <span className={`font-sans text-xs sm:text-[13px] font-bold tracking-tight whitespace-nowrap ${variantStyles.label}`}>
           {label}
@@ -450,6 +508,15 @@ export function TownhouseScrollRail({
 
   useEffect(() => {
     let ticking = false;
+    let cachedChapterEls: (HTMLElement | null)[] = [];
+
+    const getChapterEls = () => {
+      if (cachedChapterEls.length === 0 || cachedChapterEls.some((el) => !el)) {
+        cachedChapterEls = chapters.map((ch) => document.getElementById(ch.id));
+      }
+      return cachedChapterEls;
+    };
+
     const computeScroll = () => {
       const scrollTop = window.scrollY;
       const maxScroll = Math.max(
@@ -493,15 +560,16 @@ export function TownhouseScrollRail({
 
       const triggerY = window.innerHeight * 0.38;
       let foundIdx = 0;
-      chapters.forEach((ch, idx) => {
-        const el = document.getElementById(ch.id);
+      const els = getChapterEls();
+      for (let idx = 0; idx < els.length; idx++) {
+        const el = els[idx];
         if (el) {
           const rect = el.getBoundingClientRect();
           if (rect.top <= triggerY) {
             foundIdx = idx;
           }
         }
-      });
+      }
 
       setActiveIndex((cur) => {
         if (cur !== foundIdx) {

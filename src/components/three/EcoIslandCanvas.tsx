@@ -2685,17 +2685,23 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
   const isId = (props.locale ?? storeLocale) === "id";
   const activePresetMeta = CAMERA_PRESET_CONFIG[camPreset];
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isInViewport, setIsInViewport] = useState(true);
+  const [isInViewport, setIsInViewport] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setIsInViewport(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsInViewport(entry.isIntersecting);
       },
-      { rootMargin: "250px 0px" }
+      {
+        rootMargin: "50px 0px 50px 0px",
+        threshold: 0.02,
+      }
     );
 
     observer.observe(el);
