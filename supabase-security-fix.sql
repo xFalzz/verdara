@@ -1,33 +1,37 @@
 -- ==============================================================================
--- VERDARA SPATIAL ECO-TOWN: SUPABASE SECURITY ADVISOR REMEDIATION
--- Resolves: 1 Error (RLS Disabled in Public) & 12 Warnings (SECURITY DEFINER execution)
+-- VERDARA SPATIAL ECO-TOWN: SUPABASE SECURITY ADVISOR REMEDIATION (v2.0)
+-- Solusi untuk: ERROR 42501 (must be owner of table spatial_ref_sys)
+-- & Peringatan Eksekusi Fungsi SECURITY DEFINER
 -- Project: lynbpwewukmlditrihcq (verdara-town)
 -- ==============================================================================
 
 -- ------------------------------------------------------------------------------
--- 1. FIX ERROR: RLS Disabled in Public on public.spatial_ref_sys
--- Enables Row Level Security on the PostGIS reference table and permits safe public read access
+-- 1. SOLUSI ERROR spatial_ref_sys & FUNGSI st_estimatedextent
+-- Tabel spatial_ref_sys dan fungsi st_estimatedextent dibuat otomatis saat ekstensi
+-- PostGIS diaktifkan di schema 'public'. Karena dimiliki oleh superuser 'supabase_admin',
+-- perintah ALTER TABLE oleh role 'postgres' akan memicu error 42501.
+--
+-- Verdara tidak menggunakan tipe geometri PostGIS (menggunakan lat/lng numerik biasa).
+-- Menghapus PostGIS dari schema 'public' adalah solusi resmi Supabase yang langsung
+-- melenyapkan 1 Error spatial_ref_sys dan 6 Peringatan st_estimatedextent sekaligus!
 -- ------------------------------------------------------------------------------
-alter table if exists public.spatial_ref_sys enable row level security;
+drop extension if exists postgis cascade;
 
-drop policy if exists "Allow public read access to spatial_ref_sys" on public.spatial_ref_sys;
-create policy "Allow public read access to spatial_ref_sys"
-  on public.spatial_ref_sys
-  for select
-  to public
-  using (true);
+-- (Catatan: Jika suatu saat Anda ingin memakai PostGIS, pasang di schema 'extensions':)
+-- create extension if not exists postgis with schema extensions;
 
 -- ------------------------------------------------------------------------------
--- 2. FIX WARNINGS: Restrict direct execution of SECURITY DEFINER functions
--- Trigger functions must only run via internal PostgreSQL triggers, NOT via public/authenticated API calls.
+-- 2. SOLUSI PERINGATAN: public.handle_new_user()
+-- Fungsi trigger ini hanya boleh dieksekusi oleh trigger internal PostgreSQL,
+-- TIDAK boleh dipanggil langsung oleh publik atau pengguna via API/RPC.
 -- ------------------------------------------------------------------------------
-
--- 2.1 Handle New User Trigger Function
 revoke execute on function public.handle_new_user() from public;
 revoke execute on function public.handle_new_user() from anon;
 revoke execute on function public.handle_new_user() from authenticated;
 
--- 2.2 RLS Auto Enable Function (if created by helper script)
+-- ------------------------------------------------------------------------------
+-- 3. SOLUSI PERINGATAN: public.rls_auto_enable() (jika ada)
+-- ------------------------------------------------------------------------------
 do $$
 begin
   if exists (
@@ -35,27 +39,6 @@ begin
     join pg_namespace n on p.pronamespace = n.oid 
     where n.nspname = 'public' and p.proname = 'rls_auto_enable'
   ) then
-    execute 'revoke execute on function public.rls_auto_enable() from public';
-    execute 'revoke execute on function public.rls_auto_enable() from anon';
-    execute 'revoke execute on function public.rls_auto_enable() from authenticated';
+    execute 'revoke execute on function public.rls_auto_enable() from public, anon, authenticated';
   end if;
-end $$;
-
--- 2.3 PostGIS st_estimatedextent functions
-do $$
-begin
-  if exists (
-    select 1 from pg_proc p 
-    join pg_namespace n on p.pronamespace = n.oid 
-    where n.nspname = 'public' and p.proname = 'st_estimatedextent'
-  ) then
-    execute 'revoke execute on function public.st_estimatedextent(text, text, text) from public';
-    execute 'revoke execute on function public.st_estimatedextent(text, text, text) from anon';
-    execute 'revoke execute on function public.st_estimatedextent(text, text, text) from authenticated';
-    execute 'revoke execute on function public.st_estimatedextent(text, text, text, boolean) from public';
-    execute 'revoke execute on function public.st_estimatedextent(text, text, text, boolean) from anon';
-    execute 'revoke execute on function public.st_estimatedextent(text, text, text, boolean) from authenticated';
-  end if;
-exception
-  when others then null;
 end $$;
