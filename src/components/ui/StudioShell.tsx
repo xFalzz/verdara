@@ -299,7 +299,7 @@ export default function StudioShell({
 
   return (
     <div
-      className={`min-h-screen pb-36 sm:pb-32 transition-colors duration-200 ${
+      className={`min-h-screen pb-48 sm:pb-44 transition-colors duration-200 ${
         isLight
           ? "bg-[#f5f5f3] text-[#111111]"
           : "bg-[#0b0c0e] text-[#f2f1ec]"
@@ -338,7 +338,7 @@ export default function StudioShell({
 
             <span className="hidden h-4 w-[1px] bg-current/15 sm:inline-block" />
 
-            <div className="hidden sm:block">
+            <div className="hidden sm:block shrink-0 max-w-[200px] md:max-w-[260px] lg:max-w-[320px]">
               <CompactWorldCityPicker
                 isLight={isLight}
                 isId={isId}
@@ -350,8 +350,8 @@ export default function StudioShell({
 
           {/* Center: Clean Structured Navigation Links (Desktop) */}
           <nav
-            aria-label={isId ? "Menu Ruang Kerja" : "Workspace Menu"}
-            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 xl:flex shadow-2xs"
+            aria-label={isId ? "Menu Ruang Kerja Lengkap" : "Full Workspace Menu"}
+            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 2xl:flex shadow-2xs shrink-0 whitespace-nowrap"
           >
             {topLinks.map((item) => {
               const active = pathname === item.href;
@@ -360,6 +360,29 @@ export default function StudioShell({
                   key={item.href}
                   href={item.href}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
+                    active
+                      ? "bg-[#08090c] font-semibold text-[#c6f432] shadow-sm dark:bg-[#c6f432] dark:text-[#08090c]"
+                      : "opacity-75 hover:bg-current/8 hover:opacity-100"
+                  }`}
+                >
+                  {isId ? item.labelId : item.labelEn}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Core 4 Spatial Tools on Laptops/Tablets (xl to 2xl) to prevent header overflow */}
+          <nav
+            aria-label={isId ? "Menu Ruang Kerja Ringkas" : "Compact Workspace Menu"}
+            className="hidden items-center gap-1 rounded-full border border-current/10 bg-current/[0.03] p-1 xl:flex 2xl:hidden shadow-2xs shrink-0 whitespace-nowrap"
+          >
+            {topLinks.slice(0, 4).map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition ${
                     active
                       ? "bg-[#08090c] font-semibold text-[#c6f432] shadow-sm dark:bg-[#c6f432] dark:text-[#08090c]"
                       : "opacity-75 hover:bg-current/8 hover:opacity-100"

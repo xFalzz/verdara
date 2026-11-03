@@ -837,7 +837,7 @@ export function CompactWorldCityPicker({
           <span className="dovv-pill-dot">
             <span />
           </span>
-          <span className="truncate font-semibold">
+          <span className="truncate max-w-[130px] sm:max-w-[200px] lg:max-w-none font-semibold">
             {geo.city} ({geo.countryCode} · {geo.koppen.code})
           </span>
           <span className="shrink-0 font-mono text-[11px] sm:text-xs text-[#1e9e5a]">
@@ -1254,8 +1254,23 @@ export function VerdaraBottomDock() {
   const router = useRouter();
   const { locale, isAuthenticated, displayName, level, isStudioPanelOpen, setStudioPanelOpen } = useVerdaraStore();
   const [minimized, setMinimized] = useState(false);
+  const [scrollNearTop, setScrollNearTop] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const isId = locale === "id";
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    if (!isHome) {
+      setScrollNearTop(false);
+      return;
+    }
+    const checkScroll = () => {
+      setScrollNearTop(window.scrollY < 120);
+    };
+    window.addEventListener("scroll", checkScroll, { passive: true });
+    checkScroll();
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, [isHome]);
 
   useEffect(() => {
     if (minimized || !navRef.current) return;
@@ -1349,7 +1364,13 @@ export function VerdaraBottomDock() {
 
   if (minimized) {
     return (
-      <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
+      <div
+        className={`fixed bottom-4 left-1/2 z-50 -translate-x-1/2 transition-all duration-300 ${
+          isHome && scrollNearTop
+            ? "pointer-events-none opacity-0 translate-y-16"
+            : "opacity-100 translate-y-0"
+        }`}
+      >
         <button
           type="button"
           onClick={() => setMinimized(false)}
@@ -1386,6 +1407,10 @@ export function VerdaraBottomDock() {
           : "Primary Navigation (Drag to Slide)"
       }
       className={`dovv-bottom-dock country-pill-rail max-w-[96vw] overflow-x-auto transition-all duration-300 ${
+        isHome && scrollNearTop
+          ? "pointer-events-none opacity-0 translate-y-20"
+          : "opacity-100 translate-y-0"
+      } ${
         isAuthenticated
           ? "border border-[#c6f432]/30 bg-[#07080b]/94 shadow-[inset_0_0_0_1px_rgba(198,244,50,0.18),0_14px_42px_-6px_rgba(0,0,0,0.85),0_0_24px_rgba(198,244,50,0.12)]"
           : "border border-white/12 bg-[#08090c]/92 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1),0_12px_36px_-8px_rgba(0,0,0,0.7)]"

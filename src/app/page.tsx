@@ -538,7 +538,7 @@ export default function LandingPage() {
 
             {/* Desktop Node Indicator Pill */}
             <div
-              className={`hidden md:flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] transition-colors ${
+              className={`hidden 2xl:flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] whitespace-nowrap shrink-0 transition-colors ${
                 isLight
                   ? "border-black/[0.08] bg-black/[0.03] text-[#27272a]"
                   : "border-white/[0.08] bg-white/[0.04] text-[#d4d4d8]"
@@ -552,7 +552,7 @@ export default function LandingPage() {
           {/* Center: Minimalist Transparent Capsule Nav (Desktop) */}
           <nav
             aria-label={isId ? "Menu Bagian" : "Section Menu"}
-            className={`hidden items-center gap-1 rounded-full border p-1 lg:flex transition-colors ${
+            className={`hidden items-center gap-1 rounded-full border p-1 xl:flex shrink-0 whitespace-nowrap transition-colors ${
               isLight
                 ? "border-black/[0.08] bg-black/[0.02]"
                 : "border-white/[0.08] bg-white/[0.03]"
@@ -1010,7 +1010,7 @@ export default function LandingPage() {
       {/* 2. CHAPTER 01: CENTERED INTERACTIVE WORDMARK HERO WITH DRAGGABLE HOLO STICKERS */}
       <section
         id="chapter-hero"
-        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-6 pb-9 text-center sm:px-10 sm:pt-12"
+        className="scroll-mt-20 mx-auto flex max-w-[1440px] flex-col items-center px-4 pt-6 pb-20 sm:pb-28 text-center sm:px-10 sm:pt-12"
       >
         {/* Compact Country & City Popover Pill (Small, Simple, Zero Page Clutter) */}
         <div className="gsap-hero-item relative z-30">
