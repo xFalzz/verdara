@@ -1,560 +1,527 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import StudioShell from "@/components/ui/StudioShell";
-import FeatureGuideModal from "@/components/ui/FeatureGuideModal";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
-import { ACADEMY_LESSONS, type AcademyLessonSpec } from "@/lib/meta/golden-cache";
-import type { ProofChecklistItem } from "@/lib/lens/masks";
+import { getDailyQuizPack, type DailyQuizPack, type QuizQuestion } from "@/lib/academy/daily-quiz";
 
-interface ProofResultState {
-  ok: boolean;
-  score?: number;
-  verified?: boolean;
-  dhash?: string;
-  checklist?: ProofChecklistItem[];
-  xpAwarded?: number;
-  unlockedItemCode?: string | null;
-  errorMsg?: string;
-}
-
-export default function AcademyPage() {
-  const router = useRouter();
+export default function AcademyDailyQuizPage() {
   const {
     locale,
     theme,
     geo,
     passedQuizLessonIds,
-    verifiedProofLessonIds,
-    submittedDHashes,
     markQuizPassed,
-    markProofVerified,
   } = useVerdaraStore();
-
-  const [selectedLessonId, setSelectedLessonId] = useState<string>(
-    ACADEMY_LESSONS[0]!.id
-  );
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({
-    0: 0,
-    1: 0,
-    2: 0,
-  });
-  const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
-  const [verifyingProof, setVerifyingProof] = useState<boolean>(false);
-  const [proofResult, setProofResult] = useState<ProofResultState | null>(null);
-  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
 
   const isId = locale === "id";
   const isLight = theme === "light";
 
-  const surfaceCard = isLight
-    ? "border-[#C7C0B0] bg-[#EAE5D9] text-[#101D16]"
-    : "border-[#1D3328] bg-[#0E1914] text-[#F2F7F4]";
+  // Load today's deterministically seeded quiz pack
+  const todayQuizPack = useMemo<DailyQuizPack>(() => {
+    return getDailyQuizPack(new Date());
+  }, []);
 
-  const elevatedCard = isLight
-    ? "border-[#C7C0B0] bg-[#FFFFFF] text-[#101D16]"
-    : "border-[#1D3328] bg-[#13221B] text-[#F2F7F4]";
+  const [activeQuestionIdx, setActiveQuestionIdx] = useState<number>(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [streakCount, setStreakCount] = useState<number>(1);
+  const [completedToday, setCompletedToday] = useState<boolean>(false);
+  const [savedScore, setSavedScore] = useState<number | null>(null);
+  const [timeUntilReset, setTimeUntilReset] = useState<string>("");
 
-  const textSecondary = isLight ? "text-[#2C4438]" : "text-[#A3BEB0]";
-  const textMuted = isLight ? "text-[#3D594B]" : "text-[#88AC9B]";
-
-  const activeLesson: AcademyLessonSpec =
-    ACADEMY_LESSONS.find((l) => l.id === selectedLessonId) ??
-    ACADEMY_LESSONS[0]!;
-
-  const isQuizPassed = passedQuizLessonIds.includes(activeLesson.id);
-
-  const climateNote =
-    activeLesson.climateNoteByGroup[geo.koppen.group] ??
-    activeLesson.climateNoteByGroup.C!;
-
-  const handleSelectLesson = (lesson: AcademyLessonSpec) => {
-    setSelectedLessonId(lesson.id);
-    setQuizAnswers({ 0: 0, 1: 0, 2: 0 });
-    setQuizFeedback(null);
-    setProofResult(null);
-  };
-
-  const handleSubmitQuiz = () => {
-    let correctCount = 0;
-    activeLesson.quiz.forEach((q, idx) => {
-      if (quizAnswers[idx] === q.correctIndex) {
-        correctCount++;
-      }
-    });
-
-    if (correctCount >= 2) {
-      markQuizPassed(activeLesson.id);
-      setQuizFeedback(
-        isId
-          ? `Lulus Kuis (${correctCount}/3 benar). Pemindai Bukti Fisik SAM 3.1 kini terbuka.`
-          : `Quiz Passed (${correctCount}/3 correct). Meta SAM 3.1 Proof-of-Action Scanner is now unlocked.`
-      );
-    } else {
-      setQuizFeedback(
-        isId
-          ? `Skor ${correctCount}/3. Minimal 2 jawaban benar diperlukan untuk membuka verifikasi bukti.`
-          : `Score ${correctCount}/3. At least 2/3 correct answers required to unlock proof verification.`
-      );
-    }
-  };
-
-  const handleRunProofVerification = async (
-    simulationPreset: "valid_proof" | "incomplete_proof" | "duplicate_photo"
-  ) => {
-    setVerifyingProof(true);
-    setProofResult(null);
-
-    const generatedDHash =
-      simulationPreset === "duplicate_photo"
-        ? submittedDHashes[0] || "1010110011001010"
-        : `f9a4${Date.now().toString(16).slice(-12)}`;
-
+  // Sync daily state and local storage streak
+  useEffect(() => {
     try {
-      const res = await fetch("/api/academy/proof", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lessonId: activeLesson.id,
-          dhash: generatedDHash,
-          previousDHashes: submittedDHashes,
-          simulationPreset,
-          isJudge: true,
-        }),
-      });
+      const savedDate = localStorage.getItem("verdara_daily_quiz_date");
+      const savedStreak = localStorage.getItem("verdara_daily_quiz_streak");
+      const storedScore = localStorage.getItem("verdara_daily_quiz_score");
 
-      const data = await res.json();
-      if (!res.ok) {
-        setProofResult({
-          ok: false,
-          errorMsg: data.error?.message || "Duplicate or invalid proof.",
-        });
-      } else {
-        setProofResult({
-          ok: true,
-          score: data.score,
-          verified: data.verified,
-          dhash: data.dhash,
-          checklist: data.checklist,
-          xpAwarded: data.xpAwarded,
-          unlockedItemCode: data.unlockedItemCode,
-        });
-
-        if (data.verified) {
-          markProofVerified(
-            activeLesson.id,
-            generatedDHash,
-            activeLesson.xpReward,
-            activeLesson.unlocksItemCode
-          );
+      if (savedDate === todayQuizPack.dateStr) {
+        setCompletedToday(true);
+        if (storedScore !== null) {
+          setSavedScore(parseInt(storedScore, 10));
+          setIsSubmitted(true);
         }
       }
+
+      if (savedStreak) {
+        setStreakCount(parseInt(savedStreak, 10));
+      }
     } catch {
-      setProofResult({
-        ok: false,
-        errorMsg: "Verification service error.",
-      });
-    } finally {
-      setTimeout(() => setVerifyingProof(false), 250);
+      // Local storage fallback
+    }
+  }, [todayQuizPack.dateStr]);
+
+  // Real-time Countdown Timer until midnight (00:00:00 local time)
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      const diffMs = tomorrow.getTime() - now.getTime();
+
+      if (diffMs <= 0) {
+        setTimeUntilReset("00:00:00");
+        return;
+      }
+
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      setTimeUntilReset(
+        `${String(hours).padStart(2, "0")}j ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}d`
+      );
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentQ: QuizQuestion = todayQuizPack.questions[activeQuestionIdx]!;
+
+  const handleSelectOption = (optionIdx: number) => {
+    if (isSubmitted && completedToday) return;
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [activeQuestionIdx]: optionIdx,
+    }));
+  };
+
+  const calculateScore = () => {
+    let correct = 0;
+    todayQuizPack.questions.forEach((q, idx) => {
+      if (selectedAnswers[idx] === q.correctIndex) {
+        correct++;
+      }
+    });
+    return {
+      correctCount: correct,
+      total: todayQuizPack.totalQuestions,
+      xp: correct * 20,
+      passed: correct >= 3,
+    };
+  };
+
+  const handleSubmit = () => {
+    const scoreResult = calculateScore();
+    setIsSubmitted(true);
+    setSavedScore(scoreResult.xp);
+
+    try {
+      localStorage.setItem("verdara_daily_quiz_date", todayQuizPack.dateStr);
+      localStorage.setItem("verdara_daily_quiz_score", String(scoreResult.xp));
+
+      if (scoreResult.passed) {
+        const nextStreak = streakCount + 1;
+        setStreakCount(nextStreak);
+        localStorage.setItem("verdara_daily_quiz_streak", String(nextStreak));
+        markQuizPassed(`daily-${todayQuizPack.dateStr}`);
+        setCompletedToday(true);
+      }
+    } catch {
+      // Storage fallback
     }
   };
+
+  const handleRetakePractice = () => {
+    setSelectedAnswers({});
+    setIsSubmitted(false);
+    setActiveQuestionIdx(0);
+  };
+
+  const currentScore = calculateScore();
 
   return (
     <StudioShell>
-      <div className="space-y-6">
-        <header className={`rounded-2xl border p-5 ${surfaceCard}`}>
+      <div className="mx-auto max-w-4xl space-y-6 pb-20">
+        {/* DAILY QUIZ HEADER BANNER */}
+        <header
+          className={`relative overflow-hidden rounded-3xl border p-6 sm:p-8 transition-colors ${
+            isLight
+              ? "border-black/10 bg-gradient-to-br from-white via-[#faf9f5] to-[#f4f1ea] text-[#111] shadow-sm"
+              : "border-white/10 bg-gradient-to-br from-[#121418] via-[#161a20] to-[#0c0e11] text-white shadow-xl"
+          }`}
+        >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className={`font-mono text-xs font-bold tracking-wider ${textMuted}`}>
-                {"// 01 VERIFIABLE FIELD-ACTION PROTOCOL / META SAM 3.1 + 64-BIT DHASH"}
-              </p>
-              <h1 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">
+              <div className="flex items-center gap-2 font-mono text-[11px] font-semibold tracking-wider text-[#1e9e5a] dark:text-[#c6f432]">
+                <span className="h-2 w-2 rounded-full bg-[#1e9e5a] dark:bg-[#c6f432] animate-pulse" />
+                <span>
+                  {isId ? "TANTANGAN AKADEMI IKLIM HARIAN" : "DAILY CLIMATE ACADEMY CHALLENGE"}
+                </span>
+                <span className="opacity-40">|</span>
+                <span className="opacity-80">
+                  {isId ? todayQuizPack.displayDateId : todayQuizPack.displayDateEn}
+                </span>
+              </div>
+              <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
                 {isId
-                  ? "Verifikasi Bukti Aksi Lapangan (SAM 3.1 Proof Engine)"
-                  : "Verifiable Field-Action Protocols (SAM 3.1 Proof Engine)"}
+                  ? "Kuis Harian Sains & Teknik Lingkungan"
+                  : "Daily Science & Eco-Engineering Quiz"}
               </h1>
+              <p
+                className={`mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed ${
+                  isLight ? "text-[#555]" : "text-[#aaa]"
+                }`}
+              >
+                {isId
+                  ? "Setiap hari pada pukul 00:00, 5 pertanyaan baru dipilih dan diacak secara deterministik seputar tenaga surya NREL, hidrologi air hujan, biopori tanah, model AI Meta, dan ekonomi sirkular."
+                  : "Every day at midnight, 5 fresh questions are deterministically selected and shuffled covering NREL solar, rainwater hydrology, biopores, Meta AI models, and circular economy."}
+              </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className={`rounded-xl border px-4 py-2.5 font-mono text-xs font-bold ${elevatedCard}`}>
-                {verifiedProofLessonIds.length} / {ACADEMY_LESSONS.length}{" "}
-                {isId ? "Protokol Terverifikasi" : "Protocols Verified"}
+            {/* STREAK & TIMER PILL */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div
+                className={`flex items-center gap-2.5 rounded-2xl border px-4 py-2.5 font-mono text-xs ${
+                  isLight
+                    ? "border-amber-300 bg-amber-50/80 text-amber-900"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                }`}
+              >
+                <span className="text-base" role="img" aria-label="streak fire">🔥</span>
+                <div>
+                  <div className="font-bold text-[13px]">
+                    {streakCount} {isId ? "Hari" : "Days"}
+                  </div>
+                  <div className="text-[10px] opacity-75">
+                    {isId ? "Streak Harian" : "Daily Streak"}
+                  </div>
+                </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowGuideModal(true)}
-                aria-label={isId ? "Buka Panduan Akademi Aksi Lapangan" : "Open Field Action Academy Guide"}
-                className={`flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl border px-3.5 py-2 font-mono text-xs font-bold transition shadow-sm ${
+              <div
+                className={`flex items-center gap-2.5 rounded-2xl border px-4 py-2.5 font-mono text-xs ${
                   isLight
-                    ? "border-[#14532D]/35 bg-[#F2F7F4] text-[#14532D] hover:bg-[#E2EDE6] hover:border-[#14532D]"
-                    : "border-[#A3E635]/50 bg-[#0A120E] text-[#A3E635] hover:bg-[#A3E635]/15 hover:border-[#A3E635] shadow-[0_0_12px_rgba(163,230,53,0.12)]"
+                    ? "border-black/10 bg-black/[0.03] text-[#444]"
+                    : "border-white/10 bg-white/[0.04] text-[#ccc]"
                 }`}
-                title={isId ? "Panduan Fitur & Cara Pakai" : "Feature Guide & How to Use"}
               >
-                <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black ${
-                  isLight ? "bg-[#14532D]/15 text-[#14532D]" : "bg-[#A3E635]/25 text-[#A3E635]"
-                }`}>?</span>
-                <span>{isId ? "Panduan" : "Guide"}</span>
-              </button>
+                <span className="text-base" role="img" aria-label="clock">⏳</span>
+                <div>
+                  <div className="font-bold text-[13px] tabular-nums text-[#1e9e5a] dark:text-[#c6f432]">
+                    {timeUntilReset || "--:--:--"}
+                  </div>
+                  <div className="text-[10px] opacity-75">
+                    {isId ? "Reset Kuis Baru" : "Next Quiz Reset"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* PROGRESS BAR STRIP */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between font-mono text-[11px] opacity-70 mb-2">
+              <span>
+                {isId ? "Progres Soal" : "Question Progress"}: {activeQuestionIdx + 1} / {todayQuizPack.totalQuestions}
+              </span>
+              <span>
+                {Object.keys(selectedAnswers).length} / {todayQuizPack.totalQuestions} {isId ? "Terjawab" : "Answered"}
+              </span>
+            </div>
+            <div
+              className={`h-2 w-full overflow-hidden rounded-full ${
+                isLight ? "bg-black/10" : "bg-white/10"
+              }`}
+            >
+              <div
+                className="h-full bg-gradient-to-r from-[#1e9e5a] via-[#c6f432] to-[#2a9dbd] transition-all duration-300"
+                style={{
+                  width: `${((activeQuestionIdx + 1) / todayQuizPack.totalQuestions) * 100}%`,
+                }}
+              />
             </div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <div className="space-y-3 xl:col-span-4">
-            <p className={`font-mono text-xs font-bold tracking-wider ${textMuted}`}>
-              {isId ? "// 02 PILIH JALUR PROTOKOL LAPANGAN" : "// 02 SELECT FIELD PROTOCOL TRACK"}
-            </p>
-            {ACADEMY_LESSONS.map((lesson, idx) => {
-              const active = lesson.id === activeLesson.id;
-              const verified = verifiedProofLessonIds.includes(lesson.id);
-              const quizDone = passedQuizLessonIds.includes(lesson.id);
-
-              return (
-                <button
-                  key={lesson.id}
-                  type="button"
-                  onClick={() => handleSelectLesson(lesson)}
-                  className={`w-full cursor-pointer rounded-2xl border p-4 text-left transition ${
-                    active
-                      ? isLight
-                        ? "border-[#14532D] bg-[#14532D] text-[#FFFFFF]"
-                        : "border-[#A3E635] bg-[#A3E635]/15 text-[#F2F7F4]"
-                      : surfaceCard
+        {/* RESULTS SCREEN (IF SUBMITTED) */}
+        {isSubmitted ? (
+          <div
+            className={`space-y-6 rounded-3xl border p-6 sm:p-8 transition-colors ${
+              isLight
+                ? "border-black/10 bg-white text-[#111] shadow-sm"
+                : "border-white/10 bg-[#14161a] text-white shadow-xl"
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-current/10 pb-6">
+              <div>
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${
+                    currentScore.passed
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                      : "bg-amber-500/15 text-amber-700 dark:text-amber-400"
                   }`}
                 >
-                  <div className="flex items-center justify-between font-mono text-xs">
-                    <span className="font-bold">
-                      {isId ? "JALUR" : "TRACK"} 0{idx + 1} / +{lesson.xpReward} XP
-                    </span>
-                    <span className="font-bold">
-                      {verified
-                        ? isId
-                          ? "TERVERIFIKASI"
-                          : "VERIFIED"
-                        : quizDone
-                        ? isId
-                          ? "KUIS LULUS"
-                          : "QUIZ PASSED"
-                        : isId
-                        ? "KUIS DIBUTUHKAN"
-                        : "QUIZ REQUIRED"}
-                    </span>
-                  </div>
-
-                  <h2 className="mt-2 font-serif text-base font-bold">
-                    {isId ? lesson.titleId : lesson.titleEn}
-                  </h2>
-                  <p className="mt-1 text-xs opacity-85">
-                    {isId ? lesson.summaryId : lesson.summaryEn}
-                  </p>
-
-                  <div className="mt-3 flex items-center justify-between border-t border-current/15 pt-2 font-mono text-[11px] opacity-85">
-                    <span>{isId ? "Membuka:" : "Unlocks:"} {lesson.unlocksItemCode}</span>
-                    <span>{lesson.proofRequirements.length} {isId ? "Konsep SAM 3.1" : "SAM 3.1 Concepts"}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="space-y-5 xl:col-span-8">
-            <section className={`rounded-2xl border p-5 ${surfaceCard}`}>
-              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                <span className="font-bold">
-                  {isId ? "// LANGKAH 01 : PROTOKOL LAPANGAN KOPPEN" : "// STEP 01 : KOPPEN"} {geo.koppen.code} ({geo.city})
-                </span>
-                <span className={textMuted}>
-                  {isId ? "Hadiah:" : "Reward:"} +{activeLesson.xpReward} XP / {isId ? "Membuka" : "Unlocks"}{" "}
-                  {isId
-                    ? activeLesson.unlocksItemLabelId
-                    : activeLesson.unlocksItemLabelEn}
-                </span>
-              </div>
-
-              <h2 className="mt-2 font-serif text-xl font-bold">
-                {isId ? activeLesson.titleId : activeLesson.titleEn}
-              </h2>
-
-              <div className={`mt-3 rounded-xl border p-3.5 text-xs ${elevatedCard}`}>
-                <p className="font-mono font-bold">
-                  {isId
-                    ? "Adaptasi Zona Iklim Koppen Aktif:"
-                    : "Active Koppen Climate Adaptation:"}
-                </p>
-                <p className={`mt-1 leading-relaxed ${textSecondary}`}>
-                  {isId ? climateNote.id : climateNote.en}
-                </p>
-              </div>
-
-              <div className="mt-4">
-                <p className="font-mono text-xs font-bold uppercase tracking-wider">
-                  {isId
-                    ? "Langkah Eksekusi Fisik:"
-                    : "Required Physical Execution Steps:"}
-                </p>
-                <ol
-                  className={`mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed ${textSecondary}`}
-                >
-                  {(isId
-                    ? activeLesson.protocolStepsId
-                    : activeLesson.protocolStepsEn
-                  ).map((st, i) => (
-                    <li key={i}>{st}</li>
-                  ))}
-                </ol>
-              </div>
-            </section>
-
-            <section className={`rounded-2xl border p-5 ${surfaceCard}`}>
-              <div className="flex items-center justify-between font-mono text-xs">
-                <span className="font-bold">
-                  {isId
-                    ? "// LANGKAH 02 : KUIS PRASYARAT TEKNIS (LULUS >= 2/3)"
-                    : "// STEP 02 : TECHNICAL PREREQUISITE QUIZ (PASS >= 2/3)"}
-                </span>
-                {isQuizPassed && (
-                  <span className="font-bold">
-                    {isId ? "STATUS: LULUS" : "STATUS: PASSED"}
-                  </span>
-                )}
-              </div>
-
-              <div className="mt-4 space-y-3.5">
-                {activeLesson.quiz.map((q, qIdx) => (
-                  <div
-                    key={qIdx}
-                    className={`rounded-xl border p-3.5 text-xs ${elevatedCard}`}
-                  >
-                    <p className="font-semibold">
-                      {qIdx + 1}. {isId ? q.questionId : q.questionEn}
-                    </p>
-                    <div className="mt-2 space-y-1.5">
-                      {(isId ? q.optionsId : q.optionsEn).map((opt, oIdx) => (
-                        <label
-                          key={oIdx}
-                          className="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-current/5"
-                        >
-                          <input
-                            type="radio"
-                            name={`quiz-${activeLesson.id}-${qIdx}`}
-                            checked={quizAnswers[qIdx] === oIdx}
-                            onChange={() =>
-                              setQuizAnswers({ ...quizAnswers, [qIdx]: oIdx })
-                            }
-                            className="h-4 w-4 accent-[#A3E635]"
-                          />
-                          <span className={textSecondary}>{opt}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={handleSubmitQuiz}
-                  className={`min-h-[44px] cursor-pointer rounded-xl px-4 py-2.5 font-mono text-xs font-black transition ${
-                    isLight
-                      ? "bg-[#14532D] text-[#FFFFFF] hover:bg-[#166534]"
-                      : "bg-[#A3E635] text-[#070D0A] hover:bg-[#BEF264]"
-                  }`}
-                >
-                  {isId ? "Verifikasi Jawaban Kuis" : "Verify Quiz Answers"}
-                </button>
-                {quizFeedback && (
-                  <span className="font-mono text-xs font-bold">{quizFeedback}</span>
-                )}
-              </div>
-            </section>
-
-            <section className={`rounded-2xl border p-5 ${surfaceCard}`}>
-              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                <span className="font-bold">
-                  {isId
-                    ? "// LANGKAH 03 : VERIFIKATOR BUKTI AKSI META SAM 3.1 & 64-BIT DHASH"
-                    : "// STEP 03 : META SAM 3.1 PROOF-OF-ACTION & 64-BIT DHASH VERIFIER"}
-                </span>
-                {!isQuizPassed && (
-                  <span className="rounded-lg border border-rose-500/40 px-2.5 py-1 text-rose-400">
-                    {isId ? "Selesaikan Kuis Langkah 02 Terlebih Dahulu" : "Complete Step 02 Quiz First"}
-                  </span>
-                )}
-              </div>
-
-              <div className={`mt-3 rounded-xl border p-3.5 ${elevatedCard}`}>
-                <p className={`font-mono text-xs font-semibold ${textMuted}`}>
-                  {isId
-                    ? "Konsep Fisik Wajib untuk Meta SAM 3.1 (skor >= 0.50, total >= 70/100):"
-                    : "Required Physical Concepts Prompted to Meta SAM 3.1 (score >= 0.50, total >= 70/100):"}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {activeLesson.proofRequirements.map((req, idx) => (
-                    <span
-                      key={idx}
-                      className={`rounded-lg border px-2.5 py-1 font-mono text-xs ${surfaceCard}`}
-                    >
-                      {req.required
-                        ? isId
-                          ? "WAJIB:"
-                          : "REQUIRED:"
-                        : isId
-                        ? "OPSIONAL:"
-                        : "OPTIONAL:"}{" "}
-                      &quot;{req.concept}&quot; (min {req.minCount}x,{" "}
-                      {isId ? "bobot" : "weight"} {req.weight})
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-2.5">
-                <button
-                  type="button"
-                  disabled={!isQuizPassed || verifyingProof}
-                  onClick={() => handleRunProofVerification("valid_proof")}
-                  className={`min-h-[44px] cursor-pointer rounded-xl px-4 py-2.5 font-mono text-xs font-black transition disabled:opacity-40 ${
-                    isLight
-                      ? "bg-[#14532D] text-[#FFFFFF] hover:bg-[#166534]"
-                      : "bg-[#A3E635] text-[#070D0A] hover:bg-[#BEF264]"
-                  }`}
-                >
-                  {verifyingProof
+                  {currentScore.passed
                     ? isId
-                      ? "Memindai dengan SAM 3.1..."
-                      : "Scanning with SAM 3.1..."
+                      ? "LULUS TANTANGAN HARIAN"
+                      : "DAILY CHALLENGE PASSED"
                     : isId
-                    ? "Uji Bukti Lapangan Valid (SAM 3.1)"
-                    : "Verify Valid Field Proof (SAM 3.1)"}
-                </button>
-
-                <button
-                  type="button"
-                  disabled={!isQuizPassed || verifyingProof}
-                  onClick={() => handleRunProofVerification("duplicate_photo")}
-                  className="min-h-[44px] cursor-pointer rounded-xl border border-rose-500/50 px-3.5 py-2.5 font-mono text-xs font-bold text-rose-400 transition disabled:opacity-40"
-                >
+                    ? "PERLU EVALUASI ULANG"
+                    : "NEEDS REVIEW"}
+                </span>
+                <h2 className="mt-2 text-2xl sm:text-3xl font-black">
+                  {isId ? "Hasil Kuis Harian Anda" : "Your Daily Quiz Results"}
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm opacity-70">
                   {isId
-                    ? "Uji Anti-Duplikat dHash 64-bit"
-                    : "Test 64-bit dHash Anti-Duplicate"}
-                </button>
-
-                <label
-                  className={`flex min-h-[44px] items-center rounded-xl border px-3.5 py-2.5 font-mono text-xs font-bold ${elevatedCard} ${
-                    !isQuizPassed
-                      ? "pointer-events-none opacity-40"
-                      : "cursor-pointer"
-                  }`}
-                >
-                  <span>{isId ? "Unggah Foto Bukti" : "Upload Camera Proof"}</span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    disabled={!isQuizPassed}
-                    onChange={() => handleRunProofVerification("valid_proof")}
-                    className="hidden"
-                  />
-                </label>
+                    ? `${currentScore.correctCount} dari ${currentScore.total} pertanyaan dijawab dengan benar.`
+                    : `${currentScore.correctCount} out of ${currentScore.total} questions answered correctly.`}
+                </p>
               </div>
 
-              {proofResult && (
-                <div
-                  role="status"
-                  className={`mt-4 rounded-xl border p-4 ${
-                    proofResult.ok && proofResult.verified
-                      ? elevatedCard
-                      : "border-rose-500/50 bg-rose-950/20 text-rose-400"
+              <div className="flex items-center gap-3">
+                <div className="text-right font-mono">
+                  <div className="text-3xl sm:text-4xl font-black text-[#1e9e5a] dark:text-[#c6f432] tabular-nums">
+                    +{currentScore.xp} XP
+                  </div>
+                  <div className="text-[11px] opacity-60">
+                    {isId ? "Akumulasi Poin" : "Points Earned"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* DETAILED EDUCATIONAL QUESTION REVIEW */}
+            <div className="space-y-4 pt-2">
+              <h3 className="font-mono text-xs font-bold uppercase tracking-wider opacity-60">
+                {isId ? "// PEMBAHASAN LENGKAP TIAP SOAL" : "// DETAILED QUESTION REVIEW"}
+              </h3>
+
+              {todayQuizPack.questions.map((q, idx) => {
+                const userAnsIdx = selectedAnswers[idx];
+                const isCorrect = userAnsIdx === q.correctIndex;
+                const options = isId ? q.optionsId : q.optionsEn;
+
+                return (
+                  <div
+                    key={q.id}
+                    className={`rounded-2xl border p-4 sm:p-5 transition-colors ${
+                      isCorrect
+                        ? isLight
+                          ? "border-emerald-500/30 bg-emerald-50/40"
+                          : "border-emerald-500/30 bg-emerald-950/20"
+                        : isLight
+                        ? "border-rose-500/30 bg-rose-50/40"
+                        : "border-rose-500/30 bg-rose-950/20"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 font-mono text-[11px] mb-2">
+                      <span className="font-semibold opacity-70">
+                        {isId ? `Soal ${idx + 1}` : `Question ${idx + 1}`} · {isId ? q.categoryLabelId : q.categoryLabelEn}
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          isCorrect
+                            ? "text-emerald-700 dark:text-emerald-400"
+                            : "text-rose-700 dark:text-rose-400"
+                        }`}
+                      >
+                        {isCorrect ? (isId ? "✓ Benar (+20 XP)" : "✓ Correct (+20 XP)") : (isId ? "✗ Kurang Tepat" : "✗ Incorrect")}
+                      </span>
+                    </div>
+
+                    <p className="font-medium text-sm sm:text-base leading-snug">
+                      {isId ? q.questionId : q.questionEn}
+                    </p>
+
+                    <div className="mt-3 space-y-1.5 text-xs">
+                      <div className="flex items-start gap-2">
+                        <span className="font-semibold opacity-60 shrink-0">
+                          {isId ? "Jawaban Anda:" : "Your Answer:"}
+                        </span>
+                        <span
+                          className={
+                            isCorrect
+                              ? "text-emerald-700 dark:text-emerald-400 font-medium"
+                              : "text-rose-700 dark:text-rose-400 font-medium"
+                          }
+                        >
+                          {userAnsIdx !== undefined ? options[userAnsIdx] : (isId ? "Tidak dijawab" : "Unanswered")}
+                        </span>
+                      </div>
+
+                      {!isCorrect && (
+                        <div className="flex items-start gap-2">
+                          <span className="font-semibold text-emerald-700 dark:text-emerald-400 shrink-0">
+                            {isId ? "Kunci Jawaban:" : "Correct Answer:"}
+                          </span>
+                          <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                            {options[q.correctIndex]}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* SCIENTIFIC EXPLANATION */}
+                    <div
+                      className={`mt-3 rounded-xl p-3 text-xs leading-relaxed border ${
+                        isLight
+                          ? "border-black/[0.08] bg-black/[0.02] text-[#444]"
+                          : "border-white/[0.08] bg-white/[0.03] text-[#bbb]"
+                      }`}
+                    >
+                      <strong className="font-mono text-[11px] block text-[#1e9e5a] dark:text-[#c6f432] mb-1">
+                        {isId ? "Dasar Sains & Rekayasa:" : "Scientific & Engineering Rationale:"}
+                      </strong>
+                      {isId ? q.explanationId : q.explanationEn}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-current/10">
+              <button
+                type="button"
+                onClick={handleRetakePractice}
+                className={`rounded-full px-5 py-2.5 font-mono text-xs font-semibold transition border cursor-pointer ${
+                  isLight
+                    ? "border-black/20 hover:bg-black/5 text-[#333]"
+                    : "border-white/20 hover:bg-white/5 text-[#ccc]"
+                }`}
+              >
+                {isId ? "Latihan Ulang Hari Ini" : "Practice Questions Again"}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="rounded-full bg-[#080808] dark:bg-[#c6f432] text-white dark:text-[#080808] px-6 py-2.5 font-mono text-xs font-bold transition hover:opacity-90"
+                >
+                  {isId ? "Kembali ke Studio 3D →" : "Back to 3D Studio →"}
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* ACTIVE QUESTION CARD */
+          <div
+            className={`rounded-3xl border p-6 sm:p-8 transition-colors ${
+              isLight
+                ? "border-black/10 bg-white text-[#111] shadow-sm"
+                : "border-white/10 bg-[#14161a] text-white shadow-xl"
+            }`}
+          >
+            {/* QUESTION HEADER META */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-current/10 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-[#1e9e5a]/10 dark:bg-[#c6f432]/15 px-3 py-1 font-mono text-[11px] font-semibold text-[#1e9e5a] dark:text-[#c6f432]">
+                  {isId ? currentQ.categoryLabelId : currentQ.categoryLabelEn}
+                </span>
+                <span
+                  className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-medium border ${
+                    currentQ.difficulty === "Fundamental"
+                      ? "border-sky-500/30 text-sky-600 dark:text-sky-400"
+                      : currentQ.difficulty === "Intermediate"
+                      ? "border-amber-500/30 text-amber-600 dark:text-amber-400"
+                      : "border-purple-500/30 text-purple-600 dark:text-purple-400"
                   }`}
                 >
-                  {!proofResult.ok ? (
-                    <div className="font-mono text-xs">
-                      <p className="font-bold">
-                        {isId
-                          ? "HTTP 409 KONFLIK : DUPLIKAT PERCEPTUAL DHASH DITOLAK"
-                          : "HTTP 409 CONFLICT : PERCEPTUAL DHASH DUPLICATE REJECTED"}
-                      </p>
-                      <p className="mt-1">{proofResult.errorMsg}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
-                        <span className="font-bold">
-                          {isId
-                            ? `BUKTI SAM 3.1 TERVERIFIKASI / SKOR: ${proofResult.score}/100`
-                            : `SAM 3.1 PROOF VERIFIED / SCORE: ${proofResult.score}/100`}
-                        </span>
-                        <span className={textMuted}>
-                          64-bit dHash: {proofResult.dhash} ({isId ? "Unik" : "Unique"})
-                        </span>
-                      </div>
+                  {currentQ.difficulty}
+                </span>
+              </div>
 
-                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                        {proofResult.checklist?.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className={`rounded-lg border p-2.5 font-mono text-xs ${surfaceCard}`}
-                          >
-                            <p className="font-bold">
-                              {item.passed
-                                ? isId
-                                  ? "LULUS:"
-                                  : "PASS:"
-                                : isId
-                                ? "KURANG:"
-                                : "MISS:"}{" "}
-                              {item.concept}
-                            </p>
-                            <p className={`mt-1 text-[11px] ${textMuted}`}>
-                              {isId ? "Jumlah:" : "Instances:"} {item.detectedCount}/{item.minCount} /{" "}
-                              {isId ? "Keyakinan:" : "Conf:"}{" "}
-                              {(item.avgConfidence * 100).toFixed(0)}%
-                            </p>
-                          </div>
-                        ))}
-                      </div>
+              <span className="font-mono text-xs opacity-60">
+                {isId ? "Soal" : "Question"} {activeQuestionIdx + 1} {isId ? "dari" : "of"} {todayQuizPack.totalQuestions}
+              </span>
+            </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-current/15 pt-3">
-                        <span className="font-mono text-xs font-bold">
-                          +{proofResult.xpAwarded}{" "}
-                          {isId ? "Eco-XP Diberikan / Terbuka:" : "Eco-XP Awarded / Unlocked:"}{" "}
-                          {isId
-                            ? activeLesson.unlocksItemLabelId
-                            : activeLesson.unlocksItemLabelEn}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => router.push("/dashboard")}
-                          className={`min-h-[40px] cursor-pointer rounded-xl px-3.5 py-1.5 font-mono text-xs font-black ${
-                            isLight
-                              ? "bg-[#14532D] text-[#FFFFFF]"
-                              : "bg-[#A3E635] text-[#070D0A]"
-                          }`}
-                        >
-                          {isId
-                            ? "Inspeksi Modul di Plot 3D"
-                            : "Inspect Module on 3D Plot"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
+            {/* QUESTION TEXT */}
+            <div className="py-6">
+              <h2 className="text-lg sm:text-xl font-bold leading-relaxed">
+                {isId ? currentQ.questionId : currentQ.questionEn}
+              </h2>
+            </div>
+
+            {/* 4 MULTIPLE CHOICE OPTIONS */}
+            <div className="space-y-3">
+              {(isId ? currentQ.optionsId : currentQ.optionsEn).map((optionText, optIdx) => {
+                const isSelected = selectedAnswers[activeQuestionIdx] === optIdx;
+                const letter = ["A", "B", "C", "D"][optIdx];
+
+                return (
+                  <button
+                    key={optIdx}
+                    type="button"
+                    onClick={() => handleSelectOption(optIdx)}
+                    className={`flex w-full cursor-pointer items-start gap-3.5 rounded-2xl border p-4 text-left transition-all ${
+                      isSelected
+                        ? isLight
+                          ? "border-[#1e9e5a] bg-[#1e9e5a]/10 text-[#111] shadow-xs"
+                          : "border-[#c6f432] bg-[#c6f432]/15 text-white shadow-[0_0_15px_rgba(198,244,50,0.1)]"
+                        : isLight
+                        ? "border-black/10 bg-black/[0.015] hover:bg-black/[0.04] text-[#222]"
+                        : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-[#eee]"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold transition-colors ${
+                        isSelected
+                          ? "bg-[#1e9e5a] text-white dark:bg-[#c6f432] dark:text-[#080808]"
+                          : isLight
+                          ? "bg-black/10 text-[#555]"
+                          : "bg-white/10 text-[#aaa]"
+                      }`}
+                    >
+                      {letter}
+                    </span>
+                    <span className="text-sm sm:text-[15px] leading-relaxed pt-0.5">
+                      {optionText}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* BOTTOM STEP CONTROLS */}
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-current/10 pt-5">
+              <button
+                type="button"
+                disabled={activeQuestionIdx === 0}
+                onClick={() => setActiveQuestionIdx((prev) => Math.max(0, prev - 1))}
+                className={`rounded-full px-5 py-2.5 font-mono text-xs font-semibold transition border cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                  isLight
+                    ? "border-black/15 text-[#333] hover:bg-black/5"
+                    : "border-white/15 text-[#ccc] hover:bg-white/5"
+                }`}
+              >
+                ← {isId ? "Sebelumnya" : "Previous"}
+              </button>
+
+              <div className="flex items-center gap-2">
+                {activeQuestionIdx < todayQuizPack.totalQuestions - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveQuestionIdx((prev) =>
+                        Math.min(todayQuizPack.totalQuestions - 1, prev + 1)
+                      )
+                    }
+                    className="rounded-full bg-[#080808] dark:bg-[#c6f432] text-white dark:text-[#080808] px-6 py-2.5 font-mono text-xs font-bold transition hover:opacity-90 cursor-pointer"
+                  >
+                    {isId ? "Selanjutnya →" : "Next →"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={Object.keys(selectedAnswers).length < todayQuizPack.totalQuestions}
+                    className="rounded-full bg-[#1e9e5a] text-white px-7 py-2.5 font-mono text-xs font-bold transition hover:bg-[#168249] cursor-pointer shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isId ? "Kirim Jawaban Kuis Harian ✓" : "Submit Daily Answers ✓"}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-
-      <FeatureGuideModal
-        isOpen={showGuideModal}
-        onClose={() => setShowGuideModal(false)}
-        feature="academy"
-        locale={locale}
-        theme={theme}
-      />
     </StudioShell>
   );
 }

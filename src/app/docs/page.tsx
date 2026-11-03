@@ -12,6 +12,8 @@ import {
 import { formatCurrency, formatVolume, formatArea, formatNumber } from "@/lib/science/units";
 
 type DocTab =
+  | "story"
+  | "brainstorming"
   | "architecture"
   | "meta_ai"
   | "physics"
@@ -33,7 +35,7 @@ export default function DocsPage() {
     setTheme,
   } = useVerdaraStore();
 
-  const [activeTab, setActiveTab] = useState<DocTab>("architecture");
+  const [activeTab, setActiveTab] = useState<DocTab>("story");
   const [searchFilter, setSearchFilter] = useState("");
   const [dbStats, setDbStats] = useState<{
     schemaVersion: string;
@@ -78,24 +80,40 @@ export default function DocsPage() {
     summaryId: string;
   }[] = [
     {
-      id: "architecture",
+      id: "story",
       code: "01",
+      labelEn: "The Verdara Story",
+      labelId: "Kisah & Latar Belakang",
+      summaryEn: "Why Verdara was born: solving the crisis of spreadsheet paralysis vs AI hallucinations",
+      summaryId: "Mengapa Verdara lahir: memecahkan krisis spreadsheet rumit vs halusinasi angka AI",
+    },
+    {
+      id: "brainstorming",
+      code: "02",
+      labelEn: "Brainstorming & Ideation",
+      labelId: "Brainstorming & Ideasi",
+      summaryEn: "Genesis of zero-asset 3D twin, 3-agent specialist council & ±3% Fact Firewall",
+      summaryId: "Evolusi eco-twin 3D tanpa unduhan aset, dewan 3 pakar AI & Firewall Fakta ±3%",
+    },
+    {
+      id: "architecture",
+      code: "03",
       labelEn: "System Architecture",
       labelId: "Arsitektur Sistem",
-      summaryEn: "5-stage pipeline, workspace routing & state synchronization",
-      summaryId: "Alur 5 tahap, rute ruang kerja & sinkronisasi state",
+      summaryEn: "5-stage spatial pipeline, workspace topology & state synchronization",
+      summaryId: "Alur 5 tahap, topologi ruang kerja & sinkronisasi state",
     },
     {
       id: "meta_ai",
-      code: "02",
-      labelEn: "Meta AI & Spatial Vision",
+      code: "04",
+      labelEn: "Meta AI & Vision",
       labelId: "Model AI Meta & Visi",
-      summaryEn: "SAM 3.1 segmentation, Muse Spark Council & +/-3% Fact Guard",
-      summaryId: "Segmentasi SAM 3.1, Dewan Muse Spark & Validasi +/-3%",
+      summaryEn: "SAM 3.1 segmentation, Muse Spark Council & ±3% Fact Guard",
+      summaryId: "Segmentasi SAM 3.1, Dewan Muse Spark & Validasi ±3%",
     },
     {
       id: "physics",
-      code: "03",
+      code: "05",
       labelEn: "Physics & Climate Math",
       labelId: "Rumus Fisika & Iklim",
       summaryEn: "NREL PVWatts v8, DIN 1989-1 hydrology, biopores & EPA WARM",
@@ -103,27 +121,11 @@ export default function DocsPage() {
     },
     {
       id: "webgl",
-      code: "04",
+      code: "06",
       labelEn: "3D Spatial Engine",
       labelId: "Mesin Spasial 3D",
       summaryEn: "Procedural PBR architecture, Run/Break/Heal & 60 FPS particles",
       summaryId: "Arsitektur PBR prosedural, Run/Break/Heal & partikel 60 FPS",
-    },
-    {
-      id: "database",
-      code: "05",
-      labelEn: "Database v3.2 & APIs",
-      labelId: "Database v3.2 & API",
-      summaryEn: "Entity schemas, 195+ country registry & REST API endpoints",
-      summaryId: "Skema tabel, registri 195+ negara & endpoint REST API",
-    },
-    {
-      id: "security",
-      code: "06",
-      labelEn: "Cybersecurity & Shield",
-      labelId: "Keamanan & Perisai API",
-      summaryEn: "OWASP ASVS headers, Auth Gate, rate limiting & dHash anti-cheat",
-      summaryId: "Header OWASP ASVS, Gerbang Login, rate limit & anti-cheat dHash",
     },
   ];
 
@@ -368,6 +370,405 @@ export default function DocsPage() {
         {/* =====================================================================
             MODULE 01: SYSTEM ARCHITECTURE & WORKSPACE TOPOLOGY
             ===================================================================== */}
+        {/* =====================================================================
+            MODULE 01: THE VERDARA STORY & GENESIS
+            ===================================================================== */}
+        {activeTab === "story" && (
+          <section className="mt-8 space-y-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+              <div className="space-y-6 lg:col-span-8">
+                {/* 01.1 Story Genesis Card */}
+                <div
+                  className={`th-node-card border p-6 sm:p-8 pl-7 ${
+                    isLight
+                      ? "border-black/10 bg-white shadow-sm"
+                      : "border-white/10 bg-[#14161b]"
+                  }`}
+                >
+                  <span className="th-map-bar bg-[#1e9e5a]" />
+                  <span className="font-mono text-xs font-bold text-[#1e9e5a]">
+                    01.1 / THE GENESIS OF VERDARA
+                  </span>
+                  <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+                    {isId
+                      ? "Kisah Lahirnya Verdara: Ketika Rumah Biasa Menjadi Benteng Iklim"
+                      : "The Genesis of Verdara: Transforming Ordinary Homes into Climate Strongholds"}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed opacity-85">
+                    {isId
+                      ? "Krisis iklim tidak lagi sekadar angka di laporan IPCC atau konferensi internasional. Di pemukiman padat Jakarta, Manila, hingga pinggiran kota California, krisis iklim hadir nyata: genangan air hujan yang berubah menjadi banjir lokal, suhu atap yang membakar di siang hari memicu tagihan AC melonjak, serta timbulan sampah yang menumpuk di tempat pembuangan akhir. Namun ironisnya, solusi yang tersedia selama ini terperangkap dalam dua kutub ekstrem yang sama-sama mengecewakan."
+                      : "The climate crisis is no longer an abstract statistic in an IPCC report or an international treaty. In dense neighborhoods from Jakarta and Manila to suburban California, the climate crisis arrives at the doorstep: sudden flash floods overwhelming drainage, scorching solar radiation turning unshaded roofs into heat ovens that spike electricity bills, and valuable organic matter rotting in overburdened landfills. Yet paradoxically, existing residential tools remain trapped in two disappointing extremes."}
+                  </p>
+
+                  <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div
+                      className={`rounded-2xl border p-5 ${
+                        isLight
+                          ? "border-amber-500/20 bg-amber-50/50 text-[#111]"
+                          : "border-amber-500/20 bg-amber-950/20 text-[#eee]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 font-mono text-xs font-bold text-amber-700 dark:text-amber-400">
+                        <span>✗ KUTUB 1: KELUMPUHAN SPREADSHEET</span>
+                      </div>
+                      <h3 className="mt-2 font-semibold text-sm">
+                        {isId ? "Spreadsheet Teknik Sipil yang Rumit" : "Engineering Spreadsheet Paralysis"}
+                      </h3>
+                      <p className="mt-2 text-xs leading-relaxed opacity-80">
+                        {isId
+                          ? "Insinyur lingkungan memiliki rumus presisi, namun menguburnya dalam tabel Excel 50 kolom dengan istilah teknis rumit. Pemilik rumah biasa merasa kewalahan, tidak mengerti cara menghitung, dan akhirnya membatalkan niat memasang panel surya atau biopori."
+                          : "Environmental engineers possess exact formulas, but bury them inside 50-column Excel sheets full of dense technical jargon. Everyday homeowners feel alienated and abandon clean energy or rainwater harvesting projects before starting."}
+                      </p>
+                    </div>
+
+                    <div
+                      className={`rounded-2xl border p-5 ${
+                        isLight
+                          ? "border-rose-500/20 bg-rose-50/50 text-[#111]"
+                          : "border-rose-500/20 bg-rose-950/20 text-[#eee]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 font-mono text-xs font-bold text-rose-700 dark:text-rose-400">
+                        <span>✗ KUTUB 2: HALUSINASI AI GENERATIF</span>
+                      </div>
+                      <h3 className="mt-2 font-semibold text-sm">
+                        {isId ? "Chatbot yang Mengarang Angka Palsu" : "Hallucinatory Generative Chatbots"}
+                      </h3>
+                      <p className="mt-2 text-xs leading-relaxed opacity-80">
+                        {isId
+                          ? "Ketika LLM generatif muncul, orang mencoba menanyakan kapasitas panel atau volume tangki air. Model bahasa dengan percaya diri mengarang angka kWh dan rupiah palsu, karena LLM memprediksi kata berikutnya secara probabilitas teks, bukan menghitung hukum kekekalan energi."
+                          : "When generative LLMs arrived, people prompted chatbots for solar yields or cistern sizing. Language models confidently hallucinated bogus numbers because LLMs predict next-token distributions rather than computing physical conservation of energy."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`mt-6 rounded-2xl border p-5 ${
+                      isLight
+                        ? "border-[#1e9e5a]/30 bg-[#1e9e5a]/5 text-[#111]"
+                        : "border-[#c6f432]/30 bg-[#c6f432]/5 text-[#eee]"
+                    }`}
+                  >
+                    <span className="font-mono text-xs font-bold text-[#1e9e5a] dark:text-[#c6f432]">
+                      ✓ PENEMUAN VERDARA: REKAYASA DETERMINISTIK + DELIBERASI AI
+                    </span>
+                    <h3 className="mt-1 text-base font-bold">
+                      {isId
+                        ? "Paradigma Satu Arah: Persepsi → Fisika → Deliberasi → Visual Spasial 3D"
+                        : "The One-Way Paradigm: Perception → Physics → Deliberation → Spatial 3D"}
+                    </h3>
+                    <p className="mt-2 text-xs sm:text-sm leading-relaxed opacity-85">
+                      {isId
+                        ? "Verdara membalik alur sepenuhnya. Foto rumah dipindai menggunakan visi komputer Meta SAM 3.1. Persamaan fisika baku NREL dan DIN menghitung kilowatt-hour dan liter air secara mutlak. Angka tersebut dibekukan ke dalam payload kebenaran (SITE_BRIEF). Barulah 3 agen pakar Meta Muse Spark berdeliberasi mencari strategi terbaik, diawasi oleh Numeric Fact Firewall. Hasilnya divisualisasikan dalam kembaran kota 3D prosedural yang interaktif dan menyenangkan."
+                        : "Verdara completely inverts the flow. A house photo is parsed by Meta SAM 3.1 computer vision. Closed-form NREL and DIN physics equations compute kilowatt-hours and rainwater liters deterministically. The numbers are frozen into an immutable SITE_BRIEF truth. Only then do 3 Meta Muse Spark specialists deliberate on trade-offs under a Numeric Fact Firewall. The outcome is rendered as an interactive, zero-download 3D living eco-district."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 01.2 Mission Pillars */}
+                <div
+                  className={`th-node-card border p-6 sm:p-8 pl-7 ${
+                    isLight
+                      ? "border-black/10 bg-white shadow-sm"
+                      : "border-white/10 bg-[#14161b]"
+                  }`}
+                >
+                  <span className="th-map-bar bg-[#2a9dbd]" />
+                  <span className="font-mono text-xs font-bold text-[#2a9dbd]">
+                    01.2 / CORE MISSION & SOCIAL IMPACT
+                  </span>
+                  <h3 className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight">
+                    {isId
+                      ? "Misi Sosial: Demokratisasi Analisis Iklim untuk Setiap Pemilik Rumah"
+                      : "Social Mission: Democratizing Climate Intelligence for Every Homeowner"}
+                  </h3>
+                  <p className="mt-3 text-xs sm:text-sm leading-relaxed opacity-85">
+                    {isId
+                      ? "Verdara dirancang untuk mengubah pemilik rumah dari penonton pasif menjadi produsen energi mandiri dan penjaga lingkungan aktif. Setiap meter persegi atap yang dipasangi panel surya mengurangi beban pembangkit listrik fosil; setiap lubang biopori yang digali mencegah banjir jalanan; dan setiap botol yang disortir di rumah menghemat energi industri hingga 95%."
+                      : "Verdara is engineered to transform homeowners from passive victims of extreme weather into self-reliant energy prosumers and urban watershed guardians. Every square meter of solar roof reduces fossil grid load; every biopore soak pit mitigates street flash flooding; and every source-separated container saves up to 95% industrial smelting energy."}
+                  </p>
+
+                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 font-mono text-xs">
+                    <div className="rounded-xl border border-current/10 p-3.5 bg-current/[0.02]">
+                      <div className="font-bold text-[#1e9e5a] dark:text-[#c6f432] text-lg sm:text-xl">
+                        195+
+                      </div>
+                      <div className="opacity-70 mt-1">
+                        {isId ? "Negara Didukung" : "Countries Supported"}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-current/10 p-3.5 bg-current/[0.02]">
+                      <div className="font-bold text-[#2a9dbd] text-lg sm:text-xl">
+                        0 KB
+                      </div>
+                      <div className="opacity-70 mt-1">
+                        {isId ? "Unduhan Aset 3D Eksternal" : "External 3D Asset Downloads"}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-current/10 p-3.5 bg-current/[0.02]">
+                      <div className="font-bold text-amber-500 text-lg sm:text-xl">
+                        ±3.0%
+                      </div>
+                      <div className="opacity-70 mt-1">
+                        {isId ? "Toleransi Firewall Angka" : "Numeric Fact Firewall Cap"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar Quick Navigator */}
+              <div className="space-y-6 lg:col-span-4">
+                <div
+                  className={`rounded-2xl border p-5 ${
+                    isLight ? "border-black/10 bg-white" : "border-white/10 bg-[#14161b]"
+                  }`}
+                >
+                  <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#1e9e5a] dark:text-[#c6f432]">
+                    {isId ? "SOROTAN ARTIKEL" : "CHAPTER HIGHLIGHTS"}
+                  </h4>
+                  <ul className="mt-4 space-y-2.5 text-xs">
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">01.</span>
+                      <span>{isId ? "Keresahan nyata banjir dan suhu atap ekstrem di perkotaan" : "Real-world urban flood & roof heat crisis"}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">02.</span>
+                      <span>{isId ? "Kelemahan spreadsheet kaku vs chatbot halusinasi" : "Spreadsheet paralysis vs AI hallucination"}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">03.</span>
+                      <span>{isId ? "Paradigma satu arah: Persepsi, Fisika, Deliberasi, Spasial" : "The 4-stage unswerving paradigm"}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">04.</span>
+                      <span>{isId ? "Demokratisasi sains iklim untuk 195+ negara" : "Democratizing climate science across 195+ nations"}</span>
+                    </li>
+                  </ul>
+                  <div className="mt-5 pt-4 border-t border-current/10">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("brainstorming")}
+                      className="w-full rounded-xl bg-[#080808] dark:bg-[#c6f432] text-white dark:text-[#080808] py-2.5 font-mono text-xs font-bold transition hover:opacity-90 cursor-pointer text-center"
+                    >
+                      {isId ? "Lanjut ke Brainstorming →" : "Next: Brainstorming →"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* =====================================================================
+            MODULE 02: BRAINSTORMING, IDEATION & ARCHITECTURAL DECISIONS
+            ===================================================================== */}
+        {activeTab === "brainstorming" && (
+          <section className="mt-8 space-y-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+              <div className="space-y-6 lg:col-span-8">
+                {/* 02.1 Ideation Journey */}
+                <div
+                  className={`th-node-card border p-6 sm:p-8 pl-7 ${
+                    isLight
+                      ? "border-black/10 bg-white shadow-sm"
+                      : "border-white/10 bg-[#14161b]"
+                  }`}
+                >
+                  <span className="th-map-bar bg-[#c6f432]" />
+                  <span className="font-mono text-xs font-bold text-[#1e9e5a] dark:text-[#c6f432]">
+                    02.1 / BRAINSTORMING CHRONICLES & DESIGN THINKING
+                  </span>
+                  <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+                    {isId
+                      ? "Perjalanan Brainstorming: 4 Keputusan Arsitektur Paling Krusial"
+                      : "Brainstorming Chronicles: 4 Crucial Architectural Decisions"}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed opacity-85">
+                    {isId
+                      ? "Membangun Verdara selama Meta AI Hackathon 2026 menuntut kami menolak jalan pintas yang biasa diambil aplikasi AI. Berikut adalah dokumentasi diskusi intensif tim dan argumen teknik di balik setiap keputusan desain yang diambil."
+                      : "Building Verdara during the Meta AI Hackathon 2026 forced us to challenge conventional AI development shortcuts. Here is the engineering rationale and debate behind our most defining architectural choices."}
+                  </p>
+
+                  {/* 4 Deep Brainstorming Debates */}
+                  <div className="mt-6 space-y-4">
+                    {/* Debate 1 */}
+                    <div
+                      className={`rounded-2xl border p-5 ${
+                        isLight
+                          ? "border-black/[0.08] bg-black/[0.02]"
+                          : "border-white/[0.08] bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-[#1e9e5a] dark:text-[#c6f432]">
+                          KEPUTUSAN 1 · ZERO-ASSET 3D VS MODEL FILE .GLB
+                        </span>
+                        <span className="opacity-60 text-[10px]">PENGHEMATAN BANDWIDTH 100%</span>
+                      </div>
+                      <h3 className="mt-1 font-bold text-base">
+                        {isId ? "Mengapa Tidak Mengunduh File 3D Raksasa?" : "Why Zero-Asset Procedural 3D?"}
+                      </h3>
+                      <div className="mt-2 text-xs leading-relaxed space-y-2 opacity-85">
+                        <p>
+                          {isId
+                            ? "Dilema Brainstorming: Opsi awal adalah mengekspor model 3D rumah dari Blender sebagai file .glb (sekitar 30 - 80 MB). Namun, pengguna dengan koneksi seluler lambat atau ponsel hemat kuota akan mengalami loading lama dan frame drop parah."
+                            : "Brainstorming Dilemma: The obvious route was downloading pre-baked 3D houses (.glb files of 30-80 MB). However, users on mobile 4G in developing nations would suffer multi-second blank screens and intense memory bloat."}
+                        </p>
+                        <p className="font-medium text-[#1e9e5a] dark:text-[#c6f432]">
+                          {isId
+                            ? "Solusi Akhir: Kami menulis seluruh geometri distrik 3D menggunakan matematika prosedural Three.js murni. Rumah, panel surya, sumur biopori, pohon peneduh, dan talang air di-generate langsung dari kode geometris. Ukuran download aset eksternal: 0 KB!"
+                            : "Final Decision: We proceduralized the entire 3D district with pure Three.js mathematics. Roof planes, louvers, biopores, and water particles generate dynamically from code with 0 KB asset payload downloads."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Debate 2 */}
+                    <div
+                      className={`rounded-2xl border p-5 ${
+                        isLight
+                          ? "border-black/[0.08] bg-black/[0.02]"
+                          : "border-white/[0.08] bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-[#2a9dbd]">
+                          KEPUTUSAN 2 · DEWAN 3 PAKAR VS 1 CHATBOT MONOLITIK
+                        </span>
+                        <span className="opacity-60 text-[10px]">DELIBERASI MULTI-PERSPEKTIF</span>
+                      </div>
+                      <h3 className="mt-1 font-bold text-base">
+                        {isId ? "Mengapa Membutuhkan Tiga AI yang Berdebat?" : "Why a Multi-Agent Specialist Council?"}
+                      </h3>
+                      <div className="mt-2 text-xs leading-relaxed space-y-2 opacity-85">
+                        <p>
+                          {isId
+                            ? "Dilema Brainstorming: Satu chatbot tunggal biasanya memberikan jawaban generalis dan datar ('Pasang panel surya dan tampung air'). Padahal di dunia nyata, rekayasa sipil memiliki konflik kepentingan nyata: panel surya menutupi bidang yang seharusnya mengalirkan air hujan ke talang tertentu."
+                            : "Brainstorming Dilemma: A single chatbot produces bland generic advice. In real civil engineering, specialists have genuine conflicts of interest: solar engineers want 100% roof coverage, while hydrologists need uninterrupted gutter catchment surfaces."}
+                        </p>
+                        <p className="font-medium text-[#2a9dbd]">
+                          {isId
+                            ? "Solusi Akhir: Menghadirkan Dewan Pakar (Dr. Flora sang ahli botani, Ir. Arka sang insinyur surya & hidrologi, dan Sirkula sang arsitek sirkular). Mereka berdebat mencari kompromi optimal berdasarkan iklim lokal pengguna."
+                            : "Final Decision: Introducing the 3-agent specialist council (Botanist, Solar/Hydro Engineer, and Circular Economist) deliberating trade-offs transparently in front of the homeowner."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Debate 3 */}
+                    <div
+                      className={`rounded-2xl border p-5 ${
+                        isLight
+                          ? "border-black/[0.08] bg-black/[0.02]"
+                          : "border-white/[0.08] bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-amber-600 dark:text-amber-400">
+                          KEPUTUSAN 3 · NUMERIC FACT FIREWALL (TOLERANSI ±3%)
+                        </span>
+                        <span className="opacity-60 text-[10px]">ANTI-HALUSINASI KETAT</span>
+                      </div>
+                      <h3 className="mt-1 font-bold text-base">
+                        {isId ? "Bagaimana Menjamin AI Tidak Pernah Berbohong?" : "How to Guarantee Zero Numerical Lying?"}
+                      </h3>
+                      <div className="mt-2 text-xs leading-relaxed space-y-2 opacity-85">
+                        <p>
+                          {isId
+                            ? "Dilema Brainstorming: Model bahasa LLM secanggih apa pun terkadang mengubah angka jika terbawa konteks percakapan. Jika atap menghasilkan 19.8 kWp, model LLM bisa saja salah menyebut 25 kWp atau 50 kWp, yang berakibat fatal bagi perencanaan investasi warga."
+                            : "Brainstorming Dilemma: Even the most advanced LLMs will drift on numbers during chat context. If a roof physically yields 19.8 kWp, an unconstrained LLM might hallucinate 25 kWp or 50 kWp, ruining financial planning."}
+                        </p>
+                        <p className="font-medium text-amber-600 dark:text-amber-400">
+                          {isId
+                            ? "Solusi Akhir: Kami merancang Numeric Fact Firewall berbasis regex. Setiap kali agen Muse Spark berbicara, sistem memindai semua angka yang disebut dan mencocokkannya dengan SITE_BRIEF. Jika angka menyimpang di luar ±3.0%, teks tersebut otomatis disensor atau dikoreksi sebelum sampai ke browser."
+                            : "Final Decision: We engineered an automated regex Numeric Fact Firewall. Every emitted number is audited against the immutable SITE_BRIEF. Any figure drifting beyond ±3.0% is instantly intercepted and corrected."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Debate 4 */}
+                    <div
+                      className={`rounded-2xl border p-5 ${
+                        isLight
+                          ? "border-black/[0.08] bg-black/[0.02]"
+                          : "border-white/[0.08] bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-purple-600 dark:text-purple-400">
+                          KEPUTUSAN 4 · MODEL INTERAKSI RUN, BREAK, AND HEAL
+                        </span>
+                        <span className="opacity-60 text-[10px]">EDUKASI SPASIAL REAL-TIME</span>
+                      </div>
+                      <h3 className="mt-1 font-bold text-base">
+                        {isId ? "Simulasi Kota: Berjalan, Rusak, dan Pulih" : "Interactive Simulation: Run, Break, and Heal"}
+                      </h3>
+                      <div className="mt-2 text-xs leading-relaxed space-y-2 opacity-85">
+                        <p>
+                          {isId
+                            ? "Dilema Brainstorming: Diagram statistik statis tidak memicu empati emosional warga terhadap bencana iklim. Warga perlu melihat sendiri apa yang terjadi jika hujan ekstrem datang."
+                            : "Brainstorming Dilemma: Static charts do not trigger emotional urgency. Homeowners need to see viscerally what happens when a hundred-year storm hits their specific roof."}
+                        </p>
+                        <p className="font-medium text-purple-600 dark:text-purple-400">
+                          {isId
+                            ? "Solusi Akhir: Tiga mode simulasi state machine. Mode RUN memperlihatkan operasi normal; Mode BREAK memperlihatkan talang meluap, jalanan banjir +18cm, dan atap kepanasan; Mode HEAL memperlihatkan panel ganda dan biopori aktif menyerap seluruh genangan hingga kering seketika."
+                            : "Final Decision: A 3-phase interactive state machine. RUN shows baseline; BREAK simulates overflowing gutters and +18cm street flood; HEAL deploys SAM 3.1 retrofits and biopores drying the flood in real time."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar Quick Navigator */}
+              <div className="space-y-6 lg:col-span-4">
+                <div
+                  className={`rounded-2xl border p-5 ${
+                    isLight ? "border-black/10 bg-white" : "border-white/10 bg-[#14161b]"
+                  }`}
+                >
+                  <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#1e9e5a] dark:text-[#c6f432]">
+                    {isId ? "RINGKASAN IDEASI" : "IDEATION SUMMARY"}
+                  </h4>
+                  <ul className="mt-4 space-y-2.5 text-xs">
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">1.</span>
+                      <span>Zero-Asset 3D Procedural Engine (0 KB download)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">2.</span>
+                      <span>AI Multi-Agent Council (Botanist, Engineer, Economist)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">3.</span>
+                      <span>Strict Numeric Fact Firewall (±3.0% tolerance)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-[#1e9e5a] dark:text-[#c6f432] font-bold">4.</span>
+                      <span>Run / Break / Heal interactive 3D state machine</span>
+                    </li>
+                  </ul>
+                  <div className="mt-5 pt-4 border-t border-current/10 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("architecture")}
+                      className="w-full rounded-xl bg-[#080808] dark:bg-[#c6f432] text-white dark:text-[#080808] py-2.5 font-mono text-xs font-bold transition hover:opacity-90 cursor-pointer text-center"
+                    >
+                      {isId ? "Lihat Arsitektur Sistem →" : "View System Architecture →"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("story")}
+                      className="w-full rounded-xl border border-current/20 py-2 font-mono text-xs transition hover:bg-current/5 cursor-pointer text-center"
+                    >
+                      ← {isId ? "Kembali ke Kisah Verdara" : "Back to Genesis Story"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {activeTab === "architecture" && (
           <section className="mt-8 space-y-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
