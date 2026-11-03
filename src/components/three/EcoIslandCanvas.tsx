@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useMemo, useLayoutEffect } from "react";
+import React, { useRef, useState, useMemo, useLayoutEffect, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -2684,6 +2684,24 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
   const storeLocale = useVerdaraStore((s) => s.locale);
   const isId = (props.locale ?? storeLocale) === "id";
   const activePresetMeta = CAMERA_PRESET_CONFIG[camPreset];
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [isInViewport, setIsInViewport] = useState(true);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInViewport(entry.isIntersecting);
+      },
+      { rootMargin: "250px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
 
   const handleStepZoom = (factor: number) => {
     const ctrl = controlsRef.current;
@@ -2729,11 +2747,13 @@ export default function EcoIslandCanvas(props: EcoIslandProps) {
 
   return (
     <div
+      ref={containerRef}
       data-lenis-prevent
       className="relative h-full w-full overflow-hidden select-none transition-colors duration-500"
       style={{ backgroundColor: bgHex }}
     >
       <Canvas
+        frameloop={isInViewport ? "always" : "never"}
         shadows="soft"
         dpr={[1, 1.5]}
         gl={{

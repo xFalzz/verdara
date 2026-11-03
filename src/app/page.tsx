@@ -234,14 +234,24 @@ export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+    let prev = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 16);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const next = window.scrollY > 16;
+          if (next !== prev) {
+            prev = next;
+            setIsScrolled(next);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -1364,8 +1374,7 @@ export default function LandingPage() {
 
       {/* 4. CHAPTER 03: DRAGGABLE 10-COUNTRY CLIMATE DECK CAROUSEL (COUNTRY NAMES + DRAG SLIDE) */}
       <section
-        id="chapter-slides"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-20 pb-12 sm:px-10"
+        id="chapter-slides" className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-20 pb-12 sm:px-10 content-auto"
       >
         <div className="gsap-section-heading flex flex-wrap items-end justify-between gap-4 pb-8">
           <div>
@@ -1677,7 +1686,7 @@ export default function LandingPage() {
       {/* 5. CHAPTER 04: ZEGGO.COM.SG STICKY-LEFT + SCROLLING-RIGHT SUBGRID & STAIRCASE CASCADE */}
       <section
         id="chapter-how"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 py-16 sm:px-10 sm:py-20"
+        className="content-auto scroll-mt-20 mx-auto max-w-[1440px] px-4 py-16 sm:px-10 sm:py-20"
       >
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
@@ -1863,7 +1872,7 @@ export default function LandingPage() {
       {/* 6. CHAPTER 05: DOVV STUDIO 2-COLUMN WORK / CAPABILITY BENTO GRID */}
       <section
         id="chapter-tools"
-        className="scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-6 pb-24 sm:px-10"
+        className="content-auto scroll-mt-20 mx-auto max-w-[1440px] px-4 pt-6 pb-24 sm:px-10"
       >
         <div className="gsap-section-heading flex flex-col items-start justify-between gap-4 pb-10 md:flex-row md:items-end">
           <div>

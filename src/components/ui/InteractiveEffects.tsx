@@ -449,7 +449,8 @@ export function TownhouseScrollRail({
   );
 
   useEffect(() => {
-    const onScroll = () => {
+    let ticking = false;
+    const computeScroll = () => {
       const scrollTop = window.scrollY;
       const maxScroll = Math.max(
         1,
@@ -510,8 +511,18 @@ export function TownhouseScrollRail({
       });
     };
 
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          computeScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    computeScroll();
     return () => {
       window.removeEventListener("scroll", onScroll);
       if (scrollTimerRef.current) {

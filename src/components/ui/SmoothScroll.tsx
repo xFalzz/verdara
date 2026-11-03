@@ -21,48 +21,45 @@ function findScrollableAncestor(
   deltaX: number,
   deltaY: number
 ): { el: HTMLElement; axis: "y" | "x" } | null {
-  let node: HTMLElement | null = start;
-  while (node && node !== document.body && node !== document.documentElement) {
-    const style = window.getComputedStyle(node);
-    const overflowY = style.overflowY;
-    const overflowX = style.overflowX;
-
-    const canScrollY =
-      (overflowY === "auto" || overflowY === "scroll") &&
-      node.scrollHeight > node.clientHeight + 2;
-    if (canScrollY && Math.abs(deltaY) >= Math.abs(deltaX)) {
-      const atTop = node.scrollTop <= 0 && deltaY < 0;
-      const atBottom =
-        node.scrollTop + node.clientHeight >= node.scrollHeight - 1 &&
-        deltaY > 0;
-      if (!atTop && !atBottom) {
-        return { el: node, axis: "y" };
-      }
-    }
-
-    const canScrollX =
-      (overflowX === "auto" || overflowX === "scroll") &&
-      node.scrollWidth > node.clientWidth + 2;
-    const isHorizontalRail =
-      node.classList.contains("dovv-bottom-dock") ||
-      node.classList.contains("country-pill-rail") ||
-      node.classList.contains("drag-slide-rail");
-    if (
-      canScrollX &&
-      (Math.abs(deltaX) > Math.abs(deltaY) || (!canScrollY && isHorizontalRail))
-    ) {
-      const effectiveDelta = Math.abs(deltaX) > 0.5 ? deltaX : deltaY;
-      const atLeft = node.scrollLeft <= 0 && effectiveDelta < 0;
-      const atRight =
-        node.scrollLeft + node.clientWidth >= node.scrollWidth - 1 &&
-        effectiveDelta > 0;
-      if (!atLeft && !atRight) {
-        return { el: node, axis: "x" };
-      }
-    }
-
-    node = node.parentElement;
+  if (!start) return null;
+  // High-performance fast path: Never use getComputedStyle in a while loop
+  const candidate = start.closest?.(
+    "[data-scrollable], .overflow-y-auto, .overflow-y-scroll, .overflow-x-auto, .overflow-x-scroll, .dovv-bottom-dock, .country-pill-rail, .drag-slide-rail"
+  ) as HTMLElement | null;
+  if (!candidate || candidate === document.body || candidate === document.documentElement) {
+    return null;
   }
+
+  const canScrollY = candidate.scrollHeight > candidate.clientHeight + 2;
+  if (canScrollY && Math.abs(deltaY) >= Math.abs(deltaX)) {
+    const atTop = candidate.scrollTop <= 0 && deltaY < 0;
+    const atBottom =
+      candidate.scrollTop + candidate.clientHeight >= candidate.scrollHeight - 1 &&
+      deltaY > 0;
+    if (!atTop && !atBottom) {
+      return { el: candidate, axis: "y" };
+    }
+  }
+
+  const canScrollX = candidate.scrollWidth > candidate.clientWidth + 2;
+  const isHorizontalRail =
+    candidate.classList.contains("dovv-bottom-dock") ||
+    candidate.classList.contains("country-pill-rail") ||
+    candidate.classList.contains("drag-slide-rail");
+  if (
+    canScrollX &&
+    (Math.abs(deltaX) > Math.abs(deltaY) || (!canScrollY && isHorizontalRail))
+  ) {
+    const effectiveDelta = Math.abs(deltaX) > 0.5 ? deltaX : deltaY;
+    const atLeft = candidate.scrollLeft <= 0 && effectiveDelta < 0;
+    const atRight =
+      candidate.scrollLeft + candidate.clientWidth >= candidate.scrollWidth - 1 &&
+      effectiveDelta > 0;
+    if (!atLeft && !atRight) {
+      return { el: candidate, axis: "x" };
+    }
+  }
+
   return null;
 }
 
@@ -72,46 +69,23 @@ function findScrollableAncestor(
 function findHorizontalDragContainer(
   start: HTMLElement | null
 ): HTMLElement | null {
-  let node: HTMLElement | null = start;
-  while (node && node !== document.body && node !== document.documentElement) {
-    if (
-      node.tagName === "CANVAS" ||
-      node.tagName === "INPUT" ||
-      node.tagName === "TEXTAREA" ||
-      node.tagName === "SELECT"
-    ) {
-      return null;
-    }
-    const style = window.getComputedStyle(node);
-    const overflowX = style.overflowX;
-    const hasExplicitRailClass =
-      node.classList.contains("dovv-bottom-dock") ||
-      node.classList.contains("country-pill-rail") ||
-      node.classList.contains("drag-slide-rail");
-    const canScrollX =
-      (hasExplicitRailClass ||
-        overflowX === "auto" ||
-        overflowX === "scroll") &&
-      node.scrollWidth > node.clientWidth + 2;
-
-    if (canScrollX) {
-      return node;
-    }
-    node = node.parentElement;
+  if (!start) return null;
+  if (
+    start.tagName === "CANVAS" ||
+    start.tagName === "INPUT" ||
+    start.tagName === "TEXTAREA" ||
+    start.tagName === "SELECT"
+  ) {
+    return null;
   }
-  return null;
+  const rail = start.closest?.(
+    ".dovv-bottom-dock, .country-pill-rail, .drag-slide-rail, [data-horizontal-rail]"
+  ) as HTMLElement | null;
+  if (!rail) return null;
+  if (rail.scrollWidth <= rail.clientWidth + 2) return null;
+  return rail;
 }
 
-/**
- * Universal Smooth Scroll Engine for Verdara:
- * 1. Drives smooth inertial scrolling across the entire document on every route
- *    (/, /login, /dashboard, /lens, /radar, /council, /academy, /settings, /faq).
- * 2. Smoothly interpolates nested scrollable containers (dropdown lists, modals,
- *    tables, and horizontal rails) at 60 FPS using an internal lerp map, handing
- *    off seamlessly to the main page scroll when reaching top/bottom edges.
- * 3. Automatically recalculates scroll bounds via ResizeObserver and route transitions
- *    so expanding accordions, switching tabs, or loading dynamic content never clips.
- */
 export default function SmoothScroll() {
   const pathname = usePathname();
 
@@ -121,10 +95,10 @@ export default function SmoothScroll() {
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({
-      lerp: 0.13,
-      smoothWheel: true,
+      lerp: 0.18,
+      smoothWheel: typeof window !== "undefined" && !window.matchMedia("(pointer: coarse)").matches,
       wheelMultiplier: 1,
-      touchMultiplier: 1.15,
+      touchMultiplier: 0,
       syncTouch: false,
       autoRaf: false,
       anchors: { offset: -76 },
