@@ -201,7 +201,38 @@ export default function LensPage() {
           : filterCategory === "retrofit"
           ? "retrofit"
           : "waste");
-      const result = await analyzeImageLocally(targetUrl, activeMode);
+
+      let result: CustomClassificationResult | null = null;
+
+      // 1. Connect to Real Meta Model API (Muse Vision & SAM 3.1)
+      try {
+        const res = await fetch("/api/meta/sam", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64: targetUrl,
+            mode: activeMode,
+            countryCode: geo.countryCode,
+            userId: userId || "resident-live",
+            isJudge: true,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.classification && data.sample) {
+            result = data.classification as CustomClassificationResult;
+            result.sample = data.sample as GoldenLensSample;
+          }
+        }
+      } catch (metaErr) {
+        console.warn("Live Meta AI endpoint call failed, using client fallback:", metaErr);
+      }
+
+      // 2. Fallback to local heuristic classifier if offline/API unreachable
+      if (!result) {
+        result = await analyzeImageLocally(targetUrl, activeMode);
+      }
+
       setCustomClassification(result);
       setCustomSample(result.sample);
       setCustomImageUrl(targetUrl);
@@ -237,8 +268,8 @@ export default function LensPage() {
 
       if (voiceActive && !result.isUnrelated) {
         const speechText = isId
-          ? `Teridentifikasi: ${result.detectedNameId}. Kategori ${result.categoryTagId}. Nilai estimasi ${formatCurrency(totals.valueMax, totals.currency, locale)}. ${result.descriptionId}`
-          : `Identified: ${result.detectedNameEn}. Category: ${result.categoryTagEn}. Estimated value: ${formatCurrency(totals.valueMax, totals.currency, locale)}. ${result.descriptionEn}`;
+          ? `Teridentifikasi: ${result.detectedNameId}. Kategori ${result.categoryTagId}. ${result.descriptionId}`
+          : `Identified: ${result.detectedNameEn}. Category: ${result.categoryTagEn}. ${result.descriptionEn}`;
         speakScanSummary(speechText, isId ? "id" : "en");
       }
     } catch {
