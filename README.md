@@ -8,6 +8,8 @@ Turn any residential property or neighborhood into a scientifically grounded, in
 Computer vision sees the site, deterministic engineering equations compute the numbers, and AI agents only explain what the physics already proved.
 
 [![Meta AI](https://img.shields.io/badge/Meta%20AI-SAM%203.1%20%7C%20Muse%20Spark-0668E1?style=for-the-badge&logo=meta&logoColor=white)](#4-ai-layer)
+[![YouTube Demo](https://img.shields.io/badge/YouTube-3--Min%20Demo%20Video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/PvBULhAhteY)
+[![X Post](https://img.shields.io/badge/X-Announcement%20Post-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/xFalzs/status/2117653883095068817?a=cusRfMpZYBSZKxifq6s&s=20)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%20FastAPI%20%7C%20LoRA-3776AB?style=for-the-badge&logo=python&logoColor=white)](#10-getting-started)
 [![Docker](https://img.shields.io/badge/Docker-Multi--Stage%20Container-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#10-getting-started)
@@ -15,7 +17,7 @@ Computer vision sees the site, deterministic engineering equations compute the n
 [![Tests](https://img.shields.io/badge/Tests-22%2F22%20Passing-10b981?style=for-the-badge&logo=vitest&logoColor=white)](#10-getting-started)
 [![License](https://img.shields.io/badge/License-MIT-gray?style=for-the-badge)](LICENSE)
 
-[Live Application](https://verdaraa.vercel.app/) &nbsp;|&nbsp; [Architecture](#2-system-architecture) &nbsp;|&nbsp; [Scientific Engine](#5-scientific-engine) &nbsp;|&nbsp; [Getting Started](#10-getting-started) &nbsp;|&nbsp; [Limitations](#12-assumptions-and-limitations)
+[Live Application](https://verdaraa.vercel.app/) &nbsp;|&nbsp; [3-Min Demo Video](https://youtu.be/PvBULhAhteY) &nbsp;|&nbsp; [X Announcement](https://x.com/xFalzs/status/2117653883095068817?a=cusRfMpZYBSZKxifq6s&s=20) &nbsp;|&nbsp; [Architecture](#2-system-architecture) &nbsp;|&nbsp; [Scientific Engine](#5-scientific-engine) &nbsp;|&nbsp; [Getting Started](#10-getting-started) &nbsp;|&nbsp; [Limitations](#12-assumptions-and-limitations)
 
 </div>
 
@@ -40,6 +42,12 @@ Computer vision sees the site, deterministic engineering equations compute the n
 ---
 
 ## 1. Overview
+
+> **Submission Links:**
+> - **3-Minute Demo Video:** [https://youtu.be/PvBULhAhteY](https://youtu.be/PvBULhAhteY)
+> - **Official X Announcement:** [https://x.com/xFalzs/status/2117653883095068817](https://x.com/xFalzs/status/2117653883095068817?a=cusRfMpZYBSZKxifq6s&s=20)
+> - **Live Platform:** [https://verdaraa.vercel.app/](https://verdaraa.vercel.app/)
+
 
 Climate adaptation tools tend to fail in one of two ways: they trap users in fragmented engineering spreadsheets, or they rely on generative AI that invents energy yields, water capacities, and financial returns.
 
@@ -521,7 +529,11 @@ Verdara is a **pre-feasibility estimation tool**. It is not a substitute for a s
 
 **Author:** Nawfal Irfan ([@xFalzz](https://github.com/xFalzz)), lead architect and developer.
 
-**Context:** Built for the Meta Global AI Hackathon 2026 (spatial perception, sustainability, and autonomous multi-agent systems).
+**Context:** Built for the Meta Global AI Hackathon 2026 organized in partnership with Cerebral Valley (Indie Developer Track - *Build for Your World*).
+
+- **3-Minute Demo Video:** [https://youtu.be/PvBULhAhteY](https://youtu.be/PvBULhAhteY)
+- **Announcement on X (Twitter):** [https://x.com/xFalzs/status/2117653883095068817](https://x.com/xFalzs/status/2117653883095068817?a=cusRfMpZYBSZKxifq6s&s=20)
+- **Live Production App:** [https://verdaraa.vercel.app/](https://verdaraa.vercel.app/)
 
 **References**
 
