@@ -40,6 +40,10 @@ next-env.d.ts
 /.secrets*
 /brand-assets/
 
-
 /.claude/
 /agent/
+
+# Video & Remotion Local Workspace (Do NOT commit to git)
+/verdara-video/
+/Video mentahan/
+*.mp4
