@@ -26,6 +26,14 @@ const securityHeaders = [
     value: "camera=(self), microphone=(), geolocation=(self), browsing-topics=()",
   },
   {
+    key: "X-XSS-Protection",
+    value: "1; mode=block",
+  },
+  {
+    key: "X-Verdara-Security-Shield",
+    value: "Active-v3.2",
+  },
+  {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
