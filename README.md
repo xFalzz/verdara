@@ -454,7 +454,7 @@ The app runs out of the box on the deterministic specimen cache. To enable live 
 
 ### Deployment
 
-The repository includes a [`netlify.toml`](netlify.toml) for Netlify. The production deployment is available at [verdara.space](https://verdara.space).
+The repository includes a [`netlify.toml`](netlify.toml) for Netlify. The production deployment is available at [verdaraa.vercel.app](https://verdaraa.vercel.app/).
 
 ---
 
