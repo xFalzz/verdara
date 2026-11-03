@@ -1417,17 +1417,23 @@ export function VerdaraBottomDock() {
     {
       code: "06",
       href: "/academy",
-      labelEn: "Field Proofs",
-      labelId: "Bukti Aksi",
+      labelEn: "Daily Quiz",
+      labelId: "Kuis Harian",
     },
     {
       code: "07",
+      href: "/docs",
+      labelEn: "Docs",
+      labelId: "Dokumentasi",
+    },
+    {
+      code: "08",
       href: "/faq",
       labelEn: "FAQ",
       labelId: "Tanya Jawab",
     },
     {
-      code: "08",
+      code: "09",
       href: "/settings",
       labelEn: "Settings",
       labelId: "Pengaturan",

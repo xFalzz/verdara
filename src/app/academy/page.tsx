@@ -2,21 +2,33 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import StudioShell from "@/components/ui/StudioShell";
 import { useVerdaraStore } from "@/store/useVerdaraStore";
 import { getDailyQuizPack, type DailyQuizPack, type QuizQuestion } from "@/lib/academy/daily-quiz";
 
 export default function AcademyDailyQuizPage() {
+  const router = useRouter();
   const {
     locale,
     theme,
     geo,
+    isAuthenticated,
     passedQuizLessonIds,
     markQuizPassed,
   } = useVerdaraStore();
 
   const isId = locale === "id";
   const isLight = theme === "light";
+  const [hasMounted, setHasMounted] = useState<boolean>(false);
+
+  // Require login: immediately redirect unauthenticated guests
+  useEffect(() => {
+    setHasMounted(true);
+    if (!isAuthenticated) {
+      router.replace("/login?next=/academy");
+    }
+  }, [isAuthenticated, router]);
 
   // Load today's deterministically seeded quiz pack
   const todayQuizPack = useMemo<DailyQuizPack>(() => {
@@ -133,6 +145,44 @@ export default function AcademyDailyQuizPage() {
   };
 
   const currentScore = calculateScore();
+
+  // If user is not logged in, NEVER display the quiz questions
+  if (!hasMounted || !isAuthenticated) {
+    return (
+      <StudioShell>
+        <div className="mx-auto flex min-h-[65vh] max-w-lg flex-col items-center justify-center px-4 py-16 text-center">
+          <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#c6f432]/40 bg-[#c6f432]/10 shadow-[0_0_30px_rgba(198,244,50,0.25)]">
+            <span className="font-mono text-2xl">🔒</span>
+          </div>
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#1e9e5a] dark:text-[#c6f432]">
+            {isId ? "AKSES RESIDEN DIPERLUKAN" : "RESIDENT AUTHENTICATION REQUIRED"}
+          </span>
+          <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight">
+            {isId ? "Masuk untuk Mengakses Akademi" : "Sign In to Access Academy"}
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            {isId
+              ? "Tantangan kuis harian, rekaman streak, dan perolehan skor XP leaderboard Verdara hanya bisa diakses oleh akun residen yang sudah masuk. Silakan login terlebih dahulu."
+              : "Verdara Academy daily quizzes, streak tracker, and leaderboard XP rewards require an authenticated resident account. Please sign in to participate."}
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+            <Link
+              href="/login?next=/academy"
+              className="flex min-h-[44px] w-full sm:w-auto items-center justify-center rounded-full bg-[#1e9e5a] dark:bg-[#c6f432] px-6 text-sm font-semibold text-white dark:text-[#080808] transition hover:opacity-90 shadow-sm"
+            >
+              {isId ? "Masuk Sekarang (Sign In) →" : "Sign In to Start Quiz →"}
+            </Link>
+            <Link
+              href="/docs"
+              className="flex min-h-[44px] w-full sm:w-auto items-center justify-center rounded-full border border-current/15 px-5 text-sm font-medium transition hover:bg-current/10"
+            >
+              {isId ? "Baca Kisah Verdara (/docs) →" : "Read Verdara Story (/docs) →"}
+            </Link>
+          </div>
+        </div>
+      </StudioShell>
+    );
+  }
 
   return (
     <StudioShell>

@@ -68,20 +68,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.fbsbx.net" },
     ],
   },
-  async redirects() {
-    return [
-      {
-        source: "/docs",
-        destination: "/academy",
-        permanent: false,
-      },
-      {
-        source: "/docs/:path*",
-        destination: "/academy",
-        permanent: false,
-      },
-    ];
-  },
   async headers() {
     return [
       {

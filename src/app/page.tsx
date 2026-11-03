@@ -572,7 +572,7 @@ export default function LandingPage() {
               { href: "#chapter-town", label: isId ? "Distrik 3D" : "3D District" },
               { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
               { href: "#chapter-tools", label: isId ? "Fitur AI" : "AI Tools" },
-              { href: "/academy", label: isId ? "Akademi" : "Academy", isRoute: true },
+              isAuthenticated ? { href: "/academy", label: isId ? "Akademi" : "Academy", isRoute: true } : { href: "/docs", label: isId ? "Dokumentasi" : "Docs", isRoute: true },
               { href: "/faq", label: "FAQ", isRoute: true },
             ].map((item) =>
               item.isRoute ? (
@@ -829,7 +829,7 @@ export default function LandingPage() {
                   { href: "#chapter-slides", label: isId ? "10 Negara" : "10 Countries" },
                   { href: "#chapter-workflow", label: isId ? "Cara Kerja" : "How It Works" },
                   { href: "#chapter-tools", label: isId ? "Fitur AI" : "AI Tools" },
-                  { href: "/academy", label: isId ? "Akademi" : "Academy", isRoute: true },
+                  isAuthenticated ? { href: "/academy", label: isId ? "Akademi" : "Academy", isRoute: true } : { href: "/docs", label: isId ? "Dokumentasi" : "Docs", isRoute: true },
                   { href: "/faq", label: "FAQ", isRoute: true },
                 ].map((nav) =>
                   nav.isRoute ? (
@@ -2141,7 +2141,7 @@ export default function LandingPage() {
           </Link>
 
           {/* DOVV CARD 04: VERIFIABLE FIELD-ACTION PROOFS */}
-          <Link href="/academy" className="gsap-bento-card dovv-card group">
+          <Link href={isAuthenticated ? "/academy" : "/login?next=/academy"} className="gsap-bento-card dovv-card group">
             <div className="dovv-card-media p-5 flex flex-col justify-between min-h-[280px]">
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-[#aaa9ad]">
                 <span>META SAM 3.1 CAMERA PROOF · ANTI-CHEAT</span>
@@ -2611,7 +2611,7 @@ export default function LandingPage() {
                     {isId ? "Dokumentasi Lengkap (/docs) →" : "Full Architecture Specs (/docs) →"}
                   </Link>
                   <Link
-                    href="/academy"
+                    href={isAuthenticated ? "/academy" : "/login?next=/academy"}
                     className={`inline-flex min-h-[40px] items-center rounded-full border px-4 font-mono text-xs transition ${
                       isSectionLight
                         ? "border-black/15 bg-black/5 text-[#0a0a0c] hover:bg-black/10"
