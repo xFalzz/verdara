@@ -27,7 +27,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://verdara.space"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://verdaraa.vercel.app"),
   title: {
     default: "Verdara: see your whole eco-town, audit roof physics & material recovery",
     template: "%s | Verdara",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     title: "Verdara: see your whole eco-town, audit roof physics & material recovery",
     description:
       "A living 3D neighborhood digital twin connecting solar arrays, rainwater cisterns, and circular salvage hubs across 28 global biomes.",
-    url: "https://verdara.space",
+    url: "https://verdaraa.vercel.app",
     siteName: "Verdara Eco-Town Studio",
     locale: "en_US",
     alternateLocale: ["id_ID"],
@@ -80,11 +80,18 @@ export const metadata: Metadata = {
   verification: {
     google: "google8cbfb42f0970a6b2",
   },
-  other: {
-    "geo.region": "ID-JK",
-    "geo.placename": "Jakarta",
+    other: {
+    "geo.region": "ID-JK;US-CA",
+    "geo.placename": "Jakarta, Menlo Park, Global",
     "geo.position": "-6.2088;106.8456",
     ICBM: "-6.2088, 106.8456",
+    "DC.title": "Verdara: Living Eco-Town Twin & Physics Studio",
+    "DC.creator": "Verdara Spatial Labs",
+    "DC.subject": "Renewable Energy; Solar PV; Rainwater Harvesting; Biopores; Circular Economy",
+    "DC.coverage": "World",
+    distribution: "Global",
+    rating: "General",
+    "revisit-after": "1 days",
   },
 };
 
@@ -92,10 +99,21 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "WebSite",
+      "@id": "https://verdaraa.vercel.app/#website",
+      name: "Verdara",
+      url: "https://verdaraa.vercel.app",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://verdaraa.vercel.app/docs?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
       "@type": "WebApplication",
-      "@id": "https://verdara.space/#webapp",
+      "@id": "https://verdaraa.vercel.app/#webapp",
       name: "Verdara Living Eco-Town Studio",
-      url: "https://verdara.space",
+      url: "https://verdaraa.vercel.app",
       applicationCategory: "DesignApplication, UtilitiesApplication",
       operatingSystem: "All modern browsers with GPU acceleration",
       description:
@@ -117,10 +135,10 @@ const jsonLd = {
     },
     {
       "@type": "Organization",
-      "@id": "https://verdara.space/#organization",
+      "@id": "https://verdaraa.vercel.app/#organization",
       name: "Verdara Spatial Labs",
-      url: "https://verdara.space",
-      logo: "https://verdara.space/favicon.ico",
+      url: "https://verdaraa.vercel.app",
+      logo: "https://verdaraa.vercel.app/favicon.ico",
       sameAs: ["https://github.com/verdara-space"],
       contactPoint: {
         "@type": "ContactPoint",
@@ -131,7 +149,7 @@ const jsonLd = {
     },
     {
       "@type": "Place",
-      "@id": "https://verdara.space/#headquarters",
+      "@id": "https://verdaraa.vercel.app/#headquarters",
       name: "Verdara Global Climate Hub (Jakarta)",
       geo: {
         "@type": "GeoCoordinates",
