@@ -437,6 +437,9 @@ export function TownhouseScrollRail({
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevIndex, setPrevIndex] = useState(0);
   const [scrollPct, setScrollPct] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const [bounds, setBounds] = useState<{ top: number; bottom: number } | null>(
     null
@@ -449,9 +452,25 @@ export function TownhouseScrollRail({
         1,
         document.documentElement.scrollHeight - window.innerHeight
       );
-      setScrollPct(
-        Math.min(100, Math.max(0, Math.round((scrollTop / maxScroll) * 100)))
+      const curPct = Math.min(
+        100,
+        Math.max(0, Math.round((scrollTop / maxScroll) * 100))
       );
+      setScrollPct(curPct);
+
+      // Expand on scroll for a short duration (2.2s), then close automatically
+      // When nearing footer (curPct >= 88), close and hide immediately
+      if (curPct < 88) {
+        setIsScrolling(true);
+        if (scrollTimerRef.current) {
+          clearTimeout(scrollTimerRef.current);
+        }
+        scrollTimerRef.current = setTimeout(() => {
+          setIsScrolling(false);
+        }, 2200);
+      } else {
+        setIsScrolling(false);
+      }
 
       const triggerY = window.innerHeight * 0.38;
       let foundIdx = 0;
@@ -475,8 +494,16 @@ export function TownhouseScrollRail({
 
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollTimerRef.current) {
+        clearTimeout(scrollTimerRef.current);
+      }
+    };
   }, [chapters]);
+
+  const isFooter = scrollPct >= 88;
+  const isExpanded = !isFooter && (isHovered || isScrolling);
 
   useEffect(() => {
     const updateBounds = () => {
@@ -491,7 +518,7 @@ export function TownhouseScrollRail({
     updateBounds();
     window.addEventListener("resize", updateBounds);
     return () => window.removeEventListener("resize", updateBounds);
-  }, [activeIndex, isId]);
+  }, [activeIndex, isId, isExpanded]);
 
   const scrollToChapter = (idx: number) => {
     const target = chapters[idx];
@@ -502,7 +529,6 @@ export function TownhouseScrollRail({
     }
   };
 
-  const isHero = activeIndex === 0;
   const movingDown = activeIndex >= prevIndex;
   const pillTop = bounds?.top ?? 0;
   const pillHeight = Math.max(32, (bounds?.bottom ?? 32) - pillTop);
@@ -523,33 +549,33 @@ export function TownhouseScrollRail({
       <nav
         aria-label={isId ? "Bab Halaman" : "Page Chapters"}
         data-testid="scene-rail"
-        className={`group/rail pointer-events-auto fixed top-1/2 right-3 z-40 hidden -translate-y-1/2 flex-col items-stretch rounded-2xl border p-1.5 transition-all duration-300 md:flex lg:right-5 ${
-          isHero
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`pointer-events-auto fixed top-1/2 right-3 z-40 hidden -translate-y-1/2 flex-col items-stretch rounded-2xl border transition-all duration-300 md:flex lg:right-5 ${
+          isFooter
+            ? "pointer-events-none opacity-0 translate-x-8 scale-95"
+            : isExpanded
             ? isLight
-              ? "border-black/10 bg-[#f5f5f3]/80 shadow-sm backdrop-blur-md hover:bg-white/95 hover:shadow-xl"
-              : "border-white/10 bg-[#0b0c0e]/80 shadow-sm backdrop-blur-md hover:bg-[#141619]/95 hover:shadow-xl"
+              ? "w-auto min-w-[170px] border-black/12 bg-white/95 p-1.5 shadow-[0_12px_36px_rgba(0,0,0,0.12)] backdrop-blur-md"
+              : "w-auto min-w-[170px] border-white/12 bg-[#141619]/95 p-1.5 shadow-[0_12px_36px_rgba(0,0,0,0.5)] backdrop-blur-md"
             : isLight
-            ? "border-black/12 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.09)] backdrop-blur-md"
-            : "border-white/12 bg-[#141619]/90 shadow-[0_8px_30px_rgba(0,0,0,0.45)] backdrop-blur-md"
+            ? "w-8 items-center border-black/10 bg-white/80 p-1 shadow-sm backdrop-blur-md cursor-pointer hover:bg-white/95"
+            : "w-8 items-center border-white/10 bg-[#141619]/80 p-1 shadow-sm backdrop-blur-md cursor-pointer hover:bg-[#1a1c22]/95"
         }`}
       >
-        <div className="mb-1 flex items-center justify-between gap-2 px-2.5 pt-1 font-mono text-[10px] opacity-60">
-          <span
-            className={
-              isHero
-                ? "hidden group-focus-within/rail:inline group-hover/rail:inline"
-                : "inline"
-            }
-          >
-            {isId ? "BAB" : "CHAPTER"}
-          </span>
-          <span className="tabular-nums font-semibold text-[#1e9e5a]">
+        <div
+          className={`mb-1 flex items-center gap-2 px-2 pt-1 font-mono text-[10px] opacity-60 ${
+            isExpanded ? "justify-between w-full" : "justify-center"
+          }`}
+        >
+          {isExpanded && <span>{isId ? "BAB" : "CHAPTER"}</span>}
+          <span className="tabular-nums font-semibold text-[#1e9e5a] text-[10px]">
             {scrollPct}%
           </span>
         </div>
 
-        <ol className="relative flex flex-col">
-          {bounds && (
+        <ol className="relative flex flex-col w-full">
+          {bounds && isExpanded && (
             <>
               <span
                 aria-hidden="true"
@@ -588,15 +614,19 @@ export function TownhouseScrollRail({
                 ref={(el) => {
                   itemRefs.current[idx] = el;
                 }}
-                className="relative"
+                className="relative w-full"
               >
                 <button
                   type="button"
                   onClick={() => scrollToChapter(idx)}
                   aria-label={isId ? ch.labelId : ch.labelEn}
                   aria-current={active ? "step" : undefined}
-                  className={`flex min-h-[34px] w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-2.5 text-left text-[12.5px] transition-colors ${
-                    active
+                  className={`flex min-h-[32px] w-full cursor-pointer items-center rounded-[10px] transition-colors ${
+                    isExpanded
+                      ? "gap-2.5 px-2.5 text-left text-[12.5px]"
+                      : "justify-center p-1"
+                  } ${
+                    active && isExpanded
                       ? isLight
                         ? "font-semibold text-white"
                         : "font-semibold text-[#080808]"
@@ -607,59 +637,52 @@ export function TownhouseScrollRail({
                 >
                   <span
                     aria-hidden="true"
-                    className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
+                    className={`shrink-0 rounded-full transition-all ${
                       active
-                        ? "bg-transparent"
-                        : idx < activeIndex
-                        ? "bg-[#1e9e5a]"
-                        : "bg-current opacity-35"
+                        ? isExpanded
+                          ? "h-1.5 w-1.5 bg-transparent"
+                          : "h-2 w-2 bg-[#1e9e5a] dark:bg-[#c6f432] ring-2 ring-[#c6f432]/40"
+                        : "h-1.5 w-1.5 " +
+                          (idx < activeIndex
+                            ? "bg-[#1e9e5a]"
+                            : "bg-current opacity-30")
                     }`}
                   />
-                  <span
-                    className={`whitespace-nowrap ${
-                      isHero
-                        ? "hidden group-focus-within/rail:inline group-hover/rail:inline"
-                        : "inline"
-                    }`}
-                  >
-                    {isId ? ch.labelId : ch.labelEn}
-                  </span>
+                  {isExpanded && (
+                    <span className="whitespace-nowrap inline">
+                      {isId ? ch.labelId : ch.labelEn}
+                    </span>
+                  )}
                 </button>
               </li>
             );
           })}
         </ol>
 
-        <button
-          type="button"
-          onClick={() =>
-            scrollToChapter(Math.min(chapters.length - 1, activeIndex + 1))
-          }
-          disabled={activeIndex === chapters.length - 1}
-          data-testid="scene-next"
-          className={`mt-1.5 flex min-h-[34px] cursor-pointer items-center justify-center gap-1.5 border-t pt-1.5 text-[12px] font-medium transition-opacity ${
-            isLight
-              ? "border-black/10 text-[#4b4b48] hover:text-[#111]"
-              : "border-white/10 text-[#aaa9ad] hover:text-white"
-          } ${
-            activeIndex === chapters.length - 1
-              ? "pointer-events-none opacity-25"
-              : ""
-          }`}
-        >
-          <span
-            className={
-              isHero
-                ? "hidden group-focus-within/rail:inline group-hover/rail:inline"
-                : "inline"
+        {isExpanded && (
+          <button
+            type="button"
+            onClick={() =>
+              scrollToChapter(Math.min(chapters.length - 1, activeIndex + 1))
             }
+            disabled={activeIndex === chapters.length - 1}
+            data-testid="scene-next"
+            className={`mt-1.5 flex min-h-[32px] cursor-pointer items-center justify-center gap-1.5 border-t pt-1.5 text-[12px] font-medium transition-opacity ${
+              isLight
+                ? "border-black/10 text-[#4b4b48] hover:text-[#111]"
+                : "border-white/10 text-[#aaa9ad] hover:text-white"
+            } ${
+              activeIndex === chapters.length - 1
+                ? "pointer-events-none opacity-25"
+                : ""
+            }`}
           >
-            {isId ? "Lanjut" : "Next"}
-          </span>
-          <span aria-hidden="true" className="font-mono text-xs">
-            ↓
-          </span>
-        </button>
+            <span>{isId ? "Lanjut" : "Next"}</span>
+            <span aria-hidden="true" className="font-mono text-xs">
+              ↓
+            </span>
+          </button>
+        )}
       </nav>
     </>
   );
